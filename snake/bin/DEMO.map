@@ -1,0 +1,62 @@
+Section          Base   Top    High   Length
+---------------- ------ ------ ------ -------
+.icon            D1A882 D1A89B            19h
+.init.libs       D1A89B D1A8F3            58h
+.libs            D1A8F3 D1A922            2Fh
+.init.clock      D1A922 D1A922             0h
+.init.reruncheck D1A922 D1A922             0h
+.init            D1A922 D1A942            20h
+.fini            D1A942 D1A976            34h
+.text            D1A976 D1AB49           1D3h
+.data            D1AB49 D1AB59            10h
+.rodata          D1AB59 D1AB7B            22h
+.init_array      000000 000000             0h
+.ctors           000000 000000             0h
+.dtors           000000 000000             0h
+.fini_array      000000 000000             0h
+.bss             D052C6 D052C6 D13FD8      0h
+.header          D1A87F D1A882             3h
+
+Label                       Value
+-------------------------   ------
+___low_bss                = D052C6
+___len_bss                = 000000
+___heaptop                = D13FD8
+___heapbot                = D052C6
+___libs                   = D1A8F3
+___init_array_count       = 000000
+___ctors_count            = 000000
+___dtors_count            = 000000
+___fini_array_count       = 000000
+__stack                   = D1A87E
+_os_DisableHomeTextBuffer = D1A976
+_os_EnableHomeTextBuffer  = D1A988
+_random                   = D1A99A
+__setstate                = D1A9F8
+__state                   = D1AB49
+__frameset                = D1AA08
+_rand                     = D1AA16
+__iand                    = 000134
+__irems                   = 00016C
+__ishl                    = 000174
+_srand                    = D1AA23
+.missingappvar            = D1AB59
+.libloadname              = D1AB5E
+.libloadnamelen           = 000007
+.webaddress               = D1AB66
+__start                   = D1A922
+___exithl                 = D1A942
+skip._exit                = D1A942
+skip.__Exit               = D1A942
+skip._abort               = D1A942
+_exit.sp                  = D1A943
+_exit.flash_wait_states   = D1A94D
+_main                     = D1AA2B
+_draw_borders             = D1AAE7
+_#gfx_Begin               = D1A8FC
+_#gfx_End                 = D1A900
+_#gfx_SetColor            = D1A904
+_#gfx_SetDraw             = D1A908
+_#gfx_SwapDraw            = D1A90C
+_#gfx_FillRectangle       = D1A910
+_#kb_Scan                 = D1A91E
