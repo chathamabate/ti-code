@@ -12,6 +12,10 @@
 #define EAST    3
 #define WEST    4
 
+#define vertical(d) d < EAST
+#define horizontal(d) d >= EAST
+
+
 // This will hold the last error thrown by this file.
 char *sg_err_message = NULL;
 

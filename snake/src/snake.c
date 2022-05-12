@@ -13,8 +13,8 @@
 // l - length.
 // c - coordinate to check.
 #define contains(o, d, l, c) \
-    (d < 3 && o.x == c.x && o.y <= c.y && o.y + l >= c.y) || \
-    (d >= 3 && o.y == c.y && o.x <= c.x && o.x + l >= c.x)
+    (vertical(d) && o.x == c.x && o.y <= c.y && o.y + l >= c.y) || \
+    (horizontal(d) && o.y == c.y && o.x <= c.x && o.x + l >= c.x)
 
 // Check to see if a coordinate is contained in a snake segment.
 // ss should be a snake_seg *, and c should be a coord.
@@ -64,7 +64,6 @@ snake_game *new_snake_game(uint8_t cs) {
     return sg;
 }
 
-
 void destroy_snake_game(snake_game *sg) {
     snake_seg *iter = sg->first;
     snake_seg *temp;
@@ -72,7 +71,7 @@ void destroy_snake_game(snake_game *sg) {
     while (iter) {
         temp = iter->next;
         free(iter);
-        iter = temp->next;    
+        iter = temp;    
     }
 
     free(sg);
