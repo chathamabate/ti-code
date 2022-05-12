@@ -4,74 +4,45 @@
 #include <graphx.h>
 #include <stdio.h>
 #include <stdint.h>
+#include <assert.h>
 
-// Screen Dimmensions...
-// LCD_WIDTH = 320
-// LCD_HEIGHT = 240
-
-#define BORDER_COLOR 100
-#define FOOD_COLOR 200
+#include "snake.h"
+#include "snake_render.h"
 
 void print_centered(const char *str);
-void draw_borders(void);
-
-const uint8_t CELL_SIZE = 8;
-
-static char *err_message = NULL;
 
 int main(void) {
-    // sleep(100); FIGURE OUT WHY THIS DOESN'T WORK LATER...
+    srand(rtc_Time()); // Timing here could be important.
+
+    snake_game *sg = new_snake_game(8);
+
+    char dimString[50];
+    sprintf(dimString, "%d x %d, F=(%d,%d) ", sg->env_dims.x, sg->env_dims.y, sg->food_pos.x, sg->food_pos.y);
 
     gfx_Begin();
     gfx_SetDrawBuffer();
 
-    if (LCD_WIDTH % CELL_SIZE || LCD_HEIGHT % CELL_SIZE) {
-        err_message = "Bad cell size!";
-        goto HANDLE_ERROR;
-    }
-
-    uint16_t width = LCD_WIDTH / CELL_SIZE;
-    uint16_t height = LCD_HEIGHT / CELL_SIZE;
-
-    uint16_t game_width = width - 2;
-    uint16_t game_height = height - 2;
-
-    if (height < 3) {
-        err_message = "Cell size too large!";
-        goto HANDLE_ERROR;
-    }
-
-    srand(rtc_Time());
-
-    // Game Logic Here!
-    uint24_t score = 0;
-    uint16_t food_x = rand() % game_width;
-    uint16_t food_y = rand() % game_height;
-
-    gfx_SetColor(BORDER_COLOR);
-    draw_borders();
-
-    gfx_SetColor(FOOD_COLOR);
-    gfx_FillRectangle((food_x + 1) * CELL_SIZE, (food_y + 1) * CELL_SIZE, CELL_SIZE, CELL_SIZE);
+    render_snake_game(sg);
 
     gfx_SwapDraw();
     while (!kb_IsDown(kb_KeyClear)) kb_Scan();
 
+    destroy_snake_game(sg);
 
     goto EXIT;
 
 HANDLE_ERROR:
-    gfx_FillScreen(255);
+    // gfx_FillScreen(255);
 
-    gfx_SetColor(BORDER_COLOR);
-    draw_borders();
+    // gfx_SetColor(BORDER_COLOR);
+    // draw_borders();
 
-    gfx_SetColor(0);
-    print_centered(err_message ? err_message : "Error!");
+    // gfx_SetColor(0);
+    // print_centered(err_message ? err_message : "Error!");
 
-    gfx_SwapDraw();
+    // gfx_SwapDraw();
 
-    while (!kb_IsDown(kb_KeyClear)) kb_Scan();
+    // while (!kb_IsDown(kb_KeyClear)) kb_Scan();
 
 EXIT:
     gfx_End(); 
@@ -86,9 +57,9 @@ void print_centered(const char *str) {
                       (LCD_HEIGHT - 8) / 2);
 }
 
-void draw_borders(void) {
-    gfx_FillRectangle(0, 0, LCD_WIDTH, CELL_SIZE);
-    gfx_FillRectangle(0, LCD_HEIGHT - CELL_SIZE, LCD_WIDTH, CELL_SIZE);
-    gfx_FillRectangle(0, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
-    gfx_FillRectangle(LCD_WIDTH - CELL_SIZE, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
-}
+// void draw_borders(void) {
+//     gfx_FillRectangle(0, 0, LCD_WIDTH, CELL_SIZE);
+//     gfx_FillRectangle(0, LCD_HEIGHT - CELL_SIZE, LCD_WIDTH, CELL_SIZE);
+//     gfx_FillRectangle(0, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
+//     gfx_FillRectangle(LCD_WIDTH - CELL_SIZE, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
+// }
