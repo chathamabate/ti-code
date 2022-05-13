@@ -16,45 +16,60 @@ int main(void) {
 
     snake_game *sg = new_snake_game(8);
 
-    char dimString[50];
-    sprintf(dimString, "%d x %d, F=(%d,%d) ", sg->env_dims.x, sg->env_dims.y, sg->food_pos.x, sg->food_pos.y);
-
     gfx_Begin();
     gfx_SetDrawBuffer();
 
+    sk_key_t key;
+
+    while (sg->game_state != DEFEAT) {
+        key = os_GetCSC();
+
+        switch (key) {
+        case sk_Up:
+            sg->direction = NORTH;
+            break;
+        case sk_Down:
+            sg->direction = SOUTH;
+            break;
+        case sk_Left:
+            sg->direction = EAST;
+            break;
+        case sk_Right:
+            sg->direction = WEST;
+            break;
+        case sk_Clear:
+            // Force Lose!
+            sg->game_state = DEFEAT;
+            continue;
+        }
+
+        if (sg->first->direction == STILL) {
+            sg->first->direction = sg->direction;
+        } else if ((sg->first->size > 1 || sg->first->prev) && is_opposite(sg->direction, sg->first->direction)) {
+            // Cannot pick opposite direction when snake has size greater than 1.
+            sg->direction = sg->first->direction;
+        } 
+
+        // Finally...
+        grow(sg);
+
+        if (sg->game_state != DEFEAT) {
+            shrink(sg);            
+        }
+
+        render_snake_game(sg);
+        gfx_SwapDraw();
+
+        delay(50);
+    }
+
     render_snake_game(sg);
-
     gfx_SwapDraw();
-    while (!kb_IsDown(kb_KeyClear)) kb_Scan();
 
-    destroy_snake_game(sg);
-
-    goto EXIT;
-
-HANDLE_ERROR:
-    // gfx_FillScreen(255);
-
-    // gfx_SetColor(BORDER_COLOR);
-    // draw_borders();
-
-    // gfx_SetColor(0);
-    // print_centered(err_message ? err_message : "Error!");
-
-    // gfx_SwapDraw();
-
-    // while (!kb_IsDown(kb_KeyClear)) kb_Scan();
-
-EXIT:
+    while ((key = os_GetCSC()) != sk_Clear);
     gfx_End(); 
+
     return 0;
-}
-
-
-/* Prints a screen centered string */
-void print_centered(const char *str) {
-    gfx_PrintStringXY(str,
-                      (LCD_WIDTH - gfx_GetStringWidth(str)) / 2,
-                      (LCD_HEIGHT - 8) / 2);
 }
 
 // void draw_borders(void) {

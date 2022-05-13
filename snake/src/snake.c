@@ -3,24 +3,32 @@
 #include <stdlib.h>
 #include <tice.h>
 
+// NOTE DELETE THESE LATER!!!
+#include  <stdio.h>
+#include "snake_render.h"
+#include  <graphx.h>
+
 // Randomize coordinates.
-#define rCoord(coord, env) \
+#define r_coord(coord, env) \
     coord.x = rand() % env.x; \
     coord.y = rand() % env.y;
+
+#define equ_coord(c1, c2) (c1.x == c2.x) && (c1.y == c2.y)
 
 // o - origin.
 // d - direction.
 // l - length.
 // c - coordinate to check.
 #define contains(o, d, l, c) \
-    (vertical(d) && o.x == c.x && o.y <= c.y && o.y + l >= c.y) || \
-    (horizontal(d) && o.y == c.y && o.x <= c.x && o.x + l >= c.x)
+    (vertical(d) && o.x == c.x && o.y <= c.y && c.y - o.y < l) || \
+    (horizontal(d) && o.y == c.y && o.x <= c.x && c.x - o.x < l)
 
 // Check to see if a coordinate is contained in a snake segment.
 // ss should be a snake_seg *, and c should be a coord.
 #define ss_contains(ss, c) \
     contains(ss->pos, ss->direction, ss->size, c)
 
+char *sg_err_message = "First Error!";
 
 // Returns 1, if c is part of the snakes tail.
 // Returns 0, otherwise.
@@ -33,6 +41,9 @@ snake_game *new_snake_game(uint8_t cs) {
     snake_game *sg = malloc(sizeof(snake_game));
 
     sg->cell_size = cs;
+    sg->score = 0;
+    sg->food_q = 0;
+    sg->game_state = START;
 
     if (LCD_WIDTH % cs != 0 || LCD_HEIGHT % cs != 0) {
         sg_err_message = "Invalid cell size given!";    
@@ -42,7 +53,7 @@ snake_game *new_snake_game(uint8_t cs) {
     sg->env_dims.x = (LCD_WIDTH / cs) - 2;
     sg->env_dims.y = (LCD_HEIGHT / cs) - 2;
 
-    if (sg->env_dims.x < 3 || sg->env_dims.y < 3) {
+    if (sg->env_dims.x == 0 || sg->env_dims.y == 0) {
         sg_err_message = "Cell size too large!";
         return NULL;
     }
@@ -53,10 +64,11 @@ snake_game *new_snake_game(uint8_t cs) {
     first_seg->prev = NULL;
     first_seg->direction = STILL;
     first_seg->size = 1;
-    rCoord(first_seg->pos, sg->env_dims);
+    r_coord(first_seg->pos, sg->env_dims);
 
     sg->first = first_seg;
     sg->last = first_seg;
+    sg->direction = STILL;
 
     // Randomly place the food.
     respawn_food(sg);
@@ -92,9 +104,129 @@ static uint8_t is_on_snake(snake_game *sg, coord c) {
 }
 
 static void respawn_food(snake_game *sg) {
+    // Potentially inefficent method here...
+    // Should be ok tho...
     do {
-        rCoord(sg->food_pos, sg->env_dims);
+        r_coord(sg->food_pos, sg->env_dims);
     } while (is_on_snake(sg, sg->food_pos));
 }
 
+void grow(snake_game *sg) {
+    // Don't advance a still snake.
+    if (sg->direction == STILL) {
+        return;
+    }
+
+    snake_seg *head_seg = sg->first;
+
+    // Calc coordinate of the leading cell of the snake.
+    coord head_cell;
+    switch (head_seg->direction) {
+    case SOUTH:
+        head_cell.x = head_seg->pos.x;
+        head_cell.y = head_seg->pos.y + head_seg->size - 1;
+        break;
+    case WEST:
+        head_cell.x = head_seg->pos.x + head_seg->size - 1;
+        head_cell.y = head_seg->pos.y;
+        break;
+    case NORTH:
+    case EAST:
+        head_cell = head_seg->pos;
+        break;
+    }
+
+    uint8_t out_of_bounds;
+    coord next_cell = head_cell;
+
+    switch (sg->direction) {
+    case NORTH:
+        out_of_bounds = head_cell.y == 0;
+        next_cell.y--;
+        break;
+    case SOUTH:
+        out_of_bounds = head_cell.y == (sg->env_dims.y - 1);
+        next_cell.y++;
+        break;
+    case EAST:
+        out_of_bounds = head_cell.x == 0;
+        next_cell.x--;
+        break;
+    case WEST:
+        out_of_bounds = head_cell.x == (sg->env_dims.x - 1);
+        next_cell.x++;
+        break;
+    }
+
+    // Invalid next cell has been found!
+    if (out_of_bounds || is_on_snake(sg, next_cell)) {
+        sg->game_state = DEFEAT;
+        return;
+    }
+
+    if (equ_coord(next_cell, sg->food_pos)) {
+        sg->score++;
+        sg->food_q += 5; // Allows for same turn growth... 
+
+
+        // Make sure to respawn the food!
+        respawn_food(sg);
+    }
+
+    // In this situation a new segment must be created.
+    if (sg->direction != head_seg->direction) {
+        snake_seg *new_seg = malloc(sizeof(snake_seg));
+
+        new_seg->direction = sg->direction;
+        new_seg->pos = next_cell;
+        new_seg->size = 1;
+
+        new_seg->prev = NULL;
+        new_seg->next = head_seg;
+        head_seg->prev = new_seg;
+
+        sg->first = new_seg;
+
+        return;
+    }
+
+    // Final case, simply expand the current segment.
+    head_seg->size++;
+    if (head_seg->direction == NORTH || head_seg->direction == EAST) {
+        head_seg->pos = next_cell;
+    }
+}
+
+void shrink(snake_game *sg) {
+    // Cannot shrink a still snake.
+    if (sg->direction == STILL) {
+        return;
+    }
+
+    // Don't need to shrink here!
+    if (sg->food_q > 0) {
+        sg->food_q--;
+        return;
+    }
+
+    snake_seg *tail_seg = sg->last;
+
+    tail_seg->size--;
+
+    if (tail_seg->size == 0) {
+        // Remove tail seg from the snake.
+        sg->last = tail_seg->prev;
+        sg->last->next = NULL;
+
+        free(tail_seg);
+
+        return;
+    }
+
+    if (tail_seg->direction == WEST) {
+        tail_seg->pos.x++;
+    } else if (tail_seg->direction == SOUTH) {
+        tail_seg->pos.y++;
+    }
+}
 

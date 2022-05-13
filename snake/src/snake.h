@@ -8,16 +8,23 @@
 #define STILL   0
 
 #define NORTH   1
-#define SOUTH   2 
-#define EAST    3
+#define EAST    2
+#define SOUTH   3
 #define WEST    4
 
-#define vertical(d) d < EAST
-#define horizontal(d) d >= EAST
+#define vertical(d) (d % 2) == 1
+#define horizontal(d) (d % 2) == 0
+#define opposite(d) ((d + 1) % 4) + 1
+#define is_opposite(d1, d2) d1 == opposite(d2)
+
+// Game states.
+#define START   0
+#define IN_PLAY 1
+#define DEFEAT  2
 
 
 // This will hold the last error thrown by this file.
-char *sg_err_message = NULL;
+extern char *sg_err_message;
 
 typedef struct game_coordinate {
     uint16_t x;
@@ -42,9 +49,16 @@ typedef struct snake_game_info {
     snake_seg *first;
     snake_seg *last;
 
+    // The direction to move the snake in next advance.
+    uint8_t direction;
+
     // The amount of food eaten by snake, but not
     // added onto the tail yet.
     uint16_t food_q;
+
+    // The player's score so far.
+    // +1 for each food eaten.
+    uint16_t score;
 
     // Coordinates of food.
     coord food_pos;
@@ -54,9 +68,17 @@ typedef struct snake_game_info {
 
     // Cell size... this is only for rendering.
     uint8_t cell_size;
+
+    uint8_t game_state;
 } snake_game;
 
 snake_game *new_snake_game(uint8_t cs);
 void destroy_snake_game(snake_game *sg);
+
+// Grow the snake in its pointed direction.
+void grow(snake_game *sg);
+
+// Shrink the tail of the snake (if needed)
+void shrink(snake_game *sg);
 
 #endif

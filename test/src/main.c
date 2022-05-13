@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+void test_run(void);
+
 /* Main function, called first */
 int main(void)
 {
@@ -24,8 +26,10 @@ int main(void)
     gfx_SetTextBGColor(255);
 
     /* Print some scaled text */
-    gfx_SetTextScale(1, 1);
-    gfx_PrintStringXY("SCALED TXT", 10, 10);
+    gfx_SetTextScale(4, 4);
+
+    test_run();
+
 
     /* Waits for a key */
     while (!os_GetCSC());
@@ -34,4 +38,23 @@ int main(void)
     gfx_End();
 
     return 0;
+}
+
+void test_run(void) {
+    uint8_t x, y;
+
+    x = 10; y = 12;
+    char buff[100];
+    
+    switch (8)
+    {
+    case 8:
+        sprintf(buff, "%d %d", x, y);
+        gfx_PrintStringXY(buff, 10, 10);
+        /* code */
+        return;
+    }
+
+    x++;
+    return;
 }

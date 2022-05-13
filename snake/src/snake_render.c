@@ -1,13 +1,28 @@
 
 #include "snake_render.h"
 
+#include <stdio.h>
 #include <graphx.h>
 #include <tice.h>
 
 #define to_screen_coord(c, sg) \
     (c.x + 1) * sg->cell_size, (c.y + 1) * sg->cell_size
 
+/* Prints a screen centered string */
+void print_centered(const char *str) {
+    gfx_PrintStringXY(str,
+                      (LCD_WIDTH - gfx_GetStringWidth(str)) / 2,
+                      (LCD_HEIGHT - 8) / 2);
+}
+
 void render_snake_game(snake_game *sg) {
+    gfx_FillScreen(255);
+
+    if (sg->game_state == DEFEAT) {
+        gfx_SetColor(FOOD_COLOR);
+        print_centered("DEFEAT");
+    }
+
     gfx_SetColor(BORDER_COLOR);
     draw_borders(sg);
 
