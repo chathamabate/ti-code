@@ -17,12 +17,6 @@
 #define opposite(d) ((d + 1) % 4) + 1
 #define is_opposite(d1, d2) d1 == opposite(d2)
 
-// Game states.
-#define START   0
-#define IN_PLAY 1
-#define DEFEAT  2
-
-
 // This will hold the last error thrown by this file.
 extern char *sg_err_message;
 
@@ -69,7 +63,7 @@ typedef struct snake_game_info {
     // Cell size... this is only for rendering.
     uint8_t cell_size;
 
-    uint8_t game_state;
+    uint8_t in_play;
 } snake_game;
 
 snake_game *new_snake_game(uint8_t cs);

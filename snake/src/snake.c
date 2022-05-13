@@ -43,7 +43,7 @@ snake_game *new_snake_game(uint8_t cs) {
     sg->cell_size = cs;
     sg->score = 0;
     sg->food_q = 0;
-    sg->game_state = START;
+    sg->in_play = 1; // 0 When game is over.
 
     if (LCD_WIDTH % cs != 0 || LCD_HEIGHT % cs != 0) {
         sg_err_message = "Invalid cell size given!";    
@@ -160,7 +160,7 @@ void grow(snake_game *sg) {
 
     // Invalid next cell has been found!
     if (out_of_bounds || is_on_snake(sg, next_cell)) {
-        sg->game_state = DEFEAT;
+        sg->in_play = 0;
         return;
     }
 
