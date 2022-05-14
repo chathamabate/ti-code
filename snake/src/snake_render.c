@@ -18,10 +18,10 @@ void print_centered(const char *str) {
 void render_snake_game(snake_game *sg) {
     gfx_FillScreen(255);
 
-    if (sg->game_state == DEFEAT) {
-        gfx_SetColor(FOOD_COLOR);
-        print_centered("DEFEAT");
-    }
+    // if (sg->game_state == DEFEAT) {
+    //     gfx_SetColor(FOOD_COLOR);
+    //     print_centered("DEFEAT");
+    // }
 
     gfx_SetColor(BORDER_COLOR);
     draw_borders(sg);

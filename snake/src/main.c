@@ -21,41 +21,41 @@ int main(void) {
 
     sk_key_t key;
 
-    while (sg->game_state != DEFEAT) {
-        key = os_GetCSC();
+    while (1) {
+    //     key = os_GetCSC();
 
-        switch (key) {
-        case sk_Up:
-            sg->direction = NORTH;
-            break;
-        case sk_Down:
-            sg->direction = SOUTH;
-            break;
-        case sk_Left:
-            sg->direction = EAST;
-            break;
-        case sk_Right:
-            sg->direction = WEST;
-            break;
-        case sk_Clear:
-            // Force Lose!
-            sg->game_state = DEFEAT;
-            continue;
-        }
+    //     switch (key) {
+    //     case sk_Up:
+    //         sg->direction = NORTH;
+    //         break;
+    //     case sk_Down:
+    //         sg->direction = SOUTH;
+    //         break;
+    //     case sk_Left:
+    //         sg->direction = EAST;
+    //         break;
+    //     case sk_Right:
+    //         sg->direction = WEST;
+    //         break;
+    //     case sk_Clear:
+    //         // Force Lose!
+    //         sg->game_state = DEFEAT;
+    //         continue;
+    //     }
 
-        if (sg->first->direction == STILL) {
-            sg->first->direction = sg->direction;
-        } else if ((sg->first->size > 1 || sg->first->prev) && is_opposite(sg->direction, sg->first->direction)) {
-            // Cannot pick opposite direction when snake has size greater than 1.
-            sg->direction = sg->first->direction;
-        } 
+    //     if (sg->first->direction == STILL) {
+    //         sg->first->direction = sg->direction;
+    //     } else if ((sg->first->size > 1 || sg->first->prev) && is_opposite(sg->direction, sg->first->direction)) {
+    //         // Cannot pick opposite direction when snake has size greater than 1.
+    //         sg->direction = sg->first->direction;
+    //     } 
 
-        // Finally...
-        grow(sg);
+    //     // Finally...
+    //     grow(sg);
 
-        if (sg->game_state != DEFEAT) {
-            shrink(sg);            
-        }
+    //     if (sg->game_state != DEFEAT) {
+    //         shrink(sg);            
+    //     }
 
         render_snake_game(sg);
         gfx_SwapDraw();
