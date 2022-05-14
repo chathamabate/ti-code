@@ -2,6 +2,7 @@
 #define SNAKE_H
 
 #include <stdint.h>
+#include "misc.h"
 
 // This is used in the beginning of the game
 // when the first block of the snake has no direction.
@@ -19,11 +20,6 @@
 
 // This will hold the last error thrown by this file.
 extern char *sg_err_message;
-
-typedef struct game_coordinate {
-    uint16_t x;
-    uint8_t y;
-} coord;
 
 typedef struct snake_segment {
     coord pos;

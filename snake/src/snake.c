@@ -3,15 +3,10 @@
 #include <stdlib.h>
 #include <tice.h>
 
-// NOTE DELETE THESE LATER!!!
-#include  <stdio.h>
-#include "snake_render.h"
-#include  <graphx.h>
-
 // Randomize coordinates.
-#define r_coord(coord, env) \
-    coord.x = rand() % env.x; \
-    coord.y = rand() % env.y;
+#define r_coord(c, env) \
+    c.x = rand() % env.x; \
+    c.y = rand() % env.y;
 
 #define equ_coord(c1, c2) (c1.x == c2.x) && (c1.y == c2.y)
 

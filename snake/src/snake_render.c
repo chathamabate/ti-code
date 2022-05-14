@@ -5,6 +5,8 @@
 #include <graphx.h>
 #include <tice.h>
 
+#include "misc.h"
+
 #define to_screen_coord(c, sg) \
     (c.x + 1) * sg->cell_size, (c.y + 1) * sg->cell_size
 

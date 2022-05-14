@@ -3,13 +3,10 @@
 
 #include <stdint.h>
 
-#define SB_SIZE 10
+#define SB_SIZE 8
 #define NAME_LEN 4
 
 // 10 Highscores always...
-
-#define SB_FN "SnakeScores"
-#define TEMP_SB_FN "SnakeScoresTemp"
 
 typedef struct high_score_entry {
     char name[NAME_LEN + 1];
@@ -40,6 +37,6 @@ uint8_t name_available(hs_entry *sb, char name[NAME_LEN + 1]);
 
 // insert the new highscore into the score board at the given
 // index.
-void sb_insert(hs_entry *sb, uint8_t index, hs_entry new_hs);
+void sb_insert(hs_entry *sb, uint8_t index, hs_entry *new_hs);
 
 #endif

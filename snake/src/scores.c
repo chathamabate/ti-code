@@ -7,6 +7,9 @@
     sb_error_msg = msg; \
     return 0;
 
+#define SB_FN "Snake"
+#define TEMP_SB_FN "SnakeT"
+
 char *sb_error_msg = "N/A";
 
 static uint8_t def_name_generated = 0;
@@ -86,9 +89,9 @@ uint8_t archive_sb(hs_entry *sb) {
         ERROR_OUT("archive_sb: Can't write SB!");
     }
 
-    if (!ti_Delete(SB_FN)) {
-        ERROR_OUT("archive_sb: Can't delete original SB!");
-    }
+    // If we don't delete the file.
+    // An error should occur in the rename phase... kinda a hack.
+    ti_Delete(SB_FN); 
 
     uint8_t rename_status = ti_Rename(TEMP_SB_FN, SB_FN);
 
@@ -121,7 +124,7 @@ uint8_t name_available(hs_entry *sb, char name[NAME_LEN + 1]) {
     return 1;
 }
 
-void sb_insert(hs_entry *sb, uint8_t index, hs_entry new_hs) {
+void sb_insert(hs_entry *sb, uint8_t index, hs_entry *new_hs) {
     if (index >= SB_SIZE) {
         return;
     }
@@ -129,10 +132,10 @@ void sb_insert(hs_entry *sb, uint8_t index, hs_entry new_hs) {
     uint8_t k;
 
     for (k = SB_SIZE - 1; k > index; k--) {
-        sb[k] = sb[k + 1];
+        sb[k] = sb[k - 1];
     }
 
-    sb[index] = new_hs;
+    sb[index] = *new_hs;
 }
 
 

@@ -5,70 +5,49 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <assert.h>
+#include <tice.h>
+#include <string.h>
 
+#include "misc.h"
 #include "snake.h"
+#include "scores.h"
 #include "snake_render.h"
 
-void print_centered(const char *str);
+#define SB_ERROR \
+    os_PutStrFull(sb_error_msg); \
+    while (os_GetCSC() != sk_Clear); \
+    return 0;
+
+static void print_sb(hs_entry *sb);
+
 
 int main(void) {
-    srand(rtc_Time()); // Timing here could be important.
+    coord c;
+    c.x = 30;
+    c.y = 30;
 
-    snake_game *sg = new_snake_game(8);
+    button bts[4];
+    bts[0].text = "Hey";
+    bts[1].text = "Yo Yo Yo";
+    bts[2].text = "Meh";
+    bts[3].text = "Uh huh";
 
-    gfx_Begin();
+    menu *m = new_menu(bts, 4);
+
     gfx_SetDrawBuffer();
 
-    sk_key_t key;
+    gfx_Begin();
 
-    while (1) {
-    //     key = os_GetCSC();
+    gfx_FillScreen(255);
+    render_menu(m, c);
 
-    //     switch (key) {
-    //     case sk_Up:
-    //         sg->direction = NORTH;
-    //         break;
-    //     case sk_Down:
-    //         sg->direction = SOUTH;
-    //         break;
-    //     case sk_Left:
-    //         sg->direction = EAST;
-    //         break;
-    //     case sk_Right:
-    //         sg->direction = WEST;
-    //         break;
-    //     case sk_Clear:
-    //         // Force Lose!
-    //         sg->game_state = DEFEAT;
-    //         continue;
-    //     }
-
-    //     if (sg->first->direction == STILL) {
-    //         sg->first->direction = sg->direction;
-    //     } else if ((sg->first->size > 1 || sg->first->prev) && is_opposite(sg->direction, sg->first->direction)) {
-    //         // Cannot pick opposite direction when snake has size greater than 1.
-    //         sg->direction = sg->first->direction;
-    //     } 
-
-    //     // Finally...
-    //     grow(sg);
-
-    //     if (sg->game_state != DEFEAT) {
-    //         shrink(sg);            
-    //     }
-
-        render_snake_game(sg);
-        gfx_SwapDraw();
-
-        delay(50);
-    }
-
-    render_snake_game(sg);
     gfx_SwapDraw();
+    gfx_Wait();
 
-    while ((key = os_GetCSC()) != sk_Clear);
-    gfx_End(); 
+    while (os_GetCSC() != sk_Clear);
 
+    gfx_End();
+    free(m);
     return 0;
 }
 
@@ -78,3 +57,14 @@ int main(void) {
 //     gfx_FillRectangle(0, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
 //     gfx_FillRectangle(LCD_WIDTH - CELL_SIZE, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
 // }
+
+static void print_sb(hs_entry *sb) {
+    uint8_t index;
+    char buff[20];
+
+    for (index = 0; index < SB_SIZE; index++) {
+        sprintf(buff, "%s : %d", sb[index].name, sb[index].score);
+        os_PutStrFull(buff);
+        os_NewLine();
+    }
+}
