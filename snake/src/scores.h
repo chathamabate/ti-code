@@ -6,6 +6,9 @@
 #define SB_SIZE 8
 #define NAME_LEN 4
 
+// Very very similar to a menu here...
+// Although not entirely... lots of stuff to print out...
+
 // 10 Highscores always...
 
 typedef struct high_score_entry {

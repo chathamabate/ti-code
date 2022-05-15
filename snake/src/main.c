@@ -18,8 +18,7 @@
     while (os_GetCSC() != sk_Clear); \
     return 0;
 
-static void print_sb(hs_entry *sb);
-
+static void start(void);
 
 int main(void) {
     coord c;
@@ -59,20 +58,3 @@ int main(void) {
     return 0;
 }
 
-// void draw_borders(void) {
-//     gfx_FillRectangle(0, 0, LCD_WIDTH, CELL_SIZE);
-//     gfx_FillRectangle(0, LCD_HEIGHT - CELL_SIZE, LCD_WIDTH, CELL_SIZE);
-//     gfx_FillRectangle(0, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
-//     gfx_FillRectangle(LCD_WIDTH - CELL_SIZE, CELL_SIZE, CELL_SIZE, LCD_HEIGHT - CELL_SIZE);
-// }
-
-static void print_sb(hs_entry *sb) {
-    uint8_t index;
-    char buff[20];
-
-    for (index = 0; index < SB_SIZE; index++) {
-        sprintf(buff, "%s : %d", sb[index].name, sb[index].score);
-        os_PutStrFull(buff);
-        os_NewLine();
-    }
-}
