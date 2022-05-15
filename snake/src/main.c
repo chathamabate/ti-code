@@ -32,6 +32,14 @@ int main(void) {
     bts[2].text = "Meh";
     bts[3].text = "Uh huh";
 
+    size_t s = strlen("HEY");
+    char buff[20];
+    sprintf(buff, "STRLEN : %d", s);
+    os_ClrHome();
+    os_PutStrFull(buff);
+    while (os_GetCSC() != sk_Clear);
+
+
     menu *m = new_menu(bts, 4);
 
     gfx_SetDrawBuffer();

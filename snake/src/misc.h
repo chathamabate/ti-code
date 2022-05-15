@@ -9,13 +9,18 @@
 #define EXIT            5
 
 // Colors for rendering a menu.
-#define MENU_BG_COLOR   0 
-#define MENU_FG_COLOR   100
-#define MENU_CH_COLOR   200
-#define BORDER          5
+#define MENU_BG_COLOR   22 
+#define MENU_FG_COLOR   17
+#define MENU_CH_COLOR   240
+#define MENU_BORDER     5
 
-#define MENU_TXT_HEIGHT 8
-#define MENU_TXT_WIDTH  4
+// Investigate fonts in a later project...
+//
+// By default text is 8x8.
+// We are just going to rescale the text.
+// 
+#define MENU_TXT_H_SCALE 2
+#define MENU_TXT_W_SCALE 1
 
 #include <stdint.h>
 
@@ -26,6 +31,7 @@ typedef struct {
 
 typedef struct {
     char *text;
+    uint8_t text_width;
     uint8_t link;   // Should be a game state.
 } button;
 
