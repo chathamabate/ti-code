@@ -2,6 +2,8 @@
 
 #include <string.h>
 #include <fileioc.h>
+#include <graphx.h>
+#include <string.h>
 
 #define ERROR_OUT(msg) \
     sb_error_msg = msg; \
@@ -136,6 +138,45 @@ void sb_insert(hs_entry *sb, uint8_t index, hs_entry *new_hs) {
     }
 
     sb[index] = *new_hs;
+}
+
+void render_sb(hs_entry* sb, coord c) {
+    gfx_SetColor(SB_BG_COLOR);
+    gfx_FillRectangle(c.x, c.y, SB_WIDTH, SB_HEIGHT);
+
+    gfx_SetMonospaceFont(8);
+    gfx_SetTextScale(SB_TXT_W, SB_TXT_H);
+    gfx_SetTextFGColor(SB_FG_COLOR);
+
+    uint8_t i;
+    char score_line[NAME_LEN + SB_SPACERS + 5 + 1];
+
+    for (i = NAME_LEN; i < NAME_LEN + SB_SPACERS; i++) {
+        score_line[i] = SB_SPACER;
+    }
+
+    uint16_t cur_x = c.x + SB_BORDER;
+    uint8_t cur_y = c.y + SB_BORDER;
+
+    for (i = 0; i < SB_SIZE; i++) {
+        uint8_t j;
+
+        // Copy the name into the score line.
+        for (j = 0; j < NAME_LEN; j++) {
+            score_line[j] = sb[i].name[j];
+        }
+
+        char buff[5 + 1];   // 1 for the null terminator. 
+        sprintf(buff, "%d", sb[i].score);
+        uint8_t digits = dec_digits(sb[i].score);
+
+        for (j = 4; j >= 0; j--) {
+            uint8_t digit_num = 5 - j; // FIX THIS UP... NOT NOW THO...
+            score_line[NAME_LEN + SB_SPACERS + j] = digit_num <= digits 
+                ? buff[j - digits - 1] 
+                : '0';
+        }
+    }
 }
 
 

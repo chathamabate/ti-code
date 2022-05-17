@@ -36,11 +36,24 @@ void render_menu(menu *m, coord c) {
     gfx_SetMonospaceFont(8); 
     gfx_SetTextScale(MENU_TXT_W_SCALE, MENU_TXT_H_SCALE);
     
-    uint8_t i, cur_x, cur_y = c.y + MENU_BORDER;
+    uint16_t cur_x;
+    uint8_t i, cur_y = c.y + MENU_BORDER;
     for (i = 0; i < m->buttons_len; i++, cur_y += (8 * MENU_TXT_H_SCALE) + MENU_BORDER) {
         cur_x = (c.x + ((m->width - m->buttons[i].text_width) / 2));
 
         gfx_SetTextFGColor(i == m->choice ? MENU_CH_COLOR : MENU_FG_COLOR);
         gfx_PrintStringXY(m->buttons[i].text, cur_x, cur_y);
     }
+}
+
+uint8_t dec_digits(uint16_t num) {
+    uint8_t digits = 1;
+    uint8_t bound = 10;
+
+    while (num >= bound && digits < 5) {
+        digits++;
+        bound *= 10;
+    }
+
+    return digits;
 }

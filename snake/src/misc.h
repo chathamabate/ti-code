@@ -52,4 +52,7 @@ menu *new_menu(button *bts, uint8_t bts_len);
 // Render a menu at a given coordinate.
 void render_menu(menu *m, coord c);
 
+// Get the number of base 10 digits a number has.
+uint8_t dec_digits(uint16_t num);
+
 #endif
