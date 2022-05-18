@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <tice.h>
-// #include <graphx.h>
+#include <graphx.h>
 // #include <stdio.h>
 
 // Randomize coordinates.
@@ -24,6 +24,9 @@
 // ss should be a snake_seg *, and c should be a coord.
 #define ss_contains(ss, c) \
     contains(ss->pos, ss->direction, ss->size, c)
+
+#define to_screen_coord(c, sg) \
+    (c.x + 1) * sg->cell_size, (c.y + 1) * sg->cell_size
 
 char *sg_err_message = "First Error!";
 
@@ -224,6 +227,45 @@ void shrink(snake_game *sg) {
         tail_seg->pos.x++;
     } else if (tail_seg->direction == SOUTH) {
         tail_seg->pos.y++;
+    }
+}
+
+void render_snake_game(snake_game *sg) {
+    gfx_FillScreen(COLOR_5);
+
+    gfx_SetColor(COLOR_1);
+
+    gfx_FillRectangle(0, 0, LCD_WIDTH, sg->cell_size);
+    gfx_FillRectangle(0, LCD_HEIGHT - sg->cell_size, LCD_WIDTH, sg->cell_size);
+    gfx_FillRectangle(0, sg->cell_size, sg->cell_size, LCD_HEIGHT - sg->cell_size);
+    gfx_FillRectangle(LCD_WIDTH - sg->cell_size, sg->cell_size, sg->cell_size, LCD_HEIGHT - sg->cell_size);
+
+    gfx_SetColor(COLOR_2);
+    gfx_FillRectangle(
+        to_screen_coord(sg->food_pos, sg), 
+        sg->cell_size, 
+        sg->cell_size
+    );
+
+    gfx_SetColor(COLOR_0);
+
+    snake_seg *iter = sg->first;
+    while (iter) {
+        if (vertical(iter->direction)) {
+            gfx_FillRectangle(
+                to_screen_coord(iter->pos, sg), 
+                sg->cell_size, 
+                iter->size * sg->cell_size
+            );
+        } else {
+            gfx_FillRectangle(
+                to_screen_coord(iter->pos, sg), 
+                iter->size * sg->cell_size,
+                sg->cell_size
+            );
+        }
+
+        iter = iter->next;
     }
 }
 

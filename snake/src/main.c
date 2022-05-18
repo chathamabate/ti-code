@@ -11,7 +11,6 @@
 #include "misc.h"
 #include "snake.h"
 #include "scores.h"
-#include "snake_render.h"
 
 #define DELAY 50
 
@@ -37,6 +36,15 @@
 // Simple typedef for runnable actions.
 typedef  void (*action)(void);
 
+typedef struct {
+    action enter;
+    action render;
+    action update;
+    action exit;
+
+    menu *m; // Not always needed.
+} game_state;
+
 // The state of the game.
 static uint8_t curr_state = START_PAGE;
 static uint8_t next_state = START_PAGE;
@@ -53,9 +61,6 @@ static menu *defeat_menu;
 static button highscores_menu_bts[1];
 static menu *highscores_menu;
 
-// Menus for each state.
-static menu *menus[EXIT + 1];
-
 static hs_entry *sb = NULL;
 static snake_game *sg = NULL;
 
@@ -67,45 +72,49 @@ static uint8_t placement = SB_SIZE;
 // Whether or not a new highscore has been achieved.
 static uint8_t archive_needed = 0;
 
-// These are the render and update functions for each game
-// state.
-static action render_funcs[EXIT + 1];
-static action update_funcs[EXIT + 1];
-static action enter_funcs[EXIT + 1];
-static action exit_funcs[EXIT + 1];
+// Game state array.
+static game_state gsa[EXIT + 1];
+
+// Macro for initing a game state.
+#define store_game_state(gsi, n_enter, n_render, n_update, n_exit, n_m) \
+    gsa[gsi].enter = n_enter; \
+    gsa[gsi].render = n_render; \
+    gsa[gsi].update = n_update; \
+    gsa[gsi].exit = n_exit; \
+    gsa[gsi].m = n_m
 
 // Initialize above globals.
-void init_globals(void);
+static void init_globals(void);
 
 // Clean up above globals.
-void cleanup_globals(void);
-
-// All scene render functions.
-void render_start_page(void);
-void render_highscores(void);
-void render_in_play(void);
-void render_defeat(void);
-void render_new_highscore(void);
-void render_exit(void); // Should never be called.
+static void cleanup_globals(void);
 
 // All enter functions.
-void enter_noop(void);
-void enter_in_play(void);
+static void enter_noop(void);
+static void enter_in_play(void);
 
-// This update function is usable for
+// All scene render functions.
+static void render_start_page(void);
+static void render_highscores(void);
+static void render_in_play(void);
+static void render_defeat(void);
+static void render_new_highscore(void);
+static void render_noop(void); 
+
+// update_menus is usable for
 // START_PAGE, HIGH_SCORES, and DEFEAT
 
 // All update functions.
-void update_menus(void);
-void update_in_play(void);
-void update_new_highscore(void);
-void update_exit(void); // Should never be called.
+static void update_menus(void);
+static void update_in_play(void);
+static void update_new_highscore(void);
+static void update_noop(void);
 
 // all exit functions.
-void exit_noop(void);
-void exit_in_play(void);
+static void exit_in_play(void);
+static void exit_noop(void);
 
-void init_globals(void) {
+static void init_globals(void) {
     main_menu_bts[0].text = "Play";   
     main_menu_bts[0].link = IN_PLAY;
 
@@ -130,38 +139,16 @@ void init_globals(void) {
 
     highscores_menu = new_menu(highscores_menu_bts, 1);
 
-    menus[START_PAGE] = main_menu;
-    menus[HIGHSCORES] = highscores_menu;
-    menus[IN_PLAY] = NULL;
-    menus[DEFEAT] = defeat_menu;
-    menus[NEW_HIGHSCORE] = NULL;
-    menus[EXIT] = NULL;
-
-    render_funcs[START_PAGE] = render_start_page;
-    render_funcs[HIGHSCORES] = render_highscores;
-    render_funcs[IN_PLAY] = render_in_play;
-    render_funcs[DEFEAT] = render_defeat;
-    render_funcs[NEW_HIGHSCORE] = render_new_highscore;
-    render_funcs[EXIT] = render_exit;
-
-    update_funcs[START_PAGE] = update_menus;
-    update_funcs[HIGHSCORES] = update_menus;
-    update_funcs[IN_PLAY] = update_in_play;
-    update_funcs[DEFEAT] = update_menus;
-    update_funcs[NEW_HIGHSCORE] = update_new_highscore;
-    update_funcs[EXIT] = update_exit;
-
-    uint8_t state;
-    for (state = 0; state < EXIT + 1; state++) {
-        enter_funcs[state] = enter_noop;
-        exit_funcs[state] = exit_noop;
-    }
-
-    enter_funcs[IN_PLAY] = enter_in_play;
-    exit_funcs[IN_PLAY] = exit_in_play;
+    // Store all games states in the gsa.
+    store_game_state(START_PAGE, enter_noop, render_start_page, update_menus, exit_noop, main_menu);
+    store_game_state(HIGHSCORES, enter_noop, render_highscores, update_menus, exit_noop, highscores_menu);
+    store_game_state(IN_PLAY, enter_in_play, render_in_play, update_in_play, exit_in_play, NULL);
+    store_game_state(DEFEAT, enter_noop, render_defeat, update_menus, exit_noop, NULL);
+    store_game_state(NEW_HIGHSCORE, enter_noop, render_new_highscore, update_new_highscore, exit_noop, NULL);
+    store_game_state(EXIT, enter_noop, render_noop, update_noop, exit_noop, NULL);
 }
 
-void cleanup_globals(void) {
+static void cleanup_globals(void) {
     // Free all dynamic memory globals.
     free(main_menu);
     free(defeat_menu);
@@ -189,17 +176,17 @@ int main(void) {
     while (curr_state != EXIT) {
         if (redraw_needed) {
             gfx_FillScreen(255);
-            (render_funcs[curr_state])();
+            gsa[curr_state].render();
             gfx_SwapDraw();
 
             redraw_needed = 0;
         }
 
-        (update_funcs[curr_state])();
+        gsa[curr_state].update();
 
         if (curr_state != next_state) {
-            (exit_funcs[curr_state])();
-            (enter_funcs[next_state])();
+            gsa[curr_state].exit();
+            gsa[next_state].enter();
 
             curr_state = next_state;
         }
@@ -219,79 +206,80 @@ int main(void) {
     return 0;
 }
 
-#define START_PAGE_BG_COLOR 247
-#define START_PAGE_FG_COLOR 16
-
 #define START_PAGE_TXT_W 4
 #define START_PAGE_TXT_H 5
 
 // Title says Snake. (5 characters)
 #define START_PAGE_TITLE_W (5 * 8 * START_PAGE_TXT_W)
 
-void render_start_page(void) {
-    gfx_FillScreen(START_PAGE_BG_COLOR);
+static void render_noop(void) {
+
+}
+
+static void render_start_page(void) {
+    gfx_FillScreen(COLOR_5);
 
     gfx_SetMonospaceFont(8);
     gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
 
-    gfx_SetTextFGColor(START_PAGE_FG_COLOR);
+    gfx_SetTextFGColor(COLOR_1);
     gfx_PrintStringXY("Snake", center(START_PAGE_TITLE_W), 45);
 
     render_menu_xy(main_menu, center(main_menu->width), 120);
 }
 
-void render_highscores(void) {
+static void render_highscores(void) {
 
 }
 
-void render_in_play(void) {
+static void render_in_play(void) {
     render_snake_game(sg);
 }
 
-void render_defeat(void) {
+static void render_defeat(void) {
 
 }
 
-void render_new_highscore(void) {
+static void render_new_highscore(void) {
 
 }
 
-void render_exit(void) {
-
-}
-
-void enter_noop(void) {
+static void enter_noop(void) {
     redraw_needed = 1;
 }
 
 #define CELL_SIZE 8
 
-void enter_in_play(void) {
+static void enter_in_play(void) {
     redraw_needed = 1;
     sg = new_snake_game(CELL_SIZE);
 }
 
-void update_menus(void) {
+static void update_noop(void) {
+
+}
+
+static void update_menus(void) {
     sk_key_t key = os_GetCSC();
 
     switch (key) {
     case sk_Up:
     case sk_8:
-        menu_up(menus[curr_state]);
+        menu_up(gsa[curr_state].m); // Should never be NULL.
         redraw_needed = 1;
         break;
     case sk_Down:
     case sk_5:
-        menu_down(menus[curr_state]);
+        menu_down(gsa[curr_state].m);
         redraw_needed = 1;
         break;
     case sk_Enter:
-        next_state = menu_link(menus[curr_state]);
+        next_state = menu_link(gsa[curr_state].m);
         break;
     }
 }
 
-void update_in_play(void) {
+static void update_in_play(void) {
     sk_key_t key = os_GetCSC();
 
     switch (key) {
@@ -333,18 +321,14 @@ void update_in_play(void) {
     }
 }
 
-void update_new_highscore(void) {
+static void update_new_highscore(void) {
 
 }
 
-void update_exit(void) {
-
-}
-
-void exit_noop(void) {
+static void exit_noop(void) {
     // Do Nothing.
 }
 
-void exit_in_play(void) {
+static void exit_in_play(void) {
     destroy_snake_game(sg);
 }

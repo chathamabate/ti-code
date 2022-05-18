@@ -141,12 +141,12 @@ void sb_insert(hs_entry *sb, uint8_t index, hs_entry *new_hs) {
 }
 
 void render_sb(hs_entry* sb, coord c) {
-    gfx_SetColor(SB_BG_COLOR);
+    gfx_SetColor(COLOR_3);
     gfx_FillRectangle(c.x, c.y, SB_WIDTH, SB_HEIGHT);
 
     gfx_SetMonospaceFont(8);
     gfx_SetTextScale(SB_TXT_W, SB_TXT_H);
-    gfx_SetTextFGColor(SB_FG_COLOR);
+    gfx_SetTextFGColor(COLOR_0);
 
     uint8_t i;
     char score_line[SB_CHARS_PER_LINE + 1];

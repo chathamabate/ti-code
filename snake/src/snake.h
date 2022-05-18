@@ -71,4 +71,7 @@ void grow(snake_game *sg);
 // Shrink the tail of the snake (if needed)
 void shrink(snake_game *sg);
 
+// Render the snake game.
+void render_snake_game(snake_game *sg);
+
 #endif

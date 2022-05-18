@@ -30,7 +30,7 @@ menu *new_menu(button *bts, uint8_t bts_len) {
 }
 
 void render_menu_xy(menu *m, uint16_t x, uint8_t y) {
-    gfx_SetColor(MENU_BG_COLOR);
+    gfx_SetColor(COLOR_4);
     gfx_FillRectangle(x, y, m->width, m->height);
 
     gfx_SetMonospaceFont(8); 
@@ -41,7 +41,7 @@ void render_menu_xy(menu *m, uint16_t x, uint8_t y) {
     for (i = 0; i < m->buttons_len; i++, cur_y += (8 * MENU_TXT_H_SCALE) + MENU_BORDER) {
         cur_x = (x + ((m->width - m->buttons[i]._text_width) / 2));
 
-        gfx_SetTextFGColor(i == m->choice ? MENU_CH_COLOR : MENU_FG_COLOR);
+        gfx_SetTextFGColor(i == m->choice ? COLOR_0 : COLOR_2);
         gfx_PrintStringXY(m->buttons[i].text, cur_x, cur_y);
     }
 }

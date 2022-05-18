@@ -1,11 +1,13 @@
 #ifndef MISC_H
 #define MISC_H
 
-// Colors for rendering a menu.
-#define MENU_BG_COLOR   22 
-#define MENU_FG_COLOR   17
-#define MENU_CH_COLOR   240
-#define MENU_BORDER     5
+// Pallete from dark to light.
+#define COLOR_0 16
+#define COLOR_1 20
+#define COLOR_2 144
+#define COLOR_3 151
+#define COLOR_4 244
+#define COLOR_5 247
 
 // Investigate fonts in a later project...
 //
@@ -14,6 +16,8 @@
 // 
 #define MENU_TXT_H_SCALE 2
 #define MENU_TXT_W_SCALE 1
+
+#define MENU_BORDER 5
 
 #define menu_down(m) \
     m->choice++; \
