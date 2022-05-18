@@ -29,17 +29,17 @@ menu *new_menu(button *bts, uint8_t bts_len) {
     return m;
 }
 
-void render_menu(menu *m, coord c) {
+void render_menu_xy(menu *m, uint16_t x, uint8_t y) {
     gfx_SetColor(MENU_BG_COLOR);
-    gfx_FillRectangle(c.x, c.y, m->width, m->height);
+    gfx_FillRectangle(x, y, m->width, m->height);
 
     gfx_SetMonospaceFont(8); 
     gfx_SetTextScale(MENU_TXT_W_SCALE, MENU_TXT_H_SCALE);
     
     uint16_t cur_x;
-    uint8_t i, cur_y = c.y + MENU_BORDER;
+    uint8_t i, cur_y = y + MENU_BORDER;
     for (i = 0; i < m->buttons_len; i++, cur_y += (8 * MENU_TXT_H_SCALE) + MENU_BORDER) {
-        cur_x = (c.x + ((m->width - m->buttons[i]._text_width) / 2));
+        cur_x = (x + ((m->width - m->buttons[i]._text_width) / 2));
 
         gfx_SetTextFGColor(i == m->choice ? MENU_CH_COLOR : MENU_FG_COLOR);
         gfx_PrintStringXY(m->buttons[i].text, cur_x, cur_y);

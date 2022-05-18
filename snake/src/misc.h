@@ -19,9 +19,13 @@
     m->choice++; \
     m->choice %= m->buttons_len
 
+// Modulo will not always work here.
 #define menu_up(m) \
-    m->choice--; \
-    m->choice %= m->buttons_len
+    m->choice = m->choice ? m->choice - 1 : m->buttons_len - 1;
+
+#define menu_link(m) ((m->buttons[m->choice]).link)
+
+#define center(width) ((LCD_WIDTH - width) / 2)
 
 #include <stdint.h>
 
@@ -51,8 +55,9 @@ typedef struct {
 // Create a new menu.
 menu *new_menu(button *bts, uint8_t bts_len);
 
-// Render a menu at a given coordinate.
-void render_menu(menu *m, coord c);
+#define render_menu(m, c) render_menu_xy(m, c.x, c.y)
+
+void render_menu_xy(menu *m, uint16_t x, uint8_t y);
 
 // Aligns str to the left in buff. Fills the rest of buff with the fill
 // character. lens here should not include terminator character.

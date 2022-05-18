@@ -23,6 +23,11 @@
 #define EXIT            5 
 // For sizing, make sure exit is always the last state.
 
+#define PAUSE(msg) \
+    os_PutStrFull(msg); \
+    os_NewLine(); \
+    while (os_GetCSC() != sk_Clear)
+    
 #define SB_ERROR() \
     os_ClrHome(); \
     os_PutStrFull(sb_error_msg); \
@@ -122,12 +127,12 @@ void init_globals(void) {
     render_funcs[NEW_HIGHSCORE] = render_new_highscore;
     render_funcs[EXIT] = render_exit;
 
-    render_funcs[START_PAGE] = update_menus;
-    render_funcs[HIGHSCORES] = update_menus;
-    render_funcs[IN_PLAY] = update_in_play;
-    render_funcs[DEFEAT] = update_menus;
-    render_funcs[NEW_HIGHSCORE] = render_new_highscore;
-    render_funcs[EXIT] = update_exit;
+    update_funcs[START_PAGE] = update_menus;
+    update_funcs[HIGHSCORES] = update_menus;
+    update_funcs[IN_PLAY] = update_in_play;
+    update_funcs[DEFEAT] = update_menus;
+    update_funcs[NEW_HIGHSCORE] = render_new_highscore;
+    update_funcs[EXIT] = update_exit;
 }
 
 void cleanup_globals(void) {
@@ -139,6 +144,8 @@ void cleanup_globals(void) {
 }
 
 int main(void) {
+    os_ClrHome();
+
     sb = load_sb();
     if (sb == NULL) {
         // Don't do anything if there's a load error.
@@ -174,4 +181,75 @@ int main(void) {
     cleanup_globals();
 
     return 0;
+}
+
+#define START_PAGE_BG_COLOR 247
+#define START_PAGE_FG_COLOR 16
+
+#define START_PAGE_TXT_W 4
+#define START_PAGE_TXT_H 5
+
+// Title says Snake. (5 characters)
+#define START_PAGE_TITLE_W (5 * 8 * START_PAGE_TXT_W)
+
+void render_start_page(void) {
+    gfx_FillScreen(START_PAGE_BG_COLOR);
+
+    gfx_SetMonospaceFont(8);
+    gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
+
+    gfx_SetTextFGColor(START_PAGE_FG_COLOR);
+    gfx_PrintStringXY("Snake", center(START_PAGE_TITLE_W), 45);
+
+    render_menu_xy(main_menu, center(main_menu->width), 120);
+}
+
+void render_highscores(void) {
+
+}
+
+void render_in_play(void) {
+
+}
+
+void render_defeat(void) {
+
+}
+
+void render_new_highscore(void) {
+
+}
+
+void render_exit(void) {
+
+}
+
+void update_menus(void) {
+    sk_key_t key = os_GetCSC();
+
+    if (key == sk_Up) {
+        menu_up(menus[curr_state]);
+    } else if (key == sk_Down) {
+        menu_down(menus[curr_state]);
+    } else if (key == sk_Enter) {
+        curr_state = menu_link(menus[curr_state]);
+    } else {
+        // Exit if no meaningful keys are pressed.
+        return;
+    }
+
+    // Always redraw when a serious key is pressed.
+    redraw_needed = 1;
+}
+
+void update_in_play(void) {
+
+}
+
+void update_new_highscore(void) {
+
+}
+
+void update_exit(void) {
+
 }
