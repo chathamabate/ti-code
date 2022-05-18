@@ -15,7 +15,7 @@
 char *sb_error_msg = "N/A";
 
 static uint8_t def_name_generated = 0;
-static char def_name[NAME_LEN + 1];
+static char def_name[SB_NAME_LEN + 1];
 
 hs_entry *load_sb() {
     uint8_t index;
@@ -24,10 +24,10 @@ hs_entry *load_sb() {
     // The purpose is to set up the default name without needing an 
     // init function.
     if (!def_name_generated) {
-        for (index = 0; index < NAME_LEN; index++) {
+        for (index = 0; index < SB_NAME_LEN; index++) {
             def_name[index] = '-';
         }
-        def_name[NAME_LEN] = '\0';
+        def_name[SB_NAME_LEN] = '\0';
 
         def_name_generated = 1;
     }
@@ -115,7 +115,7 @@ uint8_t sb_placement(hs_entry *sb, uint16_t score) {
     return index;
 }
 
-uint8_t name_available(hs_entry *sb, char name[NAME_LEN + 1]) {
+uint8_t name_available(hs_entry *sb, char name[SB_NAME_LEN + 1]) {
     uint8_t index;
     for (index = 0; index < SB_SIZE; index++) {
         if (strcmp(name, sb[index].name) == 0) {
@@ -140,9 +140,9 @@ void sb_insert(hs_entry *sb, uint8_t index, hs_entry *new_hs) {
     sb[index] = *new_hs;
 }
 
-void render_sb(hs_entry* sb, coord c) {
+void render_sb_xy(hs_entry* sb, uint16_t x, uint8_t y) {
     gfx_SetColor(COLOR_3);
-    gfx_FillRectangle(c.x, c.y, SB_WIDTH, SB_HEIGHT);
+    gfx_FillRectangle(x, y, SB_WIDTH, SB_HEIGHT);
 
     gfx_SetMonospaceFont(8);
     gfx_SetTextScale(SB_TXT_W, SB_TXT_H);
@@ -152,15 +152,15 @@ void render_sb(hs_entry* sb, coord c) {
     char score_line[SB_CHARS_PER_LINE + 1];
     score_line[SB_CHARS_PER_LINE] = '\0';
 
-    for (i = 2 + NAME_LEN; i < 2 + NAME_LEN + SB_SPACERS; i++) {
+    for (i = 2 + SB_NAME_LEN; i < 2 + SB_NAME_LEN + SB_SPACERS; i++) {
         score_line[i] = SB_SPACER;
     }
 
     // This space is present in the same place on every line.
     score_line[1] = ' ';
 
-    uint16_t cur_x = c.x + SB_BORDER;
-    uint8_t cur_y = c.y + SB_BORDER;
+    uint16_t cur_x = x + SB_BORDER;
+    uint8_t cur_y = y + SB_BORDER;
 
     for (i = 0; i < SB_SIZE; i++) {
         score_line[0] = '1' + i;
@@ -168,7 +168,7 @@ void render_sb(hs_entry* sb, coord c) {
         uint8_t j;
 
         // Copy the name into the score line.
-        for (j = 0; j < NAME_LEN; j++) {
+        for (j = 0; j < SB_NAME_LEN; j++) {
             score_line[2 + j] = sb[i].name[j];
         }
 
@@ -176,7 +176,7 @@ void render_sb(hs_entry* sb, coord c) {
         sprintf(buff, "%d", sb[i].score);
         uint8_t digits = dec_digits(sb[i].score);
         
-        right_align(&score_line[2 + NAME_LEN + SB_SPACERS], 5, buff, digits, ' ');
+        right_align(&score_line[2 + SB_NAME_LEN + SB_SPACERS], 5, buff, digits, ' ');
 
         gfx_PrintStringXY(score_line, cur_x, cur_y);
 

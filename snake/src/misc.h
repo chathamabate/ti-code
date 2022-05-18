@@ -20,16 +20,16 @@
 #define MENU_BORDER 5
 
 #define menu_down(m) \
-    m->choice++; \
-    m->choice %= m->buttons_len
+    (m)->choice++; \
+    (m)->choice %= m->buttons_len
 
 // Modulo will not always work here.
 #define menu_up(m) \
-    m->choice = m->choice ? m->choice - 1 : m->buttons_len - 1;
+    (m)->choice = (m)->choice ? (m)->choice - 1 : (m)->buttons_len - 1;
 
-#define menu_link(m) ((m->buttons[m->choice]).link)
+#define menu_link(m) (((m)->buttons[(m)->choice]).link)
 
-#define center(width) ((LCD_WIDTH - width) / 2)
+#define center(width) ((LCD_WIDTH - (width)) / 2)
 
 #include <stdint.h>
 
@@ -57,9 +57,9 @@ typedef struct {
 } menu;
 
 // Create a new menu.
-menu *new_menu(button *bts, uint8_t bts_len);
+void install_menu(menu *m, button *bts, uint8_t bts_len);
 
-#define render_menu(m, c) render_menu_xy(m, c.x, c.y)
+#define render_menu(m, c) render_menu_xy(m, (c).x, (c).y)
 
 void render_menu_xy(menu *m, uint16_t x, uint8_t y);
 

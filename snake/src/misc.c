@@ -3,9 +3,7 @@
 #include <graphx.h>
 #include <string.h>
 
-menu *new_menu(button *bts, uint8_t bts_len) {
-    menu *m = malloc(sizeof(menu));
-
+void install_menu(menu *m, button *bts, uint8_t bts_len) {
     m->choice = 0;
     m->buttons = bts;
     m->buttons_len = bts_len;
@@ -25,8 +23,6 @@ menu *new_menu(button *bts, uint8_t bts_len) {
     }
 
     m->width = max_width + (2 * MENU_BORDER);
-
-    return m;
 }
 
 void render_menu_xy(menu *m, uint16_t x, uint8_t y) {
@@ -41,7 +37,7 @@ void render_menu_xy(menu *m, uint16_t x, uint8_t y) {
     for (i = 0; i < m->buttons_len; i++, cur_y += (8 * MENU_TXT_H_SCALE) + MENU_BORDER) {
         cur_x = (x + ((m->width - m->buttons[i]._text_width) / 2));
 
-        gfx_SetTextFGColor(i == m->choice ? COLOR_0 : COLOR_2);
+        gfx_SetTextFGColor(i == m->choice ? COLOR_2 : COLOR_0);
         gfx_PrintStringXY(m->buttons[i].text, cur_x, cur_y);
     }
 }

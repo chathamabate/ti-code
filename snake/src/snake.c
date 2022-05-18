@@ -7,28 +7,28 @@
 
 // Randomize coordinates.
 #define r_coord(c, env) \
-    c.x = rand() % env.x; \
-    c.y = rand() % env.y;
+    (c).x = rand() % (env).x; \
+    (c).y = rand() % (env).y;
 
-#define equ_coord(c1, c2) (c1.x == c2.x) && (c1.y == c2.y)
+#define equ_coord(c1, c2) (((c1).x == (c2).x) && ((c1).y == (c2).y))
 
 // o - origin.
 // d - direction.
 // l - length.
 // c - coordinate to check.
 #define contains(o, d, l, c) \
-    (vertical(d) && o.x == c.x && o.y <= c.y && c.y - o.y < l) || \
-    (horizontal(d) && o.y == c.y && o.x <= c.x && c.x - o.x < l)
+    ((vertical(d) && (o).x == (c).x && (o).y <= (c).y && (c).y - (o).y < l) || \
+    (horizontal(d) && (o).y == (c).y && (o).x <= (c).x && (c).x - (o).x < l))
 
 // Check to see if a coordinate is contained in a snake segment.
 // ss should be a snake_seg *, and c should be a coord.
 #define ss_contains(ss, c) \
-    contains(ss->pos, ss->direction, ss->size, c)
+    contains((ss)->pos, (ss)->direction, ss->size, c)
 
 #define to_screen_coord(c, sg) \
-    (c.x + 1) * sg->cell_size, (c.y + 1) * sg->cell_size
+    ((c).x + 1) * (sg)->cell_size, ((c).y + 1) * (sg)->cell_size
 
-char *sg_err_message = "First Error!";
+char *sg_err_message = "N/A";
 
 // Returns 1, if c is part of the snakes tail.
 // Returns 0, otherwise.
@@ -46,7 +46,7 @@ snake_game *new_snake_game(uint8_t cs) {
     sg->in_play = 1; // 0 When game is over.
 
     if (LCD_WIDTH % cs != 0 || LCD_HEIGHT % cs != 0) {
-        sg_err_message = "Invalid cell size given!";    
+        sg_err_message = "new_snake_game: Invalid cell size given!";    
         return NULL; 
     }
 
@@ -54,7 +54,7 @@ snake_game *new_snake_game(uint8_t cs) {
     sg->env_dims.y = (LCD_HEIGHT / cs) - 2;
 
     if (sg->env_dims.x == 0 || sg->env_dims.y == 0) {
-        sg_err_message = "Cell size too large!";
+        sg_err_message = "new_snake_game: Cell size too large!";
         return NULL;
     }
 
