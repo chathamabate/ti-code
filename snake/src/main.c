@@ -65,7 +65,7 @@ static hs_entry *sb = NULL;
 
 // Globals for entering highscore name!
 static char sb_name_buff[SB_NAME_LEN + 1];
-static uint8_t name_ind = 0;
+static uint8_t sb_name_ind = 0;
 
 static snake_game *sg = NULL;
 
@@ -218,7 +218,7 @@ static void enter_in_play(void) {
 
 static void enter_new_highscore(void) {
     redraw_needed = 1;
-    
+
     uint8_t i;
     for (i = 0; i < SB_NAME_LEN; i++) {
         sb_name_buff[i] = 'A';
@@ -269,6 +269,7 @@ static void render_defeat(void) {
 
     uint8_t y = 30;
 
+    gfx_SetMonospaceFont(8);
     gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
     gfx_SetTextFGColor(COLOR_2);
     gfx_PrintStringXY("Defeat", center(START_PAGE_TXT_W * 8 * 6), y);
@@ -293,7 +294,13 @@ static void render_defeat(void) {
 }
 
 static void render_new_highscore(void) {
+    gfx_FillScreen(COLOR_1);
 
+    gfx_SetMonospaceFont(8);
+    gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
+    gfx_SetTextFGColor(COLOR_2);
+    
+    gfx_PrintStringXY("High Score!", center(START_PAGE_TXT_W * 8 * 11));
 }
 
 //
@@ -367,22 +374,33 @@ static void update_in_play(void) {
 }
 
 static void update_new_highscore(void) {
-    // switch (key) {
-    // case sk_Up:
-    // case sk_8:
-    //     break;
-    // case sk_Down:
-    // case sk_5:
-    //     break;
-    // case sk_Left:
-    // case sk_4:
-    //     break;
-    // case sk_Right:
-    // case sk_6:
-    //     break;
-    // case sk_Enter:
-    //     break;
-    // }
+    char curr = sb_name_buff[sb_name_ind];
+
+    switch (os_GetCSC()) {
+    case sk_Up:
+    case sk_8:
+        sb_name_buff[sb_name_ind] = curr == 'A' ? 'Z' : curr - 1;
+        break;
+    case sk_Down:
+    case sk_5:
+        sb_name_buff[sb_name_ind] = curr == 'Z' ? 'A' : curr + 1;
+        break;
+    case sk_Left:
+    case sk_4:
+        sb_name_ind = sb_name_ind ? sb_name_ind - 1 : SB_NAME_LEN - 1;
+        break;
+    case sk_Right:
+    case sk_6:
+        sb_name_ind = (sb_name_ind + 1) % SB_NAME_LEN;
+        break;
+    case sk_Enter:
+        next_state = HIGHSCORES;
+        return;
+    default:
+        return;
+    }
+
+    redraw_needed = 1;
 }
 
 //
