@@ -35,7 +35,7 @@ typedef struct snake_segment {
     struct snake_segment *prev;
 } snake_seg;
 
-typedef struct snake_game_info {
+typedef struct {
     snake_seg *first;
     snake_seg *last;
 

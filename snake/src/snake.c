@@ -2,6 +2,8 @@
 
 #include <stdlib.h>
 #include <tice.h>
+// #include <graphx.h>
+// #include <stdio.h>
 
 // Randomize coordinates.
 #define r_coord(c, env) \
@@ -130,6 +132,11 @@ void grow(snake_game *sg) {
         head_cell = head_seg->pos;
         break;
     }
+
+    // WHAT???? SOMETHING IS WRONG!!!!!
+    // char buff[100];
+    // sprintf(buff, "%d %d", head_cell.x, head_cell.y);
+    // gfx_PrintStringXY(buff, 30, 60);
 
     uint8_t out_of_bounds;
     coord next_cell = head_cell;
