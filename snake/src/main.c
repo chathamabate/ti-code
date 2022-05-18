@@ -13,41 +13,91 @@
 #include "scores.h"
 #include "snake_render.h"
 
-#define SB_ERROR \
+#define START_PAGE      0
+#define HIGHSCORES      1
+#define IN_PLAY         2
+#define DEFEAT          3
+#define NEW_HIGHSCORE   4
+#define EXIT            5
+
+#define SB_ERROR() \
+    os_ClrHome(); \
     os_PutStrFull(sb_error_msg); \
     while (os_GetCSC() != sk_Clear); \
-    return 0;
+    return 0
 
-static void start(void);
+static uint8_t curr_state = START_PAGE;
+
+static button main_menu_bts[3];
+static menu *main_menu;
+
+static button defeat_menu_bts[2];
+static menu *defeat_menu;
+
+static menu *selected_menu = NULL;
+static hs_entry *sb = NULL;
+
+// Initialize above globals.
+void init_globals(void);
+
+// Clean up above globals.
+void cleanup_globals(void);
+
+void init_globals(void) {
+    main_menu_bts[0].text = "Play";   
+    main_menu_bts[0].link = IN_PLAY;
+
+    main_menu_bts[1].text = "Highscores";
+    main_menu_bts[1].link = HIGHSCORES;
+
+    main_menu_bts[2].text = "Exit";
+    main_menu_bts[2].link = EXIT;
+
+    main_menu = new_menu(main_menu_bts, 3);
+
+    defeat_menu_bts[0].text = "Play Again";
+    defeat_menu_bts[0].link = IN_PLAY;
+
+    defeat_menu_bts[1].text = "Main Menu";
+    defeat_menu_bts[1].link = START_PAGE;
+
+    defeat_menu = new_menu(defeat_menu_bts, 2);
+}
 
 int main(void) {
-    coord c;
-    c.x = (LCD_WIDTH - SB_WIDTH) / 2;
-    c.y = 30;
+    sb = load_sb();
+    if (sb == NULL) {
+        // Don't do anything if there's a load error.
+        SB_ERROR();
+    }
 
-    // button bts[4];
-    // bts[0].text = "Hey";
-    // bts[1].text = "Yo Yo Yo";
-    // bts[2].text = "Meh";
-    // bts[3].text = "Uh huh";
-
-    // size_t s = strlen("HEY");
-    // char buff[20];
-    // sprintf(buff, "STRLEN : %d", s);
-    // os_ClrHome();
-    // os_PutStrFull(buff);
-    // while (os_GetCSC() != sk_Clear);
-
-    hs_entry *sb = load_sb();
-
-    sb[0].score = 100;
-
-
-    // menu *m = new_menu(bts, 4);
+    init_globals();
 
     gfx_SetDrawBuffer();
-
     gfx_Begin();
+
+    while (curr_state != EXIT) {
+        gfx_FillScreen(255);
+        sk_key_t key = os_GetCSC();
+
+        if (curr_state == IN_PLAY) {
+
+            continue;
+        }
+
+        if (curr_state == NEW_HIGHSCORE) {
+
+            continue;
+        }
+
+        // Default case...
+        // just normal menu manipulation.
+
+        if (key == sk_Up) {
+            
+        }
+
+    }
 
     gfx_FillScreen(255);
 
@@ -62,4 +112,3 @@ int main(void) {
     free(sb);
     return 0;
 }
-

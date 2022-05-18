@@ -17,10 +17,10 @@ menu *new_menu(button *bts, uint8_t bts_len) {
     uint8_t max_width = 0;
 
     for (i = 0; i < bts_len; i++) {
-        bts[i].text_width = (8 * MENU_TXT_W_SCALE) * strlen(bts[i].text);
+        bts[i]._text_width = (8 * MENU_TXT_W_SCALE) * strlen(bts[i].text);
 
-        if (bts[i].text_width > max_width) {
-            max_width = bts[i].text_width;
+        if (bts[i]._text_width > max_width) {
+            max_width = bts[i]._text_width;
         }
     }
 
@@ -39,7 +39,7 @@ void render_menu(menu *m, coord c) {
     uint16_t cur_x;
     uint8_t i, cur_y = c.y + MENU_BORDER;
     for (i = 0; i < m->buttons_len; i++, cur_y += (8 * MENU_TXT_H_SCALE) + MENU_BORDER) {
-        cur_x = (c.x + ((m->width - m->buttons[i].text_width) / 2));
+        cur_x = (c.x + ((m->width - m->buttons[i]._text_width) / 2));
 
         gfx_SetTextFGColor(i == m->choice ? MENU_CH_COLOR : MENU_FG_COLOR);
         gfx_PrintStringXY(m->buttons[i].text, cur_x, cur_y);

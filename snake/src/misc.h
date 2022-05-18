@@ -1,13 +1,6 @@
 #ifndef MISC_H
 #define MISC_H
 
-#define START_PAGE      0
-#define HIGHSCORES      1
-#define IN_PLAY         2
-#define DEFEAT          3
-#define NEW_HIGHSCORE   4
-#define EXIT            5
-
 // Colors for rendering a menu.
 #define MENU_BG_COLOR   22 
 #define MENU_FG_COLOR   17
@@ -22,6 +15,14 @@
 #define MENU_TXT_H_SCALE 2
 #define MENU_TXT_W_SCALE 1
 
+#define menu_down(m) \
+    m->choice++; \
+    m->choice %= m->buttons_len
+
+#define menu_up(m) \
+    m->choice--; \
+    m->choice %= m->buttons_len
+
 #include <stdint.h>
 
 typedef struct {
@@ -31,8 +32,9 @@ typedef struct {
 
 typedef struct {
     char *text;
-    uint8_t text_width;
-    uint8_t link;   // Should be a game state.
+    uint8_t link;           // Should be a game state.
+
+    uint8_t _text_width;    // Don't set Manually!
 } button;
 
 typedef struct {

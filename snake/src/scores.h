@@ -22,13 +22,8 @@
 #define SB_WIDTH ((2 * SB_BORDER) + (SB_TXT_W * 8 * SB_CHARS_PER_LINE))
 #define SB_HEIGHT (((SB_BORDER + (SB_TXT_H * 8)) * SB_SIZE) + SB_BORDER)
 
-#define SB_FG_COLOR 0
-#define SB_BG_COLOR 200
-
-// Very very similar to a menu here...
-// Although not entirely... lots of stuff to print out...
-
-// 10 Highscores always...
+#define SB_FG_COLOR 16
+#define SB_BG_COLOR 244
 
 typedef struct high_score_entry {
     char name[NAME_LEN + 1];
