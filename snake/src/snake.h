@@ -13,10 +13,10 @@
 #define SOUTH   3
 #define WEST    4
 
-#define vertical(d) (d % 2) == 1
-#define horizontal(d) (d % 2) == 0
-#define opposite(d) ((d + 1) % 4) + 1
-#define is_opposite(d1, d2) d1 == opposite(d2)
+#define vertical(d) ((d % 2) == 1)
+#define horizontal(d) ((d % 2) == 0)
+#define opposite(d) (((d + 1) % 4) + 1)
+#define is_opposite(d1, d2) (d1 == opposite(d2))
 
 // This will hold the last error thrown by this file.
 extern char *sg_err_message;

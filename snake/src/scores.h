@@ -4,12 +4,12 @@
 #include <stdint.h>
 #include "misc.h"
 
-#define SB_SIZE 8
+#define SB_SIZE 8 // Must be < 10.
 #define NAME_LEN 4
 
 // Number of character spacers between a name and 
 // its score.
-#define SB_SPACERS 2
+#define SB_SPACERS 8
 #define SB_SPACER '.'
 
 #define SB_TXT_W 1
@@ -17,8 +17,10 @@
 
 #define SB_BORDER 2
 
-#define SB_WIDTH (2 * SB_BORDER) + (SB_TXT_W * 8 * (NAME_LEN + SB_SPACERS + 5))
-#define SB_HEIGHT ((SB_BORDER + (SB_TXT_H * 8)) * SB_SIZE) + SB_BORDER
+#define SB_CHARS_PER_LINE (2 + NAME_LEN + SB_SPACERS + 5)
+
+#define SB_WIDTH ((2 * SB_BORDER) + (SB_TXT_W * 8 * SB_CHARS_PER_LINE))
+#define SB_HEIGHT (((SB_BORDER + (SB_TXT_H * 8)) * SB_SIZE) + SB_BORDER)
 
 #define SB_FG_COLOR 0
 #define SB_BG_COLOR 200

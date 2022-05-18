@@ -46,6 +46,20 @@ void render_menu(menu *m, coord c) {
     }
 }
 
+void left_align(char *buff, uint16_t buff_len, char *str, uint16_t str_len, char fill) {
+    uint16_t i;
+    for (i = 0; i < buff_len; i++) {
+        buff[i] = i < str_len ? str[i] : fill;
+    }
+}
+
+void right_align(char *buff, uint16_t buff_len, char *str, uint16_t str_len, char fill) {
+    uint16_t i, len_diff = buff_len - str_len; // Assumes buff_len > str_len.
+    for (i = 0; i < buff_len; i++) {
+        buff[i] = i < len_diff ? fill : str[i - len_diff];
+    }
+}
+
 uint8_t dec_digits(uint16_t num) {
     uint8_t digits = 1;
     uint8_t bound = 10;

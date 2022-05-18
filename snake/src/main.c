@@ -22,31 +22,36 @@ static void start(void);
 
 int main(void) {
     coord c;
-    c.x = 30;
+    c.x = (LCD_WIDTH - SB_WIDTH) / 2;
     c.y = 30;
 
-    button bts[4];
-    bts[0].text = "Hey";
-    bts[1].text = "Yo Yo Yo";
-    bts[2].text = "Meh";
-    bts[3].text = "Uh huh";
+    // button bts[4];
+    // bts[0].text = "Hey";
+    // bts[1].text = "Yo Yo Yo";
+    // bts[2].text = "Meh";
+    // bts[3].text = "Uh huh";
 
-    size_t s = strlen("HEY");
-    char buff[20];
-    sprintf(buff, "STRLEN : %d", s);
-    os_ClrHome();
-    os_PutStrFull(buff);
-    while (os_GetCSC() != sk_Clear);
+    // size_t s = strlen("HEY");
+    // char buff[20];
+    // sprintf(buff, "STRLEN : %d", s);
+    // os_ClrHome();
+    // os_PutStrFull(buff);
+    // while (os_GetCSC() != sk_Clear);
+
+    hs_entry *sb = load_sb();
+
+    sb[0].score = 100;
 
 
-    menu *m = new_menu(bts, 4);
+    // menu *m = new_menu(bts, 4);
 
     gfx_SetDrawBuffer();
 
     gfx_Begin();
 
     gfx_FillScreen(255);
-    render_menu(m, c);
+
+    render_sb(sb, c);
 
     gfx_SwapDraw();
     gfx_Wait();
@@ -54,7 +59,7 @@ int main(void) {
     while (os_GetCSC() != sk_Clear);
 
     gfx_End();
-    free(m);
+    free(sb);
     return 0;
 }
 

@@ -149,33 +149,38 @@ void render_sb(hs_entry* sb, coord c) {
     gfx_SetTextFGColor(SB_FG_COLOR);
 
     uint8_t i;
-    char score_line[NAME_LEN + SB_SPACERS + 5 + 1];
+    char score_line[SB_CHARS_PER_LINE + 1];
+    score_line[SB_CHARS_PER_LINE] = '\0';
 
-    for (i = NAME_LEN; i < NAME_LEN + SB_SPACERS; i++) {
+    for (i = 2 + NAME_LEN; i < 2 + NAME_LEN + SB_SPACERS; i++) {
         score_line[i] = SB_SPACER;
     }
+
+    // This space is present in the same place on every line.
+    score_line[1] = ' ';
 
     uint16_t cur_x = c.x + SB_BORDER;
     uint8_t cur_y = c.y + SB_BORDER;
 
     for (i = 0; i < SB_SIZE; i++) {
+        score_line[0] = '1' + i;
+
         uint8_t j;
 
         // Copy the name into the score line.
         for (j = 0; j < NAME_LEN; j++) {
-            score_line[j] = sb[i].name[j];
+            score_line[2 + j] = sb[i].name[j];
         }
 
         char buff[5 + 1];   // 1 for the null terminator. 
         sprintf(buff, "%d", sb[i].score);
         uint8_t digits = dec_digits(sb[i].score);
+        
+        right_align(&score_line[2 + NAME_LEN + SB_SPACERS], 5, buff, digits, ' ');
 
-        for (j = 4; j >= 0; j--) {
-            uint8_t digit_num = 5 - j; // FIX THIS UP... NOT NOW THO...
-            score_line[NAME_LEN + SB_SPACERS + j] = digit_num <= digits 
-                ? buff[j - digits - 1] 
-                : '0';
-        }
+        gfx_PrintStringXY(score_line, cur_x, cur_y);
+
+        cur_y += (8 * SB_TXT_H) + SB_BORDER;
     }
 }
 
