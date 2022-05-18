@@ -186,31 +186,23 @@ int main(void) {
     sg = new_snake_game(8);
 
     // Simple game loop.
-    // while (curr_state != EXIT) {
-    while (sg->in_play) {
-        update_in_play();
-        render_snake_game(sg);
-        char buff[100];
-        sprintf(buff, "%d %d", sg->first->pos.x, sg->first->pos.y);
-        gfx_PrintStringXY(buff, 30, 30);
-        gfx_SwapDraw();
+    while (curr_state != EXIT) {
+        if (redraw_needed) {
+            gfx_FillScreen(255);
+            (render_funcs[curr_state])();
+            gfx_SwapDraw();
 
-        // if (redraw_needed) {
-        //     gfx_FillScreen(255);
-        //     (render_funcs[curr_state])();
-        //     gfx_SwapDraw();
+            redraw_needed = 0;
+        }
 
-        //     redraw_needed = 0;
-        // }
+        (update_funcs[curr_state])();
 
-        // (update_funcs[curr_state])();
+        if (curr_state != next_state) {
+            (exit_funcs[curr_state])();
+            (enter_funcs[next_state])();
 
-        // if (curr_state != next_state) {
-        //     (exit_funcs[curr_state])();
-        //     (enter_funcs[next_state])();
-
-        //     curr_state = next_state;
-        // }
+            curr_state = next_state;
+        }
 
         delay(DELAY);
     }
@@ -282,14 +274,20 @@ void enter_in_play(void) {
 void update_menus(void) {
     sk_key_t key = os_GetCSC();
 
-    if (key == sk_Up) {
+    switch (key) {
+    case sk_Up:
+    case sk_8:
         menu_up(menus[curr_state]);
         redraw_needed = 1;
-    } else if (key == sk_Down) {
+        break;
+    case sk_Down:
+    case sk_5:
         menu_down(menus[curr_state]);
         redraw_needed = 1;
-    } else if (key == sk_Enter) {
+        break;
+    case sk_Enter:
         next_state = menu_link(menus[curr_state]);
+        break;
     }
 }
 
@@ -298,30 +296,41 @@ void update_in_play(void) {
 
     switch (key) {
     case sk_Up:
+    case sk_8:
         sg->direction = NORTH;
         break;
     case sk_Down:
+    case sk_5:
         sg->direction = SOUTH;
         break;
     case sk_Left:
+    case sk_4:
         sg->direction = WEST;
         break;
     case sk_Right:
+    case sk_6:
         sg->direction = EAST;
         break;
     }
 
+    if (sg->first->direction == STILL) {
+            sg->first->direction = sg->direction;
+    } else if ((sg->first->size > 1 || sg->first->prev) && is_opposite(sg->direction, sg->first->direction)) {
+        // Cannot pick opposite direction when snake has size greater than 1.
+        sg->direction = sg->first->direction;
+    } 
+
     grow(sg);
-    // shrink(sg);
 
-    // if (!sg->in_play) {
-    //     last_score = sg->score;
-    //     placement = sb_placement(sb, last_score);
-    //     next_state = START_PAGE;
-    //     // next_state = placement < SB_SIZE ? NEW_HIGHSCORE : DEFEAT;
-    // }
-
-    redraw_needed = 1;
+    if (sg->in_play) {
+        shrink(sg);
+        redraw_needed = 1;
+    } else {
+        last_score = sg->score;
+        placement = sb_placement(sb, last_score);
+        next_state = START_PAGE;
+        // next_state = placement < SB_SIZE ? NEW_HIGHSCORE : DEFEAT;
+    }
 }
 
 void update_new_highscore(void) {

@@ -123,20 +123,15 @@ void grow(snake_game *sg) {
         head_cell.x = head_seg->pos.x;
         head_cell.y = head_seg->pos.y + head_seg->size - 1;
         break;
-    case WEST:
+    case EAST:
         head_cell.x = head_seg->pos.x + head_seg->size - 1;
         head_cell.y = head_seg->pos.y;
         break;
     case NORTH:
-    case EAST:
+    case WEST:
         head_cell = head_seg->pos;
         break;
     }
-
-    // WHAT???? SOMETHING IS WRONG!!!!!
-    // char buff[100];
-    // sprintf(buff, "%d %d", head_cell.x, head_cell.y);
-    // gfx_PrintStringXY(buff, 30, 60);
 
     uint8_t out_of_bounds;
     coord next_cell = head_cell;
@@ -150,11 +145,11 @@ void grow(snake_game *sg) {
         out_of_bounds = head_cell.y == (sg->env_dims.y - 1);
         next_cell.y++;
         break;
-    case EAST:
+    case WEST:
         out_of_bounds = head_cell.x == 0;
         next_cell.x--;
         break;
-    case WEST:
+    case EAST:
         out_of_bounds = head_cell.x == (sg->env_dims.x - 1);
         next_cell.x++;
         break;
@@ -194,7 +189,7 @@ void grow(snake_game *sg) {
 
     // Final case, simply expand the current segment.
     head_seg->size++;
-    if (head_seg->direction == NORTH || head_seg->direction == EAST) {
+    if (head_seg->direction == NORTH || head_seg->direction == WEST) {
         head_seg->pos = next_cell;
     }
 }
@@ -225,7 +220,7 @@ void shrink(snake_game *sg) {
         return;
     }
 
-    if (tail_seg->direction == WEST) {
+    if (tail_seg->direction == EAST) {
         tail_seg->pos.x++;
     } else if (tail_seg->direction == SOUTH) {
         tail_seg->pos.y++;
