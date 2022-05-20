@@ -395,7 +395,7 @@ static void update_menus(void) {
 }
 
 static void update_in_play(void) {
-    sk_key_t key = os_GetCSC();
+    sk_key_t key = os_GetCSC(); // Consider using is down in future!
 
     switch (key) {
     case sk_Up:
