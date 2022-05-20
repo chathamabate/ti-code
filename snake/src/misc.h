@@ -63,6 +63,10 @@ void install_menu(menu *m, button *bts, uint8_t bts_len);
 
 void render_menu_xy(menu *m, uint16_t x, uint8_t y);
 
+// Hacky way around issues with monospace font setting.
+void render_string_xy_mono(char *str, uint8_t str_len, 
+    uint16_t x, uint8_t y, uint8_t x_scale, uint8_t y_scale);
+
 // Aligns str to the left in buff. Fills the rest of buff with the fill
 // character. lens here should not include terminator character.
 void left_align(char *buff, uint16_t buff_len, char *str, uint16_t str_len, char fill);

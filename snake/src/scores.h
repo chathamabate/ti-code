@@ -10,7 +10,7 @@
 // Number of character spacers between a name and 
 // its score.
 #define SB_SPACERS 8
-#define SB_SPACER '.'
+#define SB_SPACER '-'
 
 #define SB_TXT_W 2
 #define SB_TXT_H 2
@@ -19,6 +19,7 @@
 
 #define SB_CHARS_PER_LINE (2 + SB_NAME_LEN + SB_SPACERS + 5)
 
+// All SB letters should be uppercase or letters, which are by definition monospace.
 #define SB_WIDTH ((2 * SB_BORDER) + (SB_TXT_W * 8 * SB_CHARS_PER_LINE))
 #define SB_HEIGHT (((SB_BORDER + (SB_TXT_H * 8)) * SB_SIZE) + SB_BORDER)
 
@@ -31,10 +32,9 @@ typedef struct high_score_entry {
 extern char *sb_error_msg;
 
 // Load the scoreboard from the archive.
-// If the scoreboard does not exist, return a new empty
-// scoreboard.
-// Returns NULL on failure.
-hs_entry *load_sb();
+// If the scoreboard does not exist, clear given sb.
+// Returns 0 on failure. 1 on success.
+uint8_t load_sb(hs_entry *sb);
 
 // Returns 0 on failure.
 // 1 on success.

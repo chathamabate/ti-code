@@ -17,7 +17,7 @@ char *sb_error_msg = "N/A";
 static uint8_t def_name_generated = 0;
 static char def_name[SB_NAME_LEN + 1];
 
-hs_entry *load_sb() {
+uint8_t load_sb(hs_entry *sb) {
     uint8_t index;
 
     // This will run the first time load is called.
@@ -25,7 +25,7 @@ hs_entry *load_sb() {
     // init function.
     if (!def_name_generated) {
         for (index = 0; index < SB_NAME_LEN; index++) {
-            def_name[index] = '-';
+            def_name[index] = '_';
         }
         def_name[SB_NAME_LEN] = '\0';
 
@@ -34,8 +34,8 @@ hs_entry *load_sb() {
 
     ti_var_t sb_data = ti_Open(SB_FN, "r");
 
-    // Create the score board.
-    hs_entry *sb = malloc((sizeof(hs_entry) * SB_SIZE));
+    // Create the score board. DEPRECATED.
+    // hs_entry *sb = malloc((sizeof(hs_entry) * SB_SIZE));
 
     if (sb_data == 0) {
         // If no scoreboard found, create a new blank one.
@@ -44,26 +44,22 @@ hs_entry *load_sb() {
             sb[index].score = 0;
         }
 
-        return sb;
+        return 1;
     }
 
     uint8_t scores_read = ti_Read(sb, sizeof(hs_entry), SB_SIZE, sb_data);
 
     if (!ti_Close(sb_data)) {
         sb_error_msg = "load_sb: Error closing SB!";
-
-        free(sb);
-        return NULL;
+        return 0;
     }
 
     if (scores_read != SB_SIZE) {
         sb_error_msg = "load_sb: Error reading sb!";
-
-        free(sb);
-        return NULL;
+        return 0;
     }
 
-    return sb;
+    return 1;
 }
 
 
@@ -144,7 +140,6 @@ void render_sb_xy(hs_entry* sb, uint16_t x, uint8_t y) {
     gfx_SetColor(COLOR_3);
     gfx_FillRectangle(x, y, SB_WIDTH, SB_HEIGHT);
 
-    gfx_SetMonospaceFont(8);
     gfx_SetTextScale(SB_TXT_W, SB_TXT_H);
     gfx_SetTextFGColor(COLOR_0);
 
@@ -152,12 +147,14 @@ void render_sb_xy(hs_entry* sb, uint16_t x, uint8_t y) {
     char score_line[SB_CHARS_PER_LINE + 1];
     score_line[SB_CHARS_PER_LINE] = '\0';
 
-    for (i = 2 + SB_NAME_LEN; i < 2 + SB_NAME_LEN + SB_SPACERS; i++) {
+    for (i = 2 + SB_NAME_LEN + 1; i < 2 + SB_NAME_LEN + SB_SPACERS - 1; i++) {
         score_line[i] = SB_SPACER;
     }
 
-    // This space is present in the same place on every line.
+    // This spaces present in the same place on every line.
     score_line[1] = ' ';
+    score_line[2 + SB_NAME_LEN] = ' ';
+    score_line[2 + SB_NAME_LEN + SB_SPACERS - 1] = ' ';
 
     uint16_t cur_x = x + SB_BORDER;
     uint8_t cur_y = y + SB_BORDER;
@@ -178,7 +175,8 @@ void render_sb_xy(hs_entry* sb, uint16_t x, uint8_t y) {
         
         right_align(&score_line[2 + SB_NAME_LEN + SB_SPACERS], 5, buff, digits, ' ');
 
-        gfx_PrintStringXY(score_line, cur_x, cur_y);
+        render_string_xy_mono(score_line, SB_CHARS_PER_LINE, cur_x, cur_y, SB_TXT_W, SB_TXT_H);
+        // gfx_PrintStringXY(score_line, cur_x, cur_y);
 
         cur_y += (8 * SB_TXT_H) + SB_BORDER;
     }

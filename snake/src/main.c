@@ -61,7 +61,7 @@ static menu defeat_menu;
 static button highscores_menu_bts[1];
 static menu highscores_menu;
 
-static hs_entry *sb = NULL;
+static hs_entry sb[SB_SIZE];
 
 // Globals for entering highscore name!
 static char sb_name_buff[SB_NAME_LEN + 1];
@@ -73,6 +73,7 @@ static snake_game *sg = NULL;
 // scoreboard.
 static uint16_t last_score = 0;
 static uint8_t placement = SB_SIZE;
+static hs_entry new_entry;
 
 // Whether or not a new highscore has been achieved.
 static uint8_t archive_needed = 0;
@@ -89,6 +90,21 @@ static game_state gsa[EXIT + 1];
     gsa[gsi].s = n_s
 
 #define retr_menu(gsi) ((menu *)(gsa[gsi].s))
+
+// Constant macros for drawing scores.
+#define SCORE_TEXT_W 2
+#define SCORE_TEXT_H 2
+
+#define START_PAGE_MSG "Snake"
+#define START_PAGE_TXT_W 4
+#define START_PAGE_TXT_H 5
+static uint8_t START_PAGE_TITLE_W;
+
+#define DEFEAT_PAGE_MSG "Defeat"
+static uint8_t DEFEAT_PAGE_TITLE_W;
+
+#define NEW_HS_PAGE_MSG "Highscore!"
+static uint8_t NEW_HS_PAGE_TITLE_W;
 
 // Initialize above globals.
 static void init_globals(void);
@@ -117,9 +133,12 @@ static void update_noop(void);
 
 // all exit functions.
 static void exit_in_play(void);
+static void exit_new_highscore(void);
 static void exit_noop(void);
 
 static void init_globals(void) {
+    srand(rtc_Time());
+
     main_menu_bts[0].text = "Play";   
     main_menu_bts[0].link = IN_PLAY;
 
@@ -149,15 +168,21 @@ static void init_globals(void) {
     store_game_state(HIGHSCORES, enter_noop, render_highscores, update_menus, exit_noop, &highscores_menu);
     store_game_state(IN_PLAY, enter_in_play, render_in_play, update_in_play, exit_in_play, NULL);
     store_game_state(DEFEAT, enter_noop, render_defeat, update_menus, exit_noop, &defeat_menu);
-    store_game_state(NEW_HIGHSCORE, enter_new_highscore, render_new_highscore, update_new_highscore, exit_noop, NULL);
+    store_game_state(NEW_HIGHSCORE, enter_new_highscore, render_new_highscore, 
+        update_new_highscore, exit_new_highscore, NULL);
     store_game_state(EXIT, enter_noop, render_noop, update_noop, exit_noop, NULL);
+
+    // Could probs be better in next project tbh...
+    gfx_SetTextScale(1, 1);
+    START_PAGE_TITLE_W = gfx_GetStringWidth(START_PAGE_MSG);
+    DEFEAT_PAGE_TITLE_W = gfx_GetStringWidth(DEFEAT_PAGE_MSG);
+    NEW_HS_PAGE_TITLE_W = gfx_GetStringWidth(NEW_HS_PAGE_MSG);
 }
 
 int main(void) {
     os_ClrHome();
 
-    sb = load_sb();
-    if (sb == NULL) {
+    if (!load_sb(sb)) {
         // Don't do anything if there's a load error.
         SB_ERROR();
     }
@@ -194,11 +219,8 @@ int main(void) {
     gfx_End();
 
     if (archive_needed && !archive_sb(sb)) {
-        free(sb);
         SB_ERROR(); // archive error!
     }
-
-    free(sb);
 
     return 0;
 }
@@ -229,12 +251,6 @@ static void enter_new_highscore(void) {
 // Render Functions ----------------------------------------------------------------
 //
 
-#define START_PAGE_TXT_W 4
-#define START_PAGE_TXT_H 5
-
-// Title says Snake. (5 characters)
-#define START_PAGE_TITLE_W (5 * 8 * START_PAGE_TXT_W)
-
 static void render_noop(void) {
 
 }
@@ -242,11 +258,11 @@ static void render_noop(void) {
 static void render_start_page(void) {
     gfx_FillScreen(COLOR_5);
 
-    gfx_SetMonospaceFont(8);
+    // gfx_SetMonospaceFont(8);
     gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
 
     gfx_SetTextFGColor(COLOR_1);
-    gfx_PrintStringXY("Snake", center(START_PAGE_TITLE_W), 45);
+    gfx_PrintStringXY(START_PAGE_MSG, center(START_PAGE_TITLE_W * START_PAGE_TXT_W), 45);
 
     render_menu_xy(&main_menu, center(main_menu.width), 120);
 }
@@ -261,46 +277,93 @@ static void render_in_play(void) {
     render_snake_game(sg);
 }
 
-#define SCORE_TEXT_W 2
-#define SCORE_TEXT_H 2
+static void render_last_score(uint8_t y) {
+    char score_buff[14]; 
+    sprintf(score_buff, "Score: %d", last_score); 
+
+    gfx_SetTextScale(SCORE_TEXT_W, SCORE_TEXT_H); 
+    uint16_t score_width = gfx_GetStringWidth(score_buff);
+
+    gfx_PrintStringXY(score_buff, center(score_width), y);
+}
 
 static void render_defeat(void) {
     gfx_FillScreen(COLOR_4);
 
     uint8_t y = 30;
-
-    gfx_SetMonospaceFont(8);
     gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
     gfx_SetTextFGColor(COLOR_2);
-    gfx_PrintStringXY("Defeat", center(START_PAGE_TXT_W * 8 * 6), y);
+    gfx_PrintStringXY(DEFEAT_PAGE_MSG, center(START_PAGE_TXT_W * DEFEAT_PAGE_TITLE_W), y);
 
     y += (START_PAGE_TXT_H * 8) + 20;
 
-    char score_buff[14];
-    sprintf(score_buff, "Score: %d", last_score);
-    uint8_t score_digits = dec_digits(last_score);
-
-    // gfx_SetTextFGColor(COLOR_1);
-    gfx_SetTextScale(SCORE_TEXT_W, SCORE_TEXT_H);
-
-    gfx_PrintStringXY(score_buff, 
-        center((7 + score_digits) * 8 * SCORE_TEXT_W), 
-        y
-    );
+    render_last_score(y);
 
     y += (SCORE_TEXT_H * 8) + 20;
 
     render_menu_xy(&defeat_menu, center(defeat_menu.width), y);
 }
 
-static void render_new_highscore(void) {
-    gfx_FillScreen(COLOR_1);
+// Text size for the menu used for entering names.
+#define NEW_HS_TXT_W 2 
+#define NEW_HS_TXT_H 2
 
-    gfx_SetMonospaceFont(8);
+#define NEW_HS_DIAL_BORDER 5 // Border is double sided for the name dial.
+
+// Works since all upper case letters are monospace.
+#define NEW_HS_DIAL_CELL_W ((2 * NEW_HS_DIAL_BORDER) + (8 * NEW_HS_TXT_W))
+
+#define NEW_HS_DIAL_W (SB_NAME_LEN * NEW_HS_DIAL_CELL_W)
+#define NEW_HS_DIAL_H ((8 * NEW_HS_TXT_H) + (2 * NEW_HS_DIAL_BORDER))
+
+#define NEW_HS_DIAL_FG COLOR_0
+#define NEW_HS_DIAL_BG COLOR_3
+#define NEW_HS_DIAL_S_BG COLOR_4
+#define NEW_HS_DIAL_S_FG COLOR_0
+
+static void render_new_highscore(void) {
+    gfx_FillScreen(COLOR_5);
+
+    uint8_t y = 30;
     gfx_SetTextScale(START_PAGE_TXT_W, START_PAGE_TXT_H);
-    gfx_SetTextFGColor(COLOR_2);
-    
-    gfx_PrintStringXY("High Score!", center(START_PAGE_TXT_W * 8 * 11));
+
+    gfx_SetTextFGColor(COLOR_1);
+    gfx_PrintStringXY(NEW_HS_PAGE_MSG, center(START_PAGE_TXT_W * NEW_HS_PAGE_TITLE_W), y);
+
+    y += (START_PAGE_TXT_H * 8) + 20;
+    render_last_score(y);
+
+    y += (SCORE_TEXT_H * 8) + 20;
+
+    uint8_t x = center(NEW_HS_DIAL_W);
+
+    gfx_SetColor(NEW_HS_DIAL_BG);
+    gfx_FillRectangle(x, y, NEW_HS_DIAL_W, NEW_HS_DIAL_H);
+
+    gfx_SetTextScale(NEW_HS_TXT_W, NEW_HS_TXT_H);
+
+    gfx_SetColor(NEW_HS_DIAL_S_BG); // Highlighted Cell BG.
+    gfx_SetTextFGColor(NEW_HS_DIAL_FG); // Normal Cell FG.
+
+    char letter_buff[2];
+    letter_buff[1] = '\0';
+
+    uint8_t i;
+    for (i = 0; i < SB_NAME_LEN; i++, x += NEW_HS_DIAL_CELL_W) {
+        letter_buff[0] = sb_name_buff[i];
+
+        if (i == sb_name_ind) {
+            gfx_FillRectangle(x, y, NEW_HS_DIAL_CELL_W, NEW_HS_DIAL_H);
+            gfx_SetTextFGColor(NEW_HS_DIAL_S_FG);
+            gfx_PrintStringXY(letter_buff, x + NEW_HS_DIAL_BORDER, y + NEW_HS_DIAL_BORDER);
+            gfx_SetTextFGColor(NEW_HS_DIAL_FG); // Revert back to normal FG color.
+
+            continue;
+        } 
+        
+        // Normal case, just draw the text.
+        gfx_PrintStringXY(letter_buff, x + NEW_HS_DIAL_BORDER, y + NEW_HS_DIAL_BORDER);            
+    }
 }
 
 //
@@ -368,8 +431,7 @@ static void update_in_play(void) {
     } else {
         last_score = sg->score;
         placement = sb_placement(sb, last_score);
-        next_state = DEFEAT;
-        // next_state = placement < SB_SIZE ? NEW_HIGHSCORE : DEFEAT;
+        next_state = placement < SB_SIZE ? NEW_HIGHSCORE : DEFEAT;
     }
 }
 
@@ -413,4 +475,13 @@ static void exit_noop(void) {
 
 static void exit_in_play(void) {
     destroy_snake_game(sg);
+}
+
+static void exit_new_highscore(void) {
+    new_entry.score = last_score;
+    strcpy(new_entry.name, sb_name_buff);
+
+    sb_insert(sb, placement, &new_entry);
+
+    archive_needed = 1;
 }
