@@ -164,12 +164,13 @@ void grow(snake_game *sg) {
         return;
     }
 
+    // ERROR... Food can spawn at the next location!!!!!!
     if (equ_coord(next_cell, sg->food_pos)) {
         sg->score++;
         sg->food_q += 5; // Allows for same turn growth... 
 
 
-        // Make sure to respawn the food!
+        // Make sure to respawn the food! 
         respawn_food(sg);
     }
 
