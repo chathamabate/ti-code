@@ -164,16 +164,6 @@ void grow(snake_game *sg) {
         return;
     }
 
-    // ERROR... Food can spawn at the next location!!!!!!
-    if (equ_coord(next_cell, sg->food_pos)) {
-        sg->score++;
-        sg->food_q += 5; // Allows for same turn growth... 
-
-
-        // Make sure to respawn the food! 
-        respawn_food(sg);
-    }
-
     // In this situation a new segment must be created.
     if (sg->direction != head_seg->direction) {
         snake_seg *new_seg = malloc(sizeof(snake_seg));
@@ -187,14 +177,23 @@ void grow(snake_game *sg) {
         head_seg->prev = new_seg;
 
         sg->first = new_seg;
-
-        return;
+    } else {
+        // Otherwise, simply expand current segment.
+        head_seg->size++;
+        if (head_seg->direction == NORTH || head_seg->direction == WEST) {
+            head_seg->pos = next_cell;
+        }
     }
+    
+    // NOTE: It is essential this is at the end.
+    // This way when food is responded, next_cell can not be chosen.
+    if (equ_coord(next_cell, sg->food_pos)) {
+        sg->score++;
+        sg->food_q += 5; // Allows for same turn growth... 
 
-    // Final case, simply expand the current segment.
-    head_seg->size++;
-    if (head_seg->direction == NORTH || head_seg->direction == WEST) {
-        head_seg->pos = next_cell;
+
+        // Make sure to respawn the food! 
+        respawn_food(sg);
     }
 }
 
