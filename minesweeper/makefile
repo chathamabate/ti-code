@@ -8,12 +8,18 @@ DESCRIPTION = "CE C Toolchain Demo"
 COMPRESSED = NO
 ARCHIVED = NO
 
-CFLAGS = -Wall -Wextra -Oz
-CXXFLAGS = -Wall -Wextra -Oz
+CFLAGS = -Wall -Wextra -Oz -I..
+CXXFLAGS = -Wall -Wextra -Oz -I..
 
 # This Actually Works!!!
 HAS_PRINTF := NO
 
+# # Add it sources boy....
+EXTRA_CSOURCES = $(wildcard ../cutil/*.c)
+EXTRA_USERHEADERS = $(wildcard ../cutil/*.h)
+
+$(info [${EXTRA_USERHEADERS}])
 # ----------------------------
+
 
 include $(shell cedev-config --makefile)
