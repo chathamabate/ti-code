@@ -9,18 +9,18 @@
 // When exiting a local state, this function should do all necessary 
 // clean up of the local state and return a pointer to necessary 
 // transition data to set up the next state.
-typedef void *(*loc_switch_func)(void *, void *n);
+typedef void *(*loc_switch_func)(void *glb_state, void *loc_state);
 
 // An update function is used to update the local and global state.
 // It returns the local life cycle to use on the next iteration of the
 // gameloop.
 //
 // To exit the game loop, an update function should return NULL.
-typedef const struct local_life_cycle *(*loc_update_func)(void *, void *);
+typedef const struct local_life_cycle *(*loc_update_func)(void *glb_state, void *loc_state);
 
 // A render function takes the global and local states.
 // It renders the local scene.
-typedef void (*loc_render_func)(void *, void *);
+typedef void (*loc_render_func)(void *glb_state, void *loc_state);
 
 typedef struct local_life_cycle {
     // Enter will interpret the transition state.
@@ -44,7 +44,7 @@ typedef void *(*glb_enter_func)(void);
 
 // This should clean up the global state,
 // and execute all necessary exit procedures for the game.
-typedef void (*glb_exit_func)(void *);
+typedef void (*glb_exit_func)(void *glb_state);
 
 typedef struct {
     glb_enter_func enter;
