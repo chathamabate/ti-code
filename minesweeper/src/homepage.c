@@ -1,8 +1,8 @@
-#include "homepage.h"
-
 #include <graphx.h>
 #include <cutil/misc.h>
 #include <tice.h>
+
+#include "states.h"
 
 static void *enter_homepage(void *transition_state);
 static const gs_life_cycle *update_homepage(void *state);

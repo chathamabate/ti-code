@@ -1,5 +1,5 @@
-#ifndef HOMEPAGE_H
-#define HOMEPAGE_H
+#ifndef STATES_H
+#define STATES_H
 
 #include <cutil/gameloop.h>
 

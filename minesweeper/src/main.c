@@ -2,7 +2,7 @@
 #include <cutil/gameloop.h>
 #include <cutil/misc.h>
 
-#include "homepage.h"
+#include "states.h"
 
 #include <tice.h>
 #include <graphx.h>
