@@ -3,38 +3,55 @@
 
 #include <stdint.h>
 
-// A state switch func, takes a pointer to the current state.
-// It then creates a new state to switch to and returns that state.
-// If the current state needs to be freed, this should be done in this
-// function.
-typedef void *(*gs_switch_func)(void *);
+// A local switch function is either used to exit or enter a new local
+// state. It accepts a pointer to the global state and the local state.
+//
+// When exiting a local state, this function should do all necessary 
+// clean up of the local state and return a pointer to necessary 
+// transition data to set up the next state.
+typedef void *(*loc_switch_func)(void *, void *n);
 
-// An update function is used to update the current state.
-// It returns the life cycle to use for the next iteration.
-// To request game exit, NULL should be returned.
-typedef const struct game_state_life_cycle *(*gs_update_func)(void *);
+// An update function is used to update the local and global state.
+// It returns the local life cycle to use on the next iteration of the
+// gameloop.
+//
+// To exit the game loop, an update function should return NULL.
+typedef const struct local_life_cycle *(*loc_update_func)(void *, void *);
 
-// An state stay func will read from or write to the current state,
-// then return.
-typedef void (*gs_render_func)(void *);
+// A render function takes the global and local states.
+// It renders the local scene.
+typedef void (*loc_render_func)(void *, void *);
 
-typedef struct game_state_life_cycle {
+typedef struct local_life_cycle {
     // Enter will interpret the transition state.
     // Then construct the new state for this part of the game.
     // It will the clean up the transition state if it needs to.
-    gs_switch_func enter;
+    loc_switch_func enter;
 
     // Game loop methods for rendering and updating.
-    gs_update_func update;
-    gs_render_func render;
+    loc_update_func update;
+    loc_render_func render;
 
     // Exit will clean up the current state and return a transition state.
     // A transition state will contain necessary information for the next
     // state. 
-    gs_switch_func exit;
-} gs_life_cycle;
+    loc_switch_func exit;
+} loc_life_cycle;
+
+// This should do all needed set up for the game,
+// and return the global state object.
+typedef void *(*glb_enter_func)(void);
+
+// This should clean up the global state,
+// and execute all necessary exit procedures for the game.
+typedef void (*glb_exit_func)(void *);
+
+typedef struct {
+    glb_enter_func enter;
+    glb_exit_func exit;
+} glb_life_cycle;
 
 // Run a game.
-void run_game(uint16_t delay_ms, const  gs_life_cycle *init_lc);
+void run_game(uint16_t delay_ms, const glb_life_cycle *gb_lc, const loc_life_cycle *init_loc_lc);
 
 #endif
