@@ -12,13 +12,13 @@ typedef void *(*gs_switch_func)(void *);
 // An update function is used to update the current state.
 // It returns the life cycle to use for the next iteration.
 // To request game exit, NULL should be returned.
-typedef const gs_life_cycle *(*gs_update_func)(void *);
+typedef const struct game_state_life_cycle *(*gs_update_func)(void *);
 
 // An state stay func will read from or write to the current state,
 // then return.
 typedef void (*gs_render_func)(void *);
 
-typedef struct {
+typedef struct game_state_life_cycle {
     // Enter will interpret the transition state.
     // Then construct the new state for this part of the game.
     // It will the clean up the transition state if it needs to.
@@ -35,6 +35,6 @@ typedef struct {
 } gs_life_cycle;
 
 // Run a game.
-void run_game(const gs_life_cycle *init_lc);
+void run_game(uint16_t delay_ms, const  gs_life_cycle *init_lc);
 
 #endif
