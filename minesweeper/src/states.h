@@ -3,6 +3,6 @@
 
 #include <cutil/gameloop.h>
 
-extern const gs_life_cycle HOMEPAGE;
+extern const loc_life_cycle HOMEPAGE;
 
 #endif
