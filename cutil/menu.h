@@ -43,4 +43,22 @@ void render_text_menu_button_nc(text_menu *menu, uint16_t x, uint8_t y, uint8_t 
 // Render a text menu.
 void render_text_menu_nc(text_menu *menu, uint16_t x, uint8_t y);
 
+typedef struct {
+    text_menu menu;
+
+    uint8_t selection_style;
+    uint8_t deselection_style;
+
+    uint8_t selection;
+} basic_text_menu;
+
+// Create a new basic text menu.
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style);
+
+// Read keypad input to update the menu.
+void update_basic_text_menu(basic_text_menu *bt_menu);
+
+// Delete a basic text menu.
+void del_basic_text_menu(basic_text_menu *bt_menu);
+
 #endif

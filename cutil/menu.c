@@ -1,6 +1,9 @@
 #include "menu.h"
 
+#include <tice.h>
 #include <graphx.h>
+
+#include <cutil/misc.h>
 #include <cutil/cgraphx.h>
 
 void render_text_menu_button_nc(text_menu *menu, uint16_t x, uint8_t y, uint8_t i) {
@@ -38,3 +41,49 @@ void render_text_menu_nc(text_menu *menu, uint16_t x, uint8_t y) {
         render_text_menu_button_nc(menu, x, y, i);
     }
 }
+
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style) {
+    basic_text_menu *bt_menu = safe_malloc(sizeof(basic_text_menu));
+
+    bt_menu->menu.template = tmplt;
+    bt_menu->menu.styles = safe_malloc(sizeof(uint8_t) * tmplt->len);
+
+    bt_menu->menu.styles[0] = s_style;
+
+    uint8_t i;
+    for (i = 1; i < tmplt->len; i++) {
+        bt_menu->menu.styles[i] = ds_style;
+    }
+
+    bt_menu->selection_style = s_style;
+    bt_menu->deselection_style = ds_style;
+
+    bt_menu->selection = 0;
+
+    return bt_menu;
+}
+
+void update_basic_text_menu(basic_text_menu *bt_menu) {
+    // Consider switching to is down.
+    sk_key_t key = os_GetCSC(); 
+    uint8_t format = bt_menu->menu.template->format;
+
+    if (
+        ((format == MENU_VERTICAL && (key == sk_Up || key == sk_8)) ||
+        (format == MENU_HORIZONTAL && (key == sk_Left || key == sk_4))) &&
+        bt_menu->selection != 0 
+    ) {
+        bt_menu->menu.styles[bt_menu->selection] = bt_menu->deselection_style;
+        bt_menu->menu.styles[--bt_menu->selection] = bt_menu->selection_style;
+    } else if (
+
+    ) {
+
+    }
+}
+
+void del_basic_text_menu(basic_text_menu *bt_menu) {
+    free(bt_menu->menu.styles);
+    free(bt_menu);
+}
+

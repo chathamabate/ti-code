@@ -79,6 +79,8 @@ static void render_homepage(void *glb_state, void *loc_state) {
 
     gfx_FillScreen(0x06);
     gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16);
+
+    render_text_menu_nc(&hp_state->menu, (LCD_WIDTH - hp_state->menu.template->button_width) / 2, 128);
     gfx_SwapDraw();
 }
 
