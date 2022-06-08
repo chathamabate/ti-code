@@ -5,40 +5,43 @@ palettes:
       - color: {index: 0, r: 255, g: 0, b: 239}
     images: 
       - tiles16.png
+      - borders.png
 
 converts:
-  - name: ms_tiles_menu
+  - name: ms_logo
     transparent-color-index: 0
     palette: ms_palette
+    bpp: 4
+    images:
+      - logo.png
+
+  - name: ms_borders
+    transparent-color-index: 0
+    palette: ms_palette
+    bpp: 4
     tilesets:
-      tile-width: 16
-      tile-height: 32
+      tile-width: 4
+      tile-height: 4
       images:
-        - buttons.png
+        - borders.png
 
   - name: ms_tiles_16
     transparent-color-index: 0
     palette: ms_palette
+    bpp: 4
     tilesets:
       tile-width: 16
       tile-height: 16
       images:
         - tiles16.png
 
-  # - name: ms_tiles_8
-  #   transparent-color-index: 0
-  #   palette: ms_palette
-  #   tilesets:
-  #     tile-width: 8
-  #     tile-height: 8
-  #     images:
-  #       - tiles8.png
-
 outputs:
   - type: c
     palettes:
       - ms_palette
     converts:
+      - ms_logo
+      - ms_borders
       - ms_tiles_16
 
 

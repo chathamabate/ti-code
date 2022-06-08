@@ -1,4 +1,4 @@
-unsigned char ms_palette[28] =
+unsigned char ms_palette[32] =
 {
     0x1d, 0x7c, /*   0: rgb(255,   0, 239) */
     0x00, 0x00, /*   1: rgb(  0,   0,   0) */
@@ -14,4 +14,6 @@ unsigned char ms_palette[28] =
     0x3f, 0xe3, /*  11: rgb(197, 206, 255) */
     0xa0, 0xe8, /*  12: rgb(214,  45,   0) */
     0xc0, 0xf5, /*  13: rgb(239, 117,   0) */
+    0x85, 0x7e, /*  14: rgb(255, 162,  41) */
+    0x6a, 0x7f, /*  15: rgb(255, 219,  82) */
 };

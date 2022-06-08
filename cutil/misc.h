@@ -5,8 +5,7 @@
 
 typedef void (*malloc_fail_routine)(void);
 
-extern malloc_fail_routine mf_routine;
-
+// extern malloc_fail_routine mf_routine;
 void normal_malloc_fail_routine(void);
 void graphics_malloc_fail_routine(void);
 
@@ -15,4 +14,6 @@ void graphics_malloc_fail_routine(void);
 // will be called.
 void *safe_malloc(size_t size);
 
+// Set the malloc fail routine.
+void set_malloc_fail_routine(malloc_fail_routine mfr);
 #endif
