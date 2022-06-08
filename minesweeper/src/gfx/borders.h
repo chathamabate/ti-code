@@ -37,8 +37,26 @@ extern unsigned char borders_tile_14_data[18];
 #define borders_tile_14 ((gfx_sprite_t*)borders_tile_14_data)
 extern unsigned char borders_tile_15_data[18];
 #define borders_tile_15 ((gfx_sprite_t*)borders_tile_15_data)
-#define borders_num_tiles 16
-extern unsigned char *borders_tiles_data[16];
+extern unsigned char borders_tile_16_data[18];
+#define borders_tile_16 ((gfx_sprite_t*)borders_tile_16_data)
+extern unsigned char borders_tile_17_data[18];
+#define borders_tile_17 ((gfx_sprite_t*)borders_tile_17_data)
+extern unsigned char borders_tile_18_data[18];
+#define borders_tile_18 ((gfx_sprite_t*)borders_tile_18_data)
+extern unsigned char borders_tile_19_data[18];
+#define borders_tile_19 ((gfx_sprite_t*)borders_tile_19_data)
+extern unsigned char borders_tile_20_data[18];
+#define borders_tile_20 ((gfx_sprite_t*)borders_tile_20_data)
+extern unsigned char borders_tile_21_data[18];
+#define borders_tile_21 ((gfx_sprite_t*)borders_tile_21_data)
+extern unsigned char borders_tile_22_data[18];
+#define borders_tile_22 ((gfx_sprite_t*)borders_tile_22_data)
+extern unsigned char borders_tile_23_data[18];
+#define borders_tile_23 ((gfx_sprite_t*)borders_tile_23_data)
+extern unsigned char borders_tile_24_data[18];
+#define borders_tile_24 ((gfx_sprite_t*)borders_tile_24_data)
+#define borders_num_tiles 25
+extern unsigned char *borders_tiles_data[25];
 #define borders_tiles ((gfx_sprite_t**)borders_tiles_data)
 
 #ifdef __cplusplus

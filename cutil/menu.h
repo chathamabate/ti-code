@@ -8,7 +8,7 @@
 #define MENU_HORIZONTAL 1
 
 typedef struct {
-    cgfx_pane_style **style_palette;
+    const cgfx_pane_style **style_palette;
     uint8_t style_palette_len;
 
     // Horizontal | Vertical
@@ -16,11 +16,6 @@ typedef struct {
 
     // Label for each button.
     const char **labels;
-
-    // Style for each button.
-    // It is assumed the program will modify the styles
-    // depending on user input. 
-    uint8_t *styles;
 
     // Button and label sizings.
     uint16_t button_width;
@@ -34,6 +29,11 @@ typedef struct {
     // Number of buttons.
     // (i.e. number of entries in the labels and styles arrays)
     uint8_t len;
+} text_menu_template;
+
+typedef struct {
+    const text_menu_template *template;
+    uint8_t *styles;
 } text_menu;
 
 // Render a specific button of a menu.

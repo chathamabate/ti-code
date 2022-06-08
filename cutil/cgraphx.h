@@ -17,8 +17,9 @@
 #define P_SW    6
 #define P_W     7
 
+#define P_BORDER_SPRITES_LEN 8
+
 typedef struct {
-    // Each border sprite should be a 4x4 sprite.
     // The entries in this array specify the borders
     // of the button in clockwise order starting at the
     // top left corner of the button....
@@ -27,7 +28,9 @@ typedef struct {
     // 
     // NOTE, the sprites that do not correspond to corners
     // will be stretched to cover the entire button.
-    gfx_sprite_t *border_sprites[8];
+    //
+    // Must be 8 border sprites.
+    gfx_sprite_t **border_sprites;
 
     // This is the palette index of the color to fill the
     // center rectangle of the button.
@@ -44,6 +47,6 @@ void cgfx_set_pane_border_size(uint8_t b_size);
 // Fill a pane on screen.
 // width and height both must be multiples of border size.
 // width and height both most be greater than or equal to 2 * border size.
-void cgfx_pane_nc(cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t width, uint8_t height);
+void cgfx_pane_nc(const cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t width, uint8_t height);
 
 #endif

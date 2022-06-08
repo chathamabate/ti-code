@@ -7,7 +7,7 @@ void cgfx_set_pane_border_size(uint8_t b_size) {
     border_size = b_size;
 }
 
-void cgfx_pane_nc(cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t width, uint8_t height) {
+void cgfx_pane_nc(const cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t width, uint8_t height) {
     uint8_t width_scale = (width - (2 * border_size)) / border_size;
     uint8_t height_scale = (height - (2 * border_size)) / border_size;
 
