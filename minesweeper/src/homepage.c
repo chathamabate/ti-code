@@ -5,6 +5,7 @@
 #include <cutil/menu.h>
 #include <cutil/misc.h>
 #include <tice.h>
+#include <keypadc.h>
 
 #include "ms_styles.h"
 #include "gfx/logo.h"
@@ -33,10 +34,9 @@ static const text_menu_template MENU_TEMPLATE = {
 
 // The local state for the homepage.
 typedef struct {
-    text_menu menu;
+    basic_text_menu *bt_menu;
 
     uint8_t redraw;
-    uint8_t selection;
 } homepage_state;
 
 static void *enter_homepage(void *glb_state, void *trans_state) {
@@ -48,20 +48,23 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
     // Allocate the homepage local state.
     homepage_state *hp_state = safe_malloc(sizeof(homepage_state));
 
-    hp_state->menu.template = &MENU_TEMPLATE;
-    hp_state->menu.styles = safe_malloc(sizeof(uint8_t) * BTN_LABELS_LEN);
+    hp_state->bt_menu = new_basic_text_menu(&MENU_TEMPLATE, 1, 0);
 
     hp_state->redraw = 1;
-    hp_state->selection = 0;
 
     return hp_state;
 }
 
 static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
     (void)glb_state;
-    (void)loc_state;
 
-    if (os_GetCSC() == sk_Clear) {
+    homepage_state *hp_state = (homepage_state *)loc_state;
+
+    kb_Scan();
+
+    hp_state->redraw = update_basic_text_menu(hp_state->bt_menu);
+
+    if (kb_IsDown(kb_KeyClear)) {
         return NULL; // Exit case.
     }
 
@@ -79,8 +82,9 @@ static void render_homepage(void *glb_state, void *loc_state) {
 
     gfx_FillScreen(0x06);
     gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16);
+    render_text_menu_nc(&hp_state->bt_menu->menu, 
+        (LCD_WIDTH - hp_state->bt_menu->menu.template->button_width) / 2, 128);
 
-    render_text_menu_nc(&hp_state->menu, (LCD_WIDTH - hp_state->menu.template->button_width) / 2, 128);
     gfx_SwapDraw();
 }
 
@@ -91,8 +95,7 @@ static void *exit_homepage(void *glb_state, void *loc_state, const loc_life_cycl
     // Extract home page state.
     homepage_state *hp_state = (homepage_state *)loc_state;
 
-    // Free styles array.
-    free(hp_state->menu.styles);
+    del_basic_text_menu(hp_state->bt_menu);
 
     // Free the state as a whole.
     free(hp_state);

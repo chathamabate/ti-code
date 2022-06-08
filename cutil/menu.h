@@ -56,7 +56,8 @@ typedef struct {
 basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style);
 
 // Read keypad input to update the menu.
-void update_basic_text_menu(basic_text_menu *bt_menu);
+// Returns 1 if a redraw is needed.
+uint8_t update_basic_text_menu(basic_text_menu *bt_menu);
 
 // Delete a basic text menu.
 void del_basic_text_menu(basic_text_menu *bt_menu);

@@ -63,9 +63,9 @@ basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_
     return bt_menu;
 }
 
-void update_basic_text_menu(basic_text_menu *bt_menu) {
+uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
     // Consider switching to is down.
-    sk_key_t key = os_GetCSC(); 
+    sk_key_t key = 0; 
     uint8_t format = bt_menu->menu.template->format;
 
     if (
@@ -74,12 +74,21 @@ void update_basic_text_menu(basic_text_menu *bt_menu) {
         bt_menu->selection != 0 
     ) {
         bt_menu->menu.styles[bt_menu->selection] = bt_menu->deselection_style;
-        bt_menu->menu.styles[--bt_menu->selection] = bt_menu->selection_style;
+        bt_menu->menu.styles[--(bt_menu->selection)] = bt_menu->selection_style;
+
+        return 1;
     } else if (
-
+        ((format == MENU_VERTICAL && (key == sk_Down || key == sk_5)) ||
+        (format == MENU_HORIZONTAL && (key == sk_Right || key == sk_6))) &&
+        bt_menu->selection != bt_menu->menu.template->len - 1
     ) {
+        bt_menu->menu.styles[bt_menu->selection] = bt_menu->deselection_style;
+        bt_menu->menu.styles[++(bt_menu->selection)] = bt_menu->selection_style;
 
+        return 1;
     }
+
+    return 0;
 }
 
 void del_basic_text_menu(basic_text_menu *bt_menu) {
