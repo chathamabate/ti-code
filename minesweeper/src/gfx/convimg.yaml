@@ -1,0 +1,45 @@
+
+palettes:
+  - name: ms_palette
+    fixed-entries: 
+      - color: {index: 0, r: 255, g: 0, b: 239}
+    images: 
+      - tiles16.png
+
+converts:
+  - name: ms_tiles_menu
+    transparent-color-index: 0
+    palette: ms_palette
+    tilesets:
+      tile-width: 16
+      tile-height: 32
+      images:
+        - buttons.png
+
+  - name: ms_tiles_16
+    transparent-color-index: 0
+    palette: ms_palette
+    tilesets:
+      tile-width: 16
+      tile-height: 16
+      images:
+        - tiles16.png
+
+  # - name: ms_tiles_8
+  #   transparent-color-index: 0
+  #   palette: ms_palette
+  #   tilesets:
+  #     tile-width: 8
+  #     tile-height: 8
+  #     images:
+  #       - tiles8.png
+
+outputs:
+  - type: c
+    palettes:
+      - ms_palette
+    converts:
+      - ms_tiles_16
+
+
+
