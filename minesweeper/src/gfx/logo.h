@@ -7,9 +7,9 @@ extern "C" {
 
 #define logo_width 200
 #define logo_height 64
-#define logo_size 6402
+#define logo_size 12802
 #define logo ((gfx_sprite_t*)logo_data)
-extern unsigned char logo_data[6402];
+extern unsigned char logo_data[12802];
 
 #ifdef __cplusplus
 }

@@ -14,6 +14,9 @@ CXXFLAGS = -Wall -Wextra -Oz -I..
 # This Actually Works!!!
 HAS_PRINTF := NO
 
+# Big time space saver.
+COMPRESSED := YES
+
 # # Add it sources boy....
 EXTRA_CSOURCES = $(wildcard ../cutil/*.c)
 EXTRA_USERHEADERS = $(wildcard ../cutil/*.h)

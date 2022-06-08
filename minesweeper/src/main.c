@@ -1,6 +1,7 @@
 
 #include <cutil/gameloop.h>
 #include <cutil/misc.h>
+#include <cutil/cgraphx.h>
 
 #include "states.h"
 
@@ -8,8 +9,11 @@
 #include <graphx.h>
 #include <keypadc.h>
 
+#include <cutil/menu.h>
+
 #include "gfx/ms_palette.h"
 #include "gfx/tiles16.h"
+#include "gfx/borders.h"
 
 // Game states and menus could be improved from snake...
 // Archiving will probs be the same TBH...
@@ -38,12 +42,56 @@ const glb_life_cycle GLOBAL_LC = {
 };
 
 int main(void) {
-    run_game(100, &GLOBAL_LC, &HOMEPAGE);
+    // run_game(100, &GLOBAL_LC, &HOMEPAGE);
 
-    // gfx_Begin();
-    // gfx_SetPalette(ms_palette, sizeof_ms_palette, 0);
-    // gfx_SetTransparentColor(0);
-    // gfx_FillScreen(4);
+    cgfx_pane_style ps;
+
+    uint8_t i;
+    for (i = 0; i < 8; i++) {
+        ps.border_sprites[i] = borders_tiles[i];
+    }
+
+    ps.fill = 0x07;
+    ps.text_fg = 1;
+
+    cgfx_pane_style *style_palette[] = {
+        &ps
+    };
+
+    const char *labels[] = {
+        "Play",
+        "Highscores",
+        "Instructions",
+        "Exit"
+    };
+
+    uint8_t styles[] = {
+        0, 0, 0, 0
+    };
+
+
+    text_menu tm = {
+        .button_height = 20,
+        .button_width = 128,
+        .format = MENU_VERTICAL,
+        .label_height_scale = 1,
+        .label_width_scale = 1,
+        .labels = labels,
+        .len = 4,
+        .style_palette = style_palette,
+        .style_palette_len = 1,
+        .styles = styles
+    };
+
+    gfx_Begin();
+    gfx_SetPalette(ms_palette, sizeof_ms_palette, 0);
+    gfx_SetTransparentColor(0);
+    gfx_FillScreen(4);
+
+    // render_text_menu_button_nc(&tm, 0, 0, 0);
+    render_text_menu_nc(&tm, (LCD_WIDTH - tm.button_width) / 2, 64);
+
+    // gfx_ScaledSprite_NoClip(borders_tile_0, 10, 10, 16, 16);
 
     // uint8_t x, y;
 
@@ -70,9 +118,9 @@ int main(void) {
     //     }
     // }
 
-    // // gfx_TransparentSprite()
-    // while (os_GetCSC() != sk_Clear);
-    // gfx_End();
+    // gfx_TransparentSprite()
+    while (os_GetCSC() != sk_Clear);
+    gfx_End();
 
     return 0;
 }

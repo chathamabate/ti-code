@@ -11,14 +11,14 @@ converts:
   - name: ms_logo
     transparent-color-index: 0
     palette: ms_palette
-    bpp: 4
+    # bpp: 4 # One day this shall work...
     images:
       - logo.png
 
   - name: ms_borders
     transparent-color-index: 0
     palette: ms_palette
-    bpp: 4
+    # bpp: 4
     tilesets:
       tile-width: 4
       tile-height: 4
@@ -28,7 +28,7 @@ converts:
   - name: ms_tiles_16
     transparent-color-index: 0
     palette: ms_palette
-    bpp: 4
+    # bpp: 4
     tilesets:
       tile-width: 16
       tile-height: 16
