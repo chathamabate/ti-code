@@ -59,25 +59,22 @@ int main(void) {
     };
 
     const char *labels[] = {
-        "Play",
-        "Highscores",
-        "Instructions",
-        "Exit"
+        "Exit",
+        "Back"
     };
 
     uint8_t styles[] = {
-        0, 0, 0, 0
+        0, 0
     };
-
 
     text_menu tm = {
         .button_height = 20,
-        .button_width = 128,
-        .format = MENU_VERTICAL,
+        .button_width = 64,
+        .format = MENU_HORIZONTAL,
         .label_height_scale = 1,
         .label_width_scale = 1,
         .labels = labels,
-        .len = 4,
+        .len = 2,
         .style_palette = style_palette,
         .style_palette_len = 1,
         .styles = styles

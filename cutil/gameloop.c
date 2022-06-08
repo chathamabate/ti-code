@@ -21,7 +21,7 @@ void run_game(uint16_t delay_ms, const glb_life_cycle *glb_lc, const loc_life_cy
 
         // When a new life cycle is requested, the current one is
         // exited.
-        loc_state = curr_loc_lc->exit(glb_state, loc_state);
+        loc_state = curr_loc_lc->exit(glb_state, loc_state, next_loc_lc);
 
         // then, the current life cycle is set to the next life cycle.
     } while ((curr_loc_lc = next_loc_lc));
