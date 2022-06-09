@@ -26,6 +26,10 @@ void graphics_malloc_fail_routine(void) {
 static malloc_fail_routine mf_routine = normal_malloc_fail_routine;
 
 void *safe_malloc(size_t size) {
+    if (size == 0) {
+        return NULL;
+    }
+
     void *ptr = malloc(size);
 
     if (ptr) {

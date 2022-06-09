@@ -78,6 +78,12 @@ void set_focused_keys(const c_key_t *keys, uint8_t num_keys) {
     }
 
     num_focused_keys = num_keys;
+
+    // Way of seeting no focused keys...
+    if (keys == NULL || num_keys == 0) {
+        focused_keys = NULL;
+    }
+
     focused_keys = (focused_key *)safe_malloc(sizeof(focused_key) * num_keys);
 
     uint8_t i;
