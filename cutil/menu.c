@@ -1,8 +1,10 @@
 #include "menu.h"
 
 #include <tice.h>
+// #include <keypadc.h>
 #include <graphx.h>
 
+#include <cutil/keys.h>
 #include <cutil/misc.h>
 #include <cutil/cgraphx.h>
 
@@ -64,13 +66,11 @@ basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_
 }
 
 uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
-    // Consider switching to is down.
-    sk_key_t key = 0; 
     uint8_t format = bt_menu->menu.template->format;
 
     if (
-        ((format == MENU_VERTICAL && (key == sk_Up || key == sk_8)) ||
-        (format == MENU_HORIZONTAL && (key == sk_Left || key == sk_4))) &&
+        ((format == MENU_VERTICAL && (key_press(c_Up) || key_press(c_8))) ||
+        (format == MENU_HORIZONTAL && (key_press(c_Left) || key_press(c_4)))) &&
         bt_menu->selection != 0 
     ) {
         bt_menu->menu.styles[bt_menu->selection] = bt_menu->deselection_style;
@@ -78,8 +78,8 @@ uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
 
         return 1;
     } else if (
-        ((format == MENU_VERTICAL && (key == sk_Down || key == sk_5)) ||
-        (format == MENU_HORIZONTAL && (key == sk_Right || key == sk_6))) &&
+        ((format == MENU_VERTICAL && (key_press(c_Down) || key_press(c_5))) ||
+        (format == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) &&
         bt_menu->selection != bt_menu->menu.template->len - 1
     ) {
         bt_menu->menu.styles[bt_menu->selection] = bt_menu->deselection_style;

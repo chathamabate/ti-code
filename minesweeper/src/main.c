@@ -10,6 +10,7 @@
 #include <keypadc.h>
 
 #include <cutil/menu.h>
+#include <cutil/keys.h>
 
 #include "gfx/ms_palette.h"
 #include "gfx/tiles16.h"
@@ -21,6 +22,8 @@
 
 static void *enter_game(void) {
     set_malloc_fail_routine(graphics_malloc_fail_routine);
+
+    set_repeat_delay(10);
 
     gfx_Begin();
     gfx_SetDrawBuffer();
@@ -44,7 +47,7 @@ const glb_life_cycle GLOBAL_LC = {
 };
 
 int main(void) {
-    run_game(100, &GLOBAL_LC, &HOMEPAGE);
+    run_game(50, &GLOBAL_LC, &HOMEPAGE);
 
     return 0;
 }

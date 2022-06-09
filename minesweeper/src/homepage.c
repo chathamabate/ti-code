@@ -4,11 +4,20 @@
 #include <graphx.h>
 #include <cutil/menu.h>
 #include <cutil/misc.h>
+#include <cutil/keys.h>
 #include <tice.h>
 #include <keypadc.h>
 
 #include "ms_styles.h"
 #include "gfx/logo.h"
+
+#define FOCUSED_KEYS_LEN 10
+
+static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
+    c_Up, c_Down, c_Left, c_Right, 
+    c_8, c_5, c_4, c_6,
+    c_Enter, c_Clear
+};
 
 #define BTN_LABELS_LEN 4
 
@@ -52,6 +61,8 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
 
     hp_state->redraw = 1;
 
+    set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
+
     return hp_state;
 }
 
@@ -60,9 +71,10 @@ static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
 
     homepage_state *hp_state = (homepage_state *)loc_state;
 
-    kb_Scan();
+    // This includes a kb_Scan().
+    scan_focused_keys();
 
-    hp_state->redraw = update_basic_text_menu(hp_state->bt_menu);
+    hp_state->redraw |= update_basic_text_menu(hp_state->bt_menu);
 
     if (kb_IsDown(kb_KeyClear)) {
         return NULL; // Exit case.
