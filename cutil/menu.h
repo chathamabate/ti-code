@@ -35,8 +35,11 @@ typedef struct {
     uint8_t len;
 } text_menu_template;
 
+// This signifies that a button is yet to exist on
+// the screen or in the buffer.
+#define NOT_RENDERED 255
 
-// Way to deal with buffering issues....
+// Way to deal with buffering issues.
 typedef struct {
     uint8_t style;
     uint8_t screen_style;
@@ -45,66 +48,93 @@ typedef struct {
 
 typedef struct {
     const text_menu_template *template;
-    uint8_t *styles;
+
+    // The style states of each button.
+    buffered_styling *styles;
 } text_menu;
 
-// Render a specific button of a menu.
-// This is meant to be used for partial redraw.
-void render_text_menu_button_nc(text_menu *menu, uint8_t i);
+// Create a new text menu.
+text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style);
 
 // Render a text menu.
+// NOTE, this does not always render the entire menu.
+// This function will only draw buttons whose styles
+// differ from that which exists in the buffer.
 void render_text_menu_nc(text_menu *menu);
 
-// Specifications for menu rendering types.
-#define NO_REDRAW       0
-#define FULL_REDRAW     1
-#define PARTIAL_REDRAW  2
-
-// Basic Menu needs to be refactored...
-// Focusing, and drawing mechanics should be used here...
+// delete a text menu.
+void del_text_menu(text_menu *menu);
 
 typedef struct {
-    text_menu menu;
+    text_menu *super;
 
     uint8_t selection_style;
     uint8_t deselection_style;
-
-    // The selected button as seen in the buffer.
-    // Used for partial redraw.
-    uint8_t buffer_selection; 
-
-    // The selected button as seen on the screen.
-    uint8_t screen_selection;
-
+    
     // The actual selection.
     uint8_t selection;
+} basic_text_menu;
 
-    uint8_t unfocused_style;
+// Create a new basic text menu.
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style);
 
-    // Specify if and how the menu should be redrawn.
-    uint8_t redraw;
-} simple_text_menu;
+// Checks keypad to see if selection has changed.
+// Returns 1 if selection changes, 0 otherwise.
+uint8_t update_basic_text_menu(basic_text_menu *bt_menu);
 
-// Create a new simple text menu. (Starts unfocused always)
-simple_text_menu *new_simple_text_menu(const text_menu_template *tmplt, 
-    uint8_t s_style, uint8_t ds_style, uint8_t uf_style);
+// Delete a basic text menu.
+void del_basic_text_menu(basic_text_menu *bt_menu);
 
-// Focus a simple text menu.
-void focus_simple_text_menu(simple_text_menu *st_menu);
+// // Specifications for menu rendering types.
+// #define NO_REDRAW       0
+// #define FULL_REDRAW     1
+// #define PARTIAL_REDRAW  2
 
-// Unfocus a simple text menu.
-void unfocus_simple_text_menu(simple_text_menu *st_menu);
+// // Basic Menu needs to be refactored...
+// // Focusing, and drawing mechanics should be used here...
 
-// Checks keypad input for updating selection.
-// NOTE, this should only be called if the menu is focused.
-// Otherwise, the rendering may not draw as expected.
-void update_simple_text_menu(simple_text_menu *st_menu);
+// typedef struct {
+//     text_menu menu;
 
-// Render the simple text menu according to its redraw specs.
-// If drawing actually occurs 1 will be returned, otherwise 0.
-uint8_t render_simple_text_menu_nc(simple_text_menu *st_menu);
+//     uint8_t selection_style;
+//     uint8_t deselection_style;
 
-// Delete a simple text menu.
-void del_simple_text_menu(simple_text_menu *st_menu);
+//     // The selected button as seen in the buffer.
+//     // Used for partial redraw.
+//     uint8_t buffer_selection; 
+
+//     // The selected button as seen on the screen.
+//     uint8_t screen_selection;
+
+//     // The actual selection.
+//     uint8_t selection;
+
+//     uint8_t unfocused_style;
+
+//     // Specify if and how the menu should be redrawn.
+//     uint8_t redraw;
+// } simple_text_menu;
+
+// // Create a new simple text menu. (Starts unfocused always)
+// simple_text_menu *new_simple_text_menu(const text_menu_template *tmplt, 
+//     uint8_t s_style, uint8_t ds_style, uint8_t uf_style);
+
+// // Focus a simple text menu.
+// void focus_simple_text_menu(simple_text_menu *st_menu);
+
+// // Unfocus a simple text menu.
+// void unfocus_simple_text_menu(simple_text_menu *st_menu);
+
+// // Checks keypad input for updating selection.
+// // NOTE, this should only be called if the menu is focused.
+// // Otherwise, the rendering may not draw as expected.
+// void update_simple_text_menu(simple_text_menu *st_menu);
+
+// // Render the simple text menu according to its redraw specs.
+// // If drawing actually occurs 1 will be returned, otherwise 0.
+// uint8_t render_simple_text_menu_nc(simple_text_menu *st_menu);
+
+// // Delete a simple text menu.
+// void del_simple_text_menu(simple_text_menu *st_menu);
 
 #endif

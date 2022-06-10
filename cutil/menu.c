@@ -8,10 +8,28 @@
 #include <cutil/misc.h>
 #include <cutil/cgraphx.h>
 
+// Create a new text menu.
+text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style) {
+    text_menu *menu = safe_malloc(sizeof(text_menu));
+
+    menu->template = tmplt;
+    menu->styles = (buffered_styling *)safe_malloc(sizeof(buffered_styling) * tmplt->len);
+
+    uint8_t i;
+    for (i = 0; i < tmplt->len; i++) {
+        menu->styles[i].buffer_style = NOT_RENDERED;
+        menu->styles[i].screen_style = NOT_RENDERED;
+        menu->styles[i].style = style;
+    }
+
+    return menu;
+}
+
 // Render a single button of a menu.
-void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
+// Always performs redraw, does not rotate styling states.
+static void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
     const text_menu_template *template = menu->template;
-    const cgfx_pane_style *pane_style = template->style_palette[menu->styles[i]];
+    const cgfx_pane_style *pane_style = template->style_palette[menu->styles[i].style];
 
     uint16_t x_p;
     uint8_t y_p; 
@@ -39,110 +57,69 @@ void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
 }
 
 void render_text_menu_nc(text_menu *menu) {
-    uint8_t i;
-    for (i = 0; i < menu->template->len; i++) {
-        render_text_menu_button_nc(menu, i);
-    }
-}
+    buffered_styling *styles = menu->styles;
 
-simple_text_menu *new_simple_text_menu(const text_menu_template *tmplt, 
-    uint8_t s_style, uint8_t ds_style, uint8_t uf_style) {
-    
-    simple_text_menu *st_menu = safe_malloc(sizeof(simple_text_menu));
-
-    st_menu->menu.template = tmplt;
-    st_menu->menu.styles = (uint8_t *)safe_malloc(sizeof(uint8_t) * tmplt->len);
-
-    // Menu starts off as unfocused.
-    uint8_t i;
-    for (i = 0; i < tmplt->len; i++) {
-        st_menu->menu.styles[i] = uf_style;
-    }
-
-    // Store selection styles.
-    st_menu->selection_style = s_style;
-    st_menu->deselection_style = ds_style;
-    st_menu->unfocused_style = uf_style;
-
-    // Default all selections to 0.
-    st_menu->buffer_selection = 0;
-    st_menu->screen_selection = 0;
-    st_menu->selection = 0;
-
-    st_menu->redraw = FULL_REDRAW;
-
-    return st_menu;
-}
-
-void focus_simple_text_menu(simple_text_menu *st_menu) {
-    // TODO...
-}
-
-void unfocus_simple_text_menu(simple_text_menu *st_menu) {
-    uint8_t len = st_menu->menu.template->len;
-
-    uint8_t i;
+    uint8_t i, len = menu->template->len;
     for (i = 0; i < len; i++) {
-        st_menu->menu.styles[i] = st_menu->unfocused_style;
-    }
+        // Only render a button if it needs to be rendered.
+        if (styles[i].buffer_style != styles[i].style) {
+            render_text_menu_button_nc(menu, i);
+        }
 
-    st_menu->redraw = FULL_REDRAW;
+        // Regardless of whether drawing occured, rotate the styles.
+        styles[i].buffer_style = styles[i].screen_style;
+        styles[i].screen_style = styles[i].style;
+    }
 }
 
-void update_simple_text_menu(simple_text_menu *st_menu) {
-    uint8_t format = st_menu->menu.template->format;
+void del_text_menu(text_menu *menu) {
+    free(menu->styles);
+    free(menu);
+}
+
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style) {
+    text_menu *super = new_text_menu(tmplt, ds_style);
+
+    basic_text_menu *bt_menu = safe_malloc(sizeof(basic_text_menu));
+    bt_menu->super = super;
+    bt_menu->selection_style = s_style;
+    bt_menu->deselection_style = ds_style;
+
+    // Defualt to first option selected.
+    bt_menu->selection = 0;
+    super->styles[0].style = s_style;
+}
+
+uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
+    uint8_t format = bt_menu->super->template->format;
 
     if (
         ((format == MENU_VERTICAL && (key_press(c_Up) || key_press(c_8))) ||
         (format == MENU_HORIZONTAL && (key_press(c_Left) || key_press(c_4)))) &&
-        st_menu->selection != 0 
+        bt_menu->selection != 0 
     ) {
-        st_menu->menu.styles[st_menu->selection] = st_menu->deselection_style;
-        st_menu->menu.styles[--(st_menu->selection)] = st_menu->selection_style;
-    } else if (
+        bt_menu->super->styles[bt_menu->selection].style = bt_menu->deselection_style;
+        bt_menu->super->styles[--(bt_menu->selection)].style = bt_menu->selection_style;
+
+        return 1;
+    }
+    
+    if (
         ((format == MENU_VERTICAL && (key_press(c_Down) || key_press(c_5))) ||
         (format == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) &&
-        st_menu->selection != st_menu->menu.template->len - 1
+        bt_menu->selection != bt_menu->super->template->len - 1
     ) {
-        st_menu->menu.styles[st_menu->selection] = st_menu->deselection_style;
-        st_menu->menu.styles[++(st_menu->selection)] = st_menu->selection_style;
-    }
+        bt_menu->super->styles[bt_menu->selection].style = bt_menu->deselection_style;
+        bt_menu->super->styles[++(bt_menu->selection)].style = bt_menu->selection_style;
 
-    // Specify to renderer if redraw must occur.
-    st_menu->redraw = st_menu->selection == st_menu->buffer_selection 
-        ? NO_REDRAW 
-        : PARTIAL_REDRAW;
-}
-
-uint8_t render_simple_text_menu_nc(simple_text_menu *st_menu) {
-    if (st_menu->redraw == FULL_REDRAW) {
-        // Full menu redraw required.
-        render_text_menu_nc(&(st_menu->menu));
-
-        goto ROTATE_SELECTIONS;
-    }
-
-    if (st_menu->redraw == PARTIAL_REDRAW) {
-        // This signifies the selection has changed!
-
-        // Now we are drawing over the buffer.
-        render_text_menu_button_nc(&(st_menu->menu), st_menu->buffer_selection);
-        render_text_menu_button_nc(&(st_menu->menu), st_menu->selection);
-
-        goto ROTATE_SELECTIONS;
+        return 1;
     }
 
     return 0;
-
-ROTATE_SELECTIONS:
-    st_menu->buffer_selection = st_menu->screen_selection;
-    st_menu->screen_selection = st_menu->selection;
-
-    return 1;
 }
 
-void del_simple_text_menu(simple_text_menu *st_menu) {
-    free(st_menu->menu.styles);
-    free(st_menu);
+void del_basic_text_menu(basic_text_menu *bt_menu) {
+    del_text_menu(bt_menu->super);
+    free(bt_menu);
 }
 
