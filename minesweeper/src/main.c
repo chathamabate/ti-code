@@ -24,13 +24,14 @@ static void *enter_game(void) {
     set_malloc_fail_routine(graphics_malloc_fail_routine);
 
     set_repeat_delay(10);
+    srand(rtc_Time()); // Set random seed.
 
     gfx_Begin();
     gfx_SetDrawBuffer();
     gfx_SetPalette(ms_palette, sizeof_ms_palette, 0);
     gfx_SetTransparentColor(0);
 
-    return NULL;
+    return NULL; // No Global state yet.
 }
 
 static void exit_game(void *glb_state) {

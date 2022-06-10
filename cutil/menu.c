@@ -77,17 +77,35 @@ void del_text_menu(text_menu *menu) {
     free(menu);
 }
 
-basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, uint8_t s_style, uint8_t ds_style) {
-    text_menu *super = new_text_menu(tmplt, ds_style);
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, const selection_styling *ss) {
+    text_menu *super = new_text_menu(tmplt, ss->deselection_style);
 
     basic_text_menu *bt_menu = safe_malloc(sizeof(basic_text_menu));
     bt_menu->super = super;
-    bt_menu->selection_style = s_style;
-    bt_menu->deselection_style = ds_style;
+    bt_menu->ss = ss;
 
     // Defualt to first option selected.
     bt_menu->selection = 0;
-    super->styles[0].style = s_style;
+    super->styles[0].style = ss->selection_style;
+
+    return bt_menu;
+}
+
+void focus_basic_text_menu(basic_text_menu *bt_menu) {
+    uint8_t i, len = bt_menu->super->template->len;
+    for (i = 0; i < len; i++) {
+        bt_menu->super->styles[i].style = 
+            i == bt_menu->selection 
+                ? bt_menu->ss->selection_style 
+                : bt_menu->ss->deselection_style;
+    }
+}
+
+void unfocus_basic_text_menu(basic_text_menu *bt_menu) {
+    uint8_t i, len = bt_menu->super->template->len;
+    for (i = 0; i < len; i++) {
+        bt_menu->super->styles[i].style = bt_menu->ss->unfocus_style;
+    }
 }
 
 uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
@@ -98,8 +116,8 @@ uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
         (format == MENU_HORIZONTAL && (key_press(c_Left) || key_press(c_4)))) &&
         bt_menu->selection != 0 
     ) {
-        bt_menu->super->styles[bt_menu->selection].style = bt_menu->deselection_style;
-        bt_menu->super->styles[--(bt_menu->selection)].style = bt_menu->selection_style;
+        bt_menu->super->styles[bt_menu->selection].style = bt_menu->ss->deselection_style;
+        bt_menu->super->styles[--(bt_menu->selection)].style = bt_menu->ss->selection_style;
 
         return 1;
     }
@@ -109,8 +127,8 @@ uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
         (format == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) &&
         bt_menu->selection != bt_menu->super->template->len - 1
     ) {
-        bt_menu->super->styles[bt_menu->selection].style = bt_menu->deselection_style;
-        bt_menu->super->styles[++(bt_menu->selection)].style = bt_menu->selection_style;
+        bt_menu->super->styles[bt_menu->selection].style = bt_menu->ss->deselection_style;
+        bt_menu->super->styles[++(bt_menu->selection)].style = bt_menu->ss->selection_style;
 
         return 1;
     }

@@ -1,5 +1,6 @@
 #include "ms_styles.h"
 
+#include <cutil/menu.h>
 #include "gfx/borders.h"
 
 const cgfx_pane_style PANE_STYLE_0 = {
@@ -26,6 +27,12 @@ const cgfx_pane_style *PANE_STYLE_PALETTE_DATA[PANE_STYLE_PALETTE_LEN] = {
     &PANE_STYLE_0,
     &PANE_STYLE_1,
     &PANE_STYLE_2
+};
+
+const selection_styling MS_MENU_SS = {
+    .deselection_style = 0,
+    .selection_style = 1,
+    .unfocus_style = 2
 };
 
 

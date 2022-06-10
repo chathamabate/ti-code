@@ -9,13 +9,14 @@
 #include <keypadc.h>
 
 #include "ms_styles.h"
+#include "ms_misc.h"
 #include "gfx/logo.h"
 
-#define FOCUSED_KEYS_LEN 10
+#define FOCUSED_KEYS_LEN 6
 
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
-    c_Up, c_Down, c_Left, c_Right, 
-    c_8, c_5, c_4, c_6,
+    c_Up, c_Down, 
+    c_8, c_5,
     c_Enter, c_Clear
 };
 
@@ -29,16 +30,20 @@ static const char *BTN_LABELS[BTN_LABELS_LEN] = {
     "Exit"
 };
 
+#define BTN_WIDTH 128
+
 static const text_menu_template MENU_TEMPLATE = {
     .button_height = 24,
-    .button_width = 128,
+    .button_width = BTN_WIDTH,
     .format = MENU_VERTICAL,
     .label_height_scale = 1,
     .label_width_scale = 1,
     .labels = BTN_LABELS,
     .len = BTN_LABELS_LEN,
     .style_palette = PANE_STYLE_PALETTE,
-    .style_palette_len = PANE_STYLE_PALETTE_LEN
+    .style_palette_len = PANE_STYLE_PALETTE_LEN,
+    .x = (LCD_WIDTH - BTN_WIDTH) / 2,
+    .y = 128
 };
 
 // The local state for the homepage.
@@ -57,11 +62,18 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
     // Allocate the homepage local state.
     homepage_state *hp_state = safe_malloc(sizeof(homepage_state));
 
-    hp_state->bt_menu = new_basic_text_menu(&MENU_TEMPLATE, 1, 0);
-
-    hp_state->redraw = 1;
+    hp_state->bt_menu = new_basic_text_menu(&MENU_TEMPLATE, &MS_MENU_SS);
 
     set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
+
+    // Perform background Render.
+    render_random_tile16_grid(4, 5, 1, 3);
+    cgfx_pane_nc(&PANE_STYLE_0, (320 - 224) / 2, 16, 224, 80);
+    gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16 + (80 - 64) / 2);
+    gfx_BlitBuffer(); // Copy background to the screen.
+    
+    // Signal a menu redraw.
+    hp_state->redraw = 1;
 
     return hp_state;
 }
@@ -74,11 +86,21 @@ static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
     // This includes a kb_Scan().
     scan_focused_keys();
 
-    hp_state->redraw |= update_basic_text_menu(hp_state->bt_menu);
-
-    if (kb_IsDown(kb_KeyClear)) {
-        return NULL; // Exit case.
+    if (key_press(c_Enter)) {
+        switch (hp_state->bt_menu->selection) {
+        case 0: // Play
+            /* code */
+            break;
+        case 1: // Highscores
+            break;
+        case 2: // Instructions
+            break;
+        case 3: // Exit
+            return NULL;
+        }
     }
+
+    hp_state->redraw |= update_basic_text_menu(hp_state->bt_menu);
 
     return &HOMEPAGE;
 }
@@ -92,12 +114,11 @@ static void render_homepage(void *glb_state, void *loc_state) {
         return;
     }
 
-    gfx_FillScreen(0x06);
-    gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16);
-    render_text_menu_nc(&hp_state->bt_menu->menu, 
-        (LCD_WIDTH - hp_state->bt_menu->menu.template->button_width) / 2, 128);
-
+    // Only render the menu.
+    render_text_menu_nc(hp_state->bt_menu->super);
     gfx_SwapDraw();
+
+    hp_state->redraw = 0;
 }
 
 static void *exit_homepage(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {

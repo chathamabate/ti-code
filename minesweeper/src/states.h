@@ -5,13 +5,17 @@
 
 // Global state for the entire game.
 typedef struct {
-    
+
 } ms_glb_state;
 
 extern const loc_life_cycle HOMEPAGE;
 // Homepage has no transition state... 
 // should just be null.
 
+
+extern const loc_life_cycle GAMEMODE;
+// Gamemode has no transition state...
+// should just be null.
 
 
 #endif
