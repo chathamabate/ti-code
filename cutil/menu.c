@@ -78,57 +78,59 @@ void del_text_menu(text_menu *menu) {
 }
 
 basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, const selection_styling *ss) {
-    text_menu *super = new_text_menu(tmplt, ss->deselection_style);
+    // Start unfocused.
+    text_menu *super = new_text_menu(tmplt, ss->unfocus_style);
 
-    basic_text_menu *bt_menu = safe_malloc(sizeof(basic_text_menu));
-    bt_menu->super = super;
-    bt_menu->ss = ss;
+    basic_text_menu *tt_menu = safe_malloc(sizeof(basic_text_menu));
+    tt_menu->super = super;
+    tt_menu->ss = ss;
 
     // Defualt to first option selected.
-    bt_menu->selection = 0;
-    super->styles[0].style = ss->selection_style;
+    tt_menu->selection = 0;
 
-    return bt_menu;
+    return tt_menu;
 }
 
-void focus_basic_text_menu(basic_text_menu *bt_menu) {
-    uint8_t i, len = bt_menu->super->template->len;
+void focus_basic_text_menu(basic_text_menu *tt_menu) {
+    uint8_t i, len = tt_menu->super->template->len;
     for (i = 0; i < len; i++) {
-        bt_menu->super->styles[i].style = 
-            i == bt_menu->selection 
-                ? bt_menu->ss->selection_style 
-                : bt_menu->ss->deselection_style;
+        tt_menu->super->styles[i].style = tt_menu->ss->deselection_style;
+    }
+
+    tt_menu->super->styles[tt_menu->selection].style = tt_menu->ss->selection_style;
+}
+
+void unfocus_basic_text_menu(basic_text_menu *tt_menu) {
+    uint8_t i, len = tt_menu->super->template->len;
+    for (i = 0; i < len; i++) {
+        tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
     }
 }
 
-void unfocus_basic_text_menu(basic_text_menu *bt_menu) {
-    uint8_t i, len = bt_menu->super->template->len;
-    for (i = 0; i < len; i++) {
-        bt_menu->super->styles[i].style = bt_menu->ss->unfocus_style;
-    }
-}
+// If a key signaling previous was hit.
+#define advance_previous(format) \
+    (((format) == MENU_VERTICAL && (key_press(c_Up) || key_press(c_8))) || \
+    ((format) == MENU_HORIZONTAL && (key_press(c_Left) || key_press(c_4))))
 
-uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
-    uint8_t format = bt_menu->super->template->format;
+// If a key signaling next was hit.
+#define advance_next(format) \
+    (((format) == MENU_VERTICAL && (key_press(c_Down) || key_press(c_5))) || \
+    ((format) == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) 
 
-    if (
-        ((format == MENU_VERTICAL && (key_press(c_Up) || key_press(c_8))) ||
-        (format == MENU_HORIZONTAL && (key_press(c_Left) || key_press(c_4)))) &&
-        bt_menu->selection != 0 
-    ) {
-        bt_menu->super->styles[bt_menu->selection].style = bt_menu->ss->deselection_style;
-        bt_menu->super->styles[--(bt_menu->selection)].style = bt_menu->ss->selection_style;
+uint8_t update_basic_text_menu(basic_text_menu *tt_menu) {
+    uint8_t format = tt_menu->super->template->format;
+    buffered_styling *styles = tt_menu->super->styles;
+
+    if (advance_previous(format) && tt_menu->selection != 0) {
+        styles[tt_menu->selection].style = tt_menu->ss->deselection_style;
+        styles[--(tt_menu->selection)].style = tt_menu->ss->selection_style;
 
         return 1;
     }
     
-    if (
-        ((format == MENU_VERTICAL && (key_press(c_Down) || key_press(c_5))) ||
-        (format == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) &&
-        bt_menu->selection != bt_menu->super->template->len - 1
-    ) {
-        bt_menu->super->styles[bt_menu->selection].style = bt_menu->ss->deselection_style;
-        bt_menu->super->styles[++(bt_menu->selection)].style = bt_menu->ss->selection_style;
+    if (advance_next(format) && tt_menu->selection != tt_menu->super->template->len - 1) {
+        styles[tt_menu->selection].style = tt_menu->ss->deselection_style;
+        styles[++(tt_menu->selection)].style = tt_menu->ss->selection_style;
 
         return 1;
     }
@@ -139,5 +141,86 @@ uint8_t update_basic_text_menu(basic_text_menu *bt_menu) {
 void del_basic_text_menu(basic_text_menu *bt_menu) {
     del_text_menu(bt_menu->super);
     free(bt_menu);
+}
+
+toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const selection_styling *ss) {
+    // Start unfocused.
+    text_menu *super = new_text_menu(tmplt, ss->unfocus_style);
+
+    toggle_text_menu *tt_menu = safe_malloc(sizeof(toggle_text_menu));
+    tt_menu->super = super;
+    tt_menu->ss = ss;
+
+    tt_menu->selection = 0;
+    tt_menu->toggle = tmplt->len - 1;
+
+    // Deselection will be style of the unfocused toggle.
+    super->styles[tmplt->len - 1].style = ss->deselection_style;
+
+    return tt_menu;
+}
+
+void focus_toggle_text_menu(toggle_text_menu *tt_menu) {
+    uint8_t i, len = tt_menu->super->template->len;
+    for (i = 0; i < len; i++) {
+        tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
+    }
+    
+    tt_menu->super->styles[tt_menu->toggle].style = tt_menu->ss->selection_style;
+    tt_menu->super->styles[tt_menu->selection].style = tt_menu->ss->deselection_style;
+}
+
+void unfocus_toggle_text_menu(toggle_text_menu *tt_menu) {
+    uint8_t i, len = tt_menu->super->template->len;
+    for (i = 0; i < len; i++) {
+        tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
+    }
+
+    tt_menu->super->styles[tt_menu->toggle].style = tt_menu->ss->selection_style;
+}
+
+uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
+    uint8_t format = tt_menu->super->template->format;
+    buffered_styling *styles = tt_menu->super->styles;
+
+    if (key_press(c_Enter)) {
+        if (tt_menu->selection == tt_menu->toggle) {
+            return 0;
+        }
+        
+        // Toggle is being changed!
+        styles[tt_menu->toggle].style = tt_menu->ss->unfocus_style;
+
+        // NOTE, since the selection must be over the toggle when 
+        // enter is pressed, no styling happens here for the new toggle.
+        tt_menu->toggle = tt_menu->selection;
+
+        return 1;
+    }
+
+    if (advance_previous(format) && tt_menu->selection != 0) {
+        styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
+            ? tt_menu->ss->selection_style : tt_menu->ss->unfocus_style;
+
+        styles[--(tt_menu->selection)].style = tt_menu->ss->deselection_style;
+
+        return 1;
+    }
+    
+    if (advance_next(format) && tt_menu->selection != tt_menu->super->template->len - 1) {
+        styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
+            ? tt_menu->ss->selection_style : tt_menu->ss->unfocus_style;
+
+        styles[++(tt_menu->selection)].style = tt_menu->ss->deselection_style;
+
+        return 1;
+    }
+
+    return 0;
+}
+
+void del_toggle_text_menu(toggle_text_menu *tt_menu) {
+    del_text_menu(tt_menu->super);
+    free(tt_menu);
 }
 

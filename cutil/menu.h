@@ -95,4 +95,29 @@ uint8_t update_basic_text_menu(basic_text_menu *bt_menu);
 // Delete a basic text menu.
 void del_basic_text_menu(basic_text_menu *bt_menu);
 
+typedef struct {
+    text_menu *super;
+    const selection_styling *ss;
+
+    uint8_t toggle;
+    uint8_t selection;
+} toggle_text_menu;
+
+// create a new toggle menu.
+toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const selection_styling *ss);
+
+// Focus and unfocus a toggle text menu.
+void focus_toggle_text_menu(toggle_text_menu *tt_menu);
+void unfocus_toggle_text_menu(toggle_text_menu *tt_menu);
+
+// Update a toggle text menu.
+// Returns 1 if there's a change, 0 otherwise.
+uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu);
+
+// Delete a toggle menu.
+void del_toggle_text_menu(toggle_text_menu *tt_menu);
+
+// slide pane code.
+// This is a pane.
+
 #endif

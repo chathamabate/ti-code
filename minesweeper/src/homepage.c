@@ -12,12 +12,12 @@
 #include "ms_misc.h"
 #include "gfx/logo.h"
 
-#define FOCUSED_KEYS_LEN 6
+#define FOCUSED_KEYS_LEN 5
 
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
     c_Up, c_Down, 
     c_8, c_5,
-    c_Enter, c_Clear
+    c_Enter
 };
 
 #define BTN_LABELS_LEN 4
@@ -64,10 +64,13 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
 
     hp_state->bt_menu = new_basic_text_menu(&MENU_TEMPLATE, &MS_MENU_SS);
 
+    // Only menu on the screen... focus it from the get go.
+    focus_basic_text_menu(hp_state->bt_menu);
+
     set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
 
     // Perform background Render.
-    render_random_tile16_grid(4, 5, 1, 3);
+    render_random_bg();
     cgfx_pane_nc(&PANE_STYLE_0, (320 - 224) / 2, 16, 224, 80);
     gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16 + (80 - 64) / 2);
     gfx_BlitBuffer(); // Copy background to the screen.
@@ -89,8 +92,7 @@ static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
     if (key_press(c_Enter)) {
         switch (hp_state->bt_menu->selection) {
         case 0: // Play
-            /* code */
-            break;
+            return &GAMEMODE;
         case 1: // Highscores
             break;
         case 2: // Instructions

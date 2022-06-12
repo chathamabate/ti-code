@@ -64,34 +64,52 @@ kb_lkey_t c_key_map[c_NumKeys] = {
     kb_KeyDown,     
     kb_KeyLeft,     
     kb_KeyRight,    
-    kb_KeyUp,       
+    kb_KeyUp
 };
+
+// Way of noting the a key is unfocused in the key map.
+#define UNFOCUSED c_NumKeys
+
+// Hacky solution for initializing the key map to all UNFOCUSED.
+#define _UF_3   UNFOCUSED, UNFOCUSED, UNFOCUSED
+#define _UF_12  _UF_3, _UF_3, _UF_3, _UF_3 
+#define _UF_48  _UF_12, _UF_12, _UF_12, _UF_12
+#define _UF_49  _UF_48, UNFOCUSED
 
 static uint8_t num_focused_keys;
 focused_key *focused_keys = NULL;
-uint8_t key_map[c_NumKeys];
+uint8_t key_map[c_NumKeys] = { _UF_49 };
 uint8_t repeat_delay = 1; // Starts with no delay.
 
 void set_focused_keys(const c_key_t *keys, uint8_t num_keys) {
-    if (!focused_keys) {
-        free(focused_keys);
+    focused_key *focused_keys_temp = focused_keys;
+    uint8_t key_map_temp[c_NumKeys];
+
+    // First, copy key_map into key_map_temp.
+    uint8_t i;
+    for (i = 0; i < c_NumKeys; i++) {
+        key_map_temp[i] = key_map[i];
+        key_map[i] = UNFOCUSED; // Unfocus all keys in the real key map.
     }
 
+    // Create new focused keys array.
     num_focused_keys = num_keys;
 
-    // Way of seeting no focused keys...
-    if (keys == NULL || num_keys == 0) {
-        focused_keys = NULL;
-    }
-
+    // Will be NULL if num_focused_keys == 0.
     focused_keys = (focused_key *)safe_malloc(sizeof(focused_key) * num_keys);
 
-    uint8_t i;
-    for (i = 0; i < num_keys; i++) {
+    for (i = 0; i < num_focused_keys; i++) {
         focused_keys[i].key = keys[i];
-        focused_keys[i].count = 0;
+        focused_keys[i].count = key_map_temp[keys[i]] == UNFOCUSED 
+            ? 0 
+            : focused_keys_temp[key_map_temp[keys[i]]].count;
 
         key_map[keys[i]] = i;
+    }
+
+    // Finally, free the old focused keys array.
+    if (!focused_keys_temp) {
+        free(focused_keys_temp);
     }
 }
 
