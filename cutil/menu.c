@@ -238,15 +238,30 @@ slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render) {
     s_pane->slide.buffer_render = UNRENDERED_SLIDE;
     s_pane->slide.screen_render = UNRENDERED_SLIDE;
 
+    // To be rendered first time around.
     s_pane->slide.actual = init_render;
+
+    return s_pane;
 }
 
 void render_slide_pane_nc(slide_pane *s_pane, void *data) {
-    // TODO Finish me.
-}
+    const slide_pane_template *tmplt = s_pane->tmplt;
 
-void del_slide_pane(slide_pane *s_pane) {
-    // Lucky for use slide panes have only 1 slide...
-    // thus no real dynamic parts.
-    free(s_pane);
+    if (!equ_render(s_pane->slide.actual, s_pane->slide.buffer_render)) {
+        // In this case a re render is needed.
+
+        // Render background.
+        cgfx_pane_nc(
+                tmplt->style_palette[s_pane->slide.actual.bg_style],
+                tmplt->x, tmplt->y,
+                tmplt->pane_width, tmplt->pane_height
+        );
+
+        // Render foreground.
+        (tmplt->slide_renderers[s_pane->slide.actual.fg_style])(tmplt, data);
+    }
+
+    // No matter what, rotate buffer and screen renders.
+    s_pane->slide.buffer_render = s_pane->slide.screen_render;
+    s_pane->slide.screen_render = s_pane->slide.actual;
 }

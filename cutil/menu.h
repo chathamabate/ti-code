@@ -122,18 +122,16 @@ void del_toggle_text_menu(toggle_text_menu *tt_menu);
 // Each state of the pane will have a background pane rendered.
 // The rest will be up to the user.
 
-// This is the type of a function which renders the foreground of a 
-// slide. tmplt will be the template of the slide_pane.
-// Data will be whatever the user wants.
-typedef void (*slide_renderer)(struct slide_pane_template_data *tmplt, void *data);
-
 // Template for slide panes.
 typedef struct slide_pane_template_data {
     // Pane Background styles.
     const cgfx_pane_style **style_palette;
     uint8_t style_palette_len;
 
-    slide_renderer *slide_renderers;    
+    // Slide renderers render the foreground of a slide.
+    // tmplt passed in will be this tmplt.
+    // data, will be whatever the user wants.
+    void (**slide_renderers)(const struct slide_pane_template_data *tmplt, void *data);
     uint8_t len;    // Number of slides.
     
     // Coordinates of the menu.
@@ -156,6 +154,12 @@ typedef struct {
 // Slide who's foreground and background have not been rendered.
 extern const render UNRENDERED_SLIDE;
 
+#define OUT_OF_DATE_SLIDE UNRENDERED_SLIDE
+
+#define equ_render(r1, r2) \
+    ((r1).bg_style == (r2).bg_style && (r1).fg_style == (r2).fg_style)
+
+
 // Similar buffer management seen in the text menu
 // above...
 typedef struct {
@@ -177,8 +181,8 @@ slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render);
 // Rotate its rendering states.
 void render_slide_pane_nc(slide_pane *s_pane, void *data);
 
-// Free the slide pane and its sub parts.
-void del_slide_pane(slide_pane *s_pane);
+// s_pane has no large dynamic parts!
+#define del_slide_pane(s_pane) free(s_pane)
 
 
 #endif
