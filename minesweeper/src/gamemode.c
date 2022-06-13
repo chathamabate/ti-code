@@ -23,6 +23,16 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
     c_Enter, c_Clear
 };
 
+static const slide_pane_template DIFF_PANE_TEMPLATE = {
+    .x = align(1),
+    .y = align(4),
+    .pane_height = align(7),
+    .pane_width = align(18),
+    
+    .style_palette = PANE_STYLE_PALETTE,
+    .style_palette_len = PANE_STYLE_PALETTE_LEN,
+};
+
 #define GM_MENU_LABELS_LEN 3
 
 static const char *GM_MENU_LABELS[GM_MENU_LABELS_LEN] = {
@@ -70,6 +80,9 @@ static const text_menu_template PLAY_MENU_TEMPLATE = {
 #define PLAY_MENU 1
 
 typedef struct {
+    // Display difficulties in this pane.
+    slide_pane *diff_pane;
+
     toggle_text_menu *gm_menu;
     basic_text_menu *play_menu;
 
