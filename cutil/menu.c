@@ -224,3 +224,29 @@ void del_toggle_text_menu(toggle_text_menu *tt_menu) {
     free(tt_menu);
 }
 
+// Slide Pane code.
+
+const render UNRENDERED_SLIDE = {
+    .bg_style = NOT_RENDERED,
+    .fg_style = NOT_RENDERED
+};
+
+slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render) {
+    slide_pane *s_pane = safe_malloc(sizeof(slide_pane)); 
+    s_pane->tmplt = tmp;
+
+    s_pane->slide.buffer_render = UNRENDERED_SLIDE;
+    s_pane->slide.screen_render = UNRENDERED_SLIDE;
+
+    s_pane->slide.actual = init_render;
+}
+
+void render_slide_pane_nc(slide_pane *s_pane, void *data) {
+    // TODO Finish me.
+}
+
+void del_slide_pane(slide_pane *s_pane) {
+    // Lucky for use slide panes have only 1 slide...
+    // thus no real dynamic parts.
+    free(s_pane);
+}

@@ -117,7 +117,68 @@ uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu);
 // Delete a toggle menu.
 void del_toggle_text_menu(toggle_text_menu *tt_menu);
 
-// slide pane code.
-// This is a pane.
+// Slide pane code.
+// Slide panes are panes which can render multiple ways.
+// Each state of the pane will have a background pane rendered.
+// The rest will be up to the user.
+
+// This is the type of a function which renders the foreground of a 
+// slide. tmplt will be the template of the slide_pane.
+// Data will be whatever the user wants.
+typedef void (*slide_renderer)(struct slide_pane_template_data *tmplt, void *data);
+
+// Template for slide panes.
+typedef struct slide_pane_template_data {
+    // Pane Background styles.
+    const cgfx_pane_style **style_palette;
+    uint8_t style_palette_len;
+
+    slide_renderer *slide_renderers;    
+    uint8_t len;    // Number of slides.
+    
+    // Coordinates of the menu.
+    uint16_t x;
+    uint8_t y;
+
+    // Dimensions of the menu.
+    uint16_t pane_width;
+    uint8_t pane_height; 
+} slide_pane_template;
+
+typedef struct {
+    // Index into the style palette.
+    uint8_t bg_style;      
+
+    // Index into the slide renderers array.
+    uint8_t fg_style;
+} render;
+
+// Slide who's foreground and background have not been rendered.
+extern const render UNRENDERED_SLIDE;
+
+// Similar buffer management seen in the text menu
+// above...
+typedef struct {
+    render screen_render;
+    render buffer_render;
+    render actual;
+} buffered_render;
+
+// Slide pane structure. Akin to text_menu above.
+typedef struct {
+    const slide_pane_template *tmplt;   
+    buffered_render slide;
+} slide_pane;
+
+// Dynamically create slide pane.
+slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render);
+
+// Render the slide pane.
+// Rotate its rendering states.
+void render_slide_pane_nc(slide_pane *s_pane, void *data);
+
+// Free the slide pane and its sub parts.
+void del_slide_pane(slide_pane *s_pane);
+
 
 #endif
