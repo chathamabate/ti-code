@@ -1,6 +1,7 @@
 
 #include "states.h"
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <tice.h>
 #include <graphx.h>
