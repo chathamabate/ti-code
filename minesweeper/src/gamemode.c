@@ -1,4 +1,3 @@
-
 #include "states.h"
 
 #include <stdint.h>
@@ -12,6 +11,7 @@
 
 #include "ms_styles.h"
 #include "ms_misc.h"
+#include "minesweeper.h"
 
 // Game mode code..
 
@@ -22,6 +22,33 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
     c_8, c_5, c_4, c_6,
     c_Enter, c_Clear
 };
+
+#define INFO_SPACER 4
+#define DIFF_H_SCALE 2
+#define DIFF_W_SCALE 1
+#define INFO_H_SCALE 1
+#define INFO_W_SCALE 1
+
+#define INFO_HEIGHT (DIFF_H_SCALE + (2 * INFO_H_SCALE) + (2 * INFO_SPACER))
+
+static void render_difficulty_info(const slide_pane_template *tmplt,
+        const char *diff_name, const difficulty *diff) {
+    uint16_t x_p;
+    uint8_t y_p;
+
+    gfx_SetTextScale(DIFF_W_SCALE, DIFF_H_SCALE);    
+    x_p = tmplt->x + (tmplt->pane_width - gfx_GetStringWidth(diff_name)) / 2;
+    y_p = tmplt->y + (tmplt->pane_height - INFO_HEIGHT) / 2;
+
+    // Print difficulty name.
+    gfx_PrintStringXY(diff_name, x_p, y_p);
+
+    // Buffer for creating info strings.
+    // 30 is by far big enough.
+    char buff[30];
+
+    gfx_SetTextScale(INFO_W_SCALE, INFO_H_SCALE);
+}
 
 static const slide_pane_template DIFF_PANE_TEMPLATE = {
     .x = align(1),
