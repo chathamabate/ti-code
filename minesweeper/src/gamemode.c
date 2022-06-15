@@ -1,5 +1,6 @@
 #include "states.h"
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <tice.h>
@@ -29,7 +30,7 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
 #define INFO_H_SCALE 1
 #define INFO_W_SCALE 1
 
-#define INFO_HEIGHT (DIFF_H_SCALE + (2 * INFO_H_SCALE) + (2 * INFO_SPACER))
+#define INFO_HEIGHT (8 * DIFF_H_SCALE + (2 * 8 * INFO_H_SCALE) + (2 * INFO_SPACER))
 
 static void render_difficulty_info(const slide_pane_template *tmplt,
         const char *diff_name, const difficulty *diff) {
@@ -37,8 +38,8 @@ static void render_difficulty_info(const slide_pane_template *tmplt,
     uint8_t y_p;
 
     gfx_SetTextScale(DIFF_W_SCALE, DIFF_H_SCALE);    
-    x_p = tmplt->x + (tmplt->pane_width - gfx_GetStringWidth(diff_name)) / 2;
-    y_p = tmplt->y + (tmplt->pane_height - INFO_HEIGHT) / 2;
+    x_p = slide_pane_center_x(tmplt, diff_name); 
+    y_p = slide_pane_center_y(tmplt, INFO_HEIGHT);
 
     // Print difficulty name.
     gfx_PrintStringXY(diff_name, x_p, y_p);
@@ -48,7 +49,47 @@ static void render_difficulty_info(const slide_pane_template *tmplt,
     char buff[30];
 
     gfx_SetTextScale(INFO_W_SCALE, INFO_H_SCALE);
+
+    // Print grid width and height.
+    sprintf(buff, "%d x %d", diff->grid_width, diff->grid_height);
+
+    x_p = slide_pane_center_x(tmplt, buff);
+    y_p += INFO_SPACER + DIFF_H_SCALE * 8;
+    gfx_PrintStringXY(buff, x_p, y_p);
+
+    // Print number of mines in the grid.
+    sprintf(buff, "%d Mines", diff->mines);
+
+    x_p = slide_pane_center_x(tmplt, buff);
+    y_p += INFO_SPACER + INFO_H_SCALE * 8;
+    gfx_PrintStringXY(buff, x_p, y_p);
 }
+
+static void easy_diff_pane_renderer(const slide_pane_template *tmplt, void *data) {
+    (void)data;
+
+    render_difficulty_info(tmplt, "Easy", &EASY);
+}
+
+static void medium_diff_pane_renderer(const slide_pane_template *tmplt, void *data) {
+    (void)data;
+
+    render_difficulty_info(tmplt, "Medium", &MEDIUM);
+}
+
+static void hard_diff_pane_renderer(const slide_pane_template *tmplt, void *data) {
+    (void)data;
+
+    render_difficulty_info(tmplt, "Hard", &HARD);
+}
+
+#define DIFF_RENDERERS_LEN 3
+
+static const slide_renderer DIFF_RENDERERS[DIFF_RENDERERS_LEN] = {
+    easy_diff_pane_renderer,
+    medium_diff_pane_renderer,
+    hard_diff_pane_renderer
+};
 
 static const slide_pane_template DIFF_PANE_TEMPLATE = {
     .x = align(1),
@@ -58,6 +99,9 @@ static const slide_pane_template DIFF_PANE_TEMPLATE = {
     
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
+
+    .slide_renderers = DIFF_RENDERERS,
+    .len = DIFF_RENDERERS_LEN
 };
 
 #define GM_MENU_LABELS_LEN 3
@@ -68,6 +112,10 @@ static const char *GM_MENU_LABELS[GM_MENU_LABELS_LEN] = {
 
 #define MENU_BTN_WIDTH 96 
 #define MENU_BTN_HEIGHT 32
+
+#define EASY_DIFF_IND 0
+#define MEDIUM_DIFF_IND 1
+#define HARD_DIFF_IND 2
 
 static const text_menu_template GM_MENU_TEMPLATE = {
     .button_height = MENU_BTN_HEIGHT,
@@ -130,17 +178,25 @@ static void *enter_gamemode(void *glb_state, void *trans_state) {
 
     gm_state->gm_menu = new_toggle_text_menu(&GM_MENU_TEMPLATE, &MS_MENU_SS);
     focus_toggle_text_menu(gm_state->gm_menu);
-    gm_state->focused_menu = GM_MENU;
+
+    const render INIT_RENDER = {
+        .bg_style = gm_state->gm_menu->selection == gm_state->gm_menu->toggle 
+            ? 1 : 0,
+        .fg_style = gm_state->gm_menu->selection
+    };
+
+    gm_state->diff_pane = new_slide_pane(&DIFF_PANE_TEMPLATE, INIT_RENDER);
 
     gm_state->play_menu = new_basic_text_menu(&PLAY_MENU_TEMPLATE, &MS_MENU_SS);
 
-    set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
-
+    // Render random background.
     render_random_bg();
-    // cgfx_pane_nc(&PANE_STYLE_0, align(1), align(4), align(18), align(7));
     gfx_BlitBuffer();
 
     gm_state->redraw = 1;
+
+    set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
+    gm_state->focused_menu = GM_MENU;
 
     return gm_state;
 }
@@ -179,9 +235,20 @@ static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
         return &GAMEMODE;
     }
 
-    gm_state->redraw |= gm_state->focused_menu == PLAY_MENU 
-        ? update_basic_text_menu(gm_state->play_menu)
-        : update_toggle_text_menu(gm_state->gm_menu);
+    if (gm_state->focused_menu == GM_MENU) {
+        uint8_t toggle_change = update_toggle_text_menu(gm_state->gm_menu);
+
+        if (toggle_change) {
+            gm_state->diff_pane->slide.actual.bg_style = 
+                gm_state->gm_menu->selection == gm_state->gm_menu->toggle ? 1 : 0;
+
+            gm_state->diff_pane->slide.actual.fg_style = gm_state->gm_menu->selection;
+        }
+
+        gm_state->redraw |= toggle_change;
+    } else {
+        gm_state->redraw |= update_basic_text_menu(gm_state->play_menu); 
+    }
 
     return &GAMEMODE;
 }
@@ -196,6 +263,7 @@ static void render_gamemode(void *glb_state, void *loc_state) {
     }
     
     render_text_menu_nc(gm_state->gm_menu->super);
+    render_slide_pane_nc(gm_state->diff_pane, NULL);
     render_text_menu_nc(gm_state->play_menu->super);
     gfx_SwapDraw();
 
@@ -209,6 +277,7 @@ static void *exit_gamemode(void *glb_state, void *loc_state, const loc_life_cycl
     gamemode_state *gm_state = (gamemode_state *)loc_state;
 
     del_toggle_text_menu(gm_state->gm_menu);
+    del_slide_pane(gm_state->diff_pane);
     del_basic_text_menu(gm_state->play_menu);
     free(gm_state);
 

@@ -151,6 +151,7 @@ toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const se
     tt_menu->super = super;
     tt_menu->ss = ss;
 
+    // Arbitrary defualt selection and toggle.
     tt_menu->selection = 0;
     tt_menu->toggle = tmplt->len - 1;
 

@@ -131,9 +131,9 @@ typedef struct slide_pane_template_data {
     // Slide renderers render the foreground of a slide.
     // tmplt passed in will be this tmplt.
     // data, will be whatever the user wants.
-    // I would like to make this an array of constant pointers...
-    // but, can't seem to figure this out right now :(
-    void (**slide_renderers)(const struct slide_pane_template_data *tmplt, void *data);
+    void (* const *slide_renderers)
+        (const struct slide_pane_template_data *tmplt, void *data);
+
     uint8_t len;    // Number of slides.
     
     // Coordinates of the menu.
@@ -144,6 +144,14 @@ typedef struct slide_pane_template_data {
     uint16_t pane_width;
     uint8_t pane_height; 
 } slide_pane_template;
+
+typedef void (*slide_renderer)(const slide_pane_template *tmplt, void *data);
+
+#define slide_pane_center_x(tmplt, text) \
+    ((tmplt)->x + ((tmplt)->pane_width - gfx_GetStringWidth(text)) / 2)
+
+#define slide_pane_center_y(tmplt, height) \
+    ((tmplt)->y + ((tmplt)->pane_height - height) / 2)
 
 typedef struct {
     // Index into the style palette.

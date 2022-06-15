@@ -15,6 +15,6 @@ typedef struct {
     // difficulties.
 } difficulty;
 
-extern const difficulty BEGINNER, INTERMEDIATE, EXPERT;
+extern const difficulty EASY, MEDIUM, HARD;
 
 #endif
