@@ -30,9 +30,9 @@ const cgfx_pane_style *PANE_STYLE_PALETTE_DATA[PANE_STYLE_PALETTE_LEN] = {
 };
 
 const selection_styling MS_MENU_SS = {
-    .deselection_style = 0,
-    .selection_style = 1,
-    .unfocus_style = 2
+    .deselection_style = LIGHT_BLUE,
+    .selection_style = GOLD,
+    .unfocus_style = BLACK 
 };
 
 

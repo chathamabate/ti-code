@@ -47,7 +47,20 @@ const glb_life_cycle GLOBAL_LC = {
     .exit = exit_game
 };
 
+const char * const A = "A";
+const char * const B = "B";
+
+const char *C[] = {A, B};
+
+const char **D = C;
+
 int main(void) {
+    const char **D = NULL;
+
+    D[0] = "HELLO";
+    D[0][0] = 'a';
+
+    C[1] = "C:";
     run_game(50, &GLOBAL_LC, &HOMEPAGE);
 
     return 0;

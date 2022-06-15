@@ -26,7 +26,7 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
 
 #define INFO_SPACER 4
 #define DIFF_H_SCALE 2
-#define DIFF_W_SCALE 1
+#define DIFF_W_SCALE 1 
 #define INFO_H_SCALE 1
 #define INFO_W_SCALE 1
 
@@ -92,10 +92,10 @@ static const slide_renderer DIFF_RENDERERS[DIFF_RENDERERS_LEN] = {
 };
 
 static const slide_pane_template DIFF_PANE_TEMPLATE = {
-    .x = align(1),
-    .y = align(4),
-    .pane_height = align(7),
-    .pane_width = align(18),
+    .x = align(4),
+    .y = align(5),
+    .pane_height = align(5),
+    .pane_width = align(12),
     
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
@@ -181,7 +181,7 @@ static void *enter_gamemode(void *glb_state, void *trans_state) {
 
     const render INIT_RENDER = {
         .bg_style = gm_state->gm_menu->selection == gm_state->gm_menu->toggle 
-            ? 1 : 0,
+            ? GOLD : LIGHT_BLUE,
         .fg_style = gm_state->gm_menu->selection
     };
 
@@ -201,6 +201,13 @@ static void *enter_gamemode(void *glb_state, void *trans_state) {
     return gm_state;
 }
 
+// Update the difficulty pane macro.
+#define update_diff_pane(gm_state) \
+    (gm_state)->diff_pane->slide.actual.bg_style = \
+        (gm_state)->gm_menu->selection == (gm_state)->gm_menu->toggle \
+           ? GOLD : LIGHT_BLUE; \
+    (gm_state)->diff_pane->slide.actual.fg_style = (gm_state)->gm_menu->selection;
+
 static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
     (void)glb_state;
     
@@ -213,22 +220,30 @@ static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
         return &HOMEPAGE;
     }
 
+    // Move from gamemode menu to play menu.
     if ((key_press(c_Down) || key_press(c_5)) && gm_state->focused_menu == GM_MENU) {
         unfocus_toggle_text_menu(gm_state->gm_menu);
 
         focus_basic_text_menu(gm_state->play_menu);
         gm_state->focused_menu = PLAY_MENU;
 
+        // Here just display the toggle.
+        gm_state->diff_pane->slide.actual.bg_style = BLACK;
+        gm_state->diff_pane->slide.actual.fg_style = gm_state->gm_menu->toggle;
+
         gm_state->redraw = 1;
 
         return &GAMEMODE;
     }
 
+    // Move from play menu to gamemode menu.
     if ((key_press(c_Up) || key_press(c_8)) && gm_state->focused_menu == PLAY_MENU) {
         unfocus_basic_text_menu(gm_state->play_menu);
 
         focus_toggle_text_menu(gm_state->gm_menu);
         gm_state->focused_menu = GM_MENU;
+
+        update_diff_pane(gm_state);
 
         gm_state->redraw = 1;
 
@@ -239,10 +254,7 @@ static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
         uint8_t toggle_change = update_toggle_text_menu(gm_state->gm_menu);
 
         if (toggle_change) {
-            gm_state->diff_pane->slide.actual.bg_style = 
-                gm_state->gm_menu->selection == gm_state->gm_menu->toggle ? 1 : 0;
-
-            gm_state->diff_pane->slide.actual.fg_style = gm_state->gm_menu->selection;
+            update_diff_pane(gm_state);
         }
 
         gm_state->redraw |= toggle_change;

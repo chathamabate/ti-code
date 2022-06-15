@@ -4,6 +4,10 @@
 #include <cutil/cgraphx.h>
 #include <cutil/menu.h>
 
+#define LIGHT_BLUE  0
+#define GOLD        1
+#define BLACK       2
+
 extern const cgfx_pane_style PANE_STYLE_0;
 extern const cgfx_pane_style PANE_STYLE_1;
 extern const cgfx_pane_style PANE_STYLE_2;  

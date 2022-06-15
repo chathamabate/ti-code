@@ -143,6 +143,21 @@ void del_basic_text_menu(basic_text_menu *bt_menu) {
     free(bt_menu);
 }
 
+// NOTE : 
+// This is a little confusing...
+// But all toggle menus will follow the following stylings...
+//
+// When Focused...
+// toggle : selection_style
+// selection : deselection_style
+// other : unfocus_style
+//
+// (If toggle = selection, then selection_style)
+//
+// When Unfocused...
+// toggle : selection_style
+// other : unfocus_style
+
 toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const selection_styling *ss) {
     // Start unfocused.
     text_menu *super = new_text_menu(tmplt, ss->unfocus_style);
@@ -155,8 +170,8 @@ toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const se
     tt_menu->selection = 0;
     tt_menu->toggle = tmplt->len - 1;
 
-    // Deselection will be style of the unfocused toggle.
-    super->styles[tmplt->len - 1].style = ss->deselection_style;
+    // Selection will be style of the unfocused toggle.
+    super->styles[tmplt->len - 1].style = ss->selection_style;
 
     return tt_menu;
 }
@@ -167,8 +182,8 @@ void focus_toggle_text_menu(toggle_text_menu *tt_menu) {
         tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
     }
     
-    tt_menu->super->styles[tt_menu->toggle].style = tt_menu->ss->selection_style;
     tt_menu->super->styles[tt_menu->selection].style = tt_menu->ss->deselection_style;
+    tt_menu->super->styles[tt_menu->toggle].style = tt_menu->ss->selection_style;
 }
 
 void unfocus_toggle_text_menu(toggle_text_menu *tt_menu) {
@@ -183,6 +198,7 @@ void unfocus_toggle_text_menu(toggle_text_menu *tt_menu) {
 uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
     uint8_t format = tt_menu->super->template->format;
     buffered_styling *styles = tt_menu->super->styles;
+    const selection_styling *ss = tt_menu->ss;
 
     if (key_press(c_Enter)) {
         if (tt_menu->selection == tt_menu->toggle) {
@@ -190,20 +206,22 @@ uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
         }
         
         // Toggle is being changed!
-        styles[tt_menu->toggle].style = tt_menu->ss->unfocus_style;
+        styles[tt_menu->toggle].style = ss->unfocus_style;
 
-        // NOTE, since the selection must be over the toggle when 
-        // enter is pressed, no styling happens here for the new toggle.
         tt_menu->toggle = tt_menu->selection;
+        styles[tt_menu->toggle].style = ss->selection_style;
 
         return 1;
     }
 
     if (advance_previous(format) && tt_menu->selection != 0) {
         styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
-            ? tt_menu->ss->selection_style : tt_menu->ss->unfocus_style;
+            ? ss->selection_style : ss->unfocus_style;
 
-        styles[--(tt_menu->selection)].style = tt_menu->ss->deselection_style;
+        tt_menu->selection--;
+
+        styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle
+            ? ss->selection_style : ss->deselection_style;
 
         return 1;
     }
@@ -212,7 +230,10 @@ uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
         styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
             ? tt_menu->ss->selection_style : tt_menu->ss->unfocus_style;
 
-        styles[++(tt_menu->selection)].style = tt_menu->ss->deselection_style;
+        tt_menu->selection++;
+
+        styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
+            ? ss->selection_style : ss->deselection_style;
 
         return 1;
     }
