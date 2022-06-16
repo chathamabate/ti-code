@@ -216,8 +216,8 @@ static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
     scan_focused_keys();
 
     // Back button functionality.
-    if (key_press(c_Enter) && gm_state->focused_menu == PLAY_MENU && gm_state->play_menu->selection == 0) {
-        return &HOMEPAGE;
+    if (key_press(c_Enter) && gm_state->focused_menu == PLAY_MENU) {
+        return gm_state->play_menu->selection == 0 ? &HOMEPAGE : &GAMEPLAY;
     }
 
     // Move from gamemode menu to play menu.
@@ -284,16 +284,28 @@ static void render_gamemode(void *glb_state, void *loc_state) {
 
 static void *exit_gamemode(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
     (void)glb_state;
-    (void)next_loc_lc;
 
     gamemode_state *gm_state = (gamemode_state *)loc_state;
+
+    uint8_t toggle = gm_state->gm_menu->toggle;
 
     del_toggle_text_menu(gm_state->gm_menu);
     del_slide_pane(gm_state->diff_pane);
     del_basic_text_menu(gm_state->play_menu);
     free(gm_state);
 
-    return NULL;
+    if (next_loc_lc == &HOMEPAGE) {
+        return NULL;
+    }
+    
+    switch (toggle) {
+    case EASY_DIFF_IND:
+        return (void *)(&EASY);
+    case MEDIUM_DIFF_IND:
+        return (void *)(&MEDIUM);
+    default:
+        return (void *)(&HARD); 
+    }
 }
 
 const loc_life_cycle GAMEMODE = {

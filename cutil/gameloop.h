@@ -61,7 +61,7 @@ void run_game(uint16_t delay_ms, const glb_life_cycle *gb_lc, const loc_life_cyc
 
 static void *enter_scene(void *glb_state, void *trans_state) {
     (void)glb_state;
-    (void)loc_state;
+    (void)trans_state;
 
     return NULL;
 }
@@ -78,7 +78,7 @@ static void render_scene(void *glb_state, void *loc_state) {
     (void)loc_state;
 }
 
-static void *exit_homepage(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
+static void *exit_scene(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
     (void)glb_state;
     (void)loc_state;
     (void)next_loc_lc;

@@ -17,5 +17,11 @@ extern const loc_life_cycle GAMEMODE;
 // Gamemode has no transition state...
 // should just be null.
 
+extern const loc_life_cycle GAMEPLAY;
+// Tranisition state into GAMEPLAY
+// should be a const difficulty * 
+// describing which difficulty to play.
+
+
 
 #endif
