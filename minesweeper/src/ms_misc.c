@@ -1,5 +1,6 @@
 #include "ms_misc.h"
 
+#include <stdint.h>
 #include <tice.h>
 #include <graphx.h>
 
@@ -19,4 +20,16 @@ void render_random_tile16_grid(uint8_t tile0, uint8_t tile1, uint8_t p, uint8_t 
             );
         }
     }
+}
+
+void render_tile16_grid_nc(uint8_t tile, uint16_t x, uint8_t y, 
+        uint16_t g_width, uint8_t g_height) {
+    uint16_t x_p;
+    uint8_t y_p;
+
+   for (x_p = x; x_p < x + g_width; x_p += 16) {
+       for (y_p = y; y_p < y + g_height; y_p += 16) {
+           gfx_Sprite_NoClip(tiles16_tiles[tile], x_p, y_p);
+       }
+   }
 }

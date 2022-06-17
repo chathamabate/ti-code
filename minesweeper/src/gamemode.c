@@ -33,7 +33,7 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
 #define INFO_HEIGHT (8 * DIFF_H_SCALE + (2 * 8 * INFO_H_SCALE) + (2 * INFO_SPACER))
 
 static void render_difficulty_info(const slide_pane_template *tmplt,
-        const char *diff_name, const difficulty *diff) {
+        const char *diff_name, const ms_difficulty *diff) {
     uint16_t x_p;
     uint8_t y_p;
 
