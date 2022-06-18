@@ -71,6 +71,9 @@ typedef struct {
 } ms_visual_cell;
 
 #define FG_NO_RENDER 10
+#define BG_NO_RENDER FG_NO_RENDER
+#define ms_visual_cell_equ(v_cell_1, v_cell_2) \
+    ((v_cell_1).bg == (v_cell_2).bg && (v_cell_1).fg == (v_cell_2).fg) 
 
 // Again just for keeping track of state for each cell.
 // Since the calc actually runs pretty fast...
@@ -87,7 +90,7 @@ typedef struct {
 
     // Selection area of the window
     // relative to the full window. 
-    uint8_t s_x_offset, s_y_offset;
+    uint8_t s_r_offset, s_c_offset;
     uint8_t s_width, s_height;
 } ms_window_template;
 
@@ -95,21 +98,26 @@ typedef struct {
 // a minesweeper game.
 typedef struct {
     const ms_window_template *tmplt;
-
-    ms_game *ms_game;
+    ms_game *game; // NOTE, this is independent of the window.
 
     // Position of window...
     // IN THE MINESWEEPER GRID! 
-    uint8_t w_x, w_y;
+    int16_t w_r, w_c; // These can be negative!!
 
     // Cursor position in the selection area.
-    uint8_t c_x, c_y;
+    uint8_t c_r, c_c; 
 
     // The state of all renderable cell locations.
     ms_buffered_visual_cell **render;
 } ms_window;
 
+// Create a window into some game.
+ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game);
 
-// void render_ms_window_nc
+// Render the window.
+void render_ms_window_nc(ms_window *window, uint16_t x, uint8_t y);
+
+// NOTE, this does not delete the game the window looks into.
+void del_ms_window(ms_window *window);
 
 #endif

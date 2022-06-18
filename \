@@ -1,13 +1,10 @@
 
 #include "minesweeper.h"
-#include <graphx.h>
 #include <stdlib.h>
 
 #include <cutil/misc.h>
 #include <stdint.h>
 #include <tice.h>
-
-#include "gfx/tiles16.h"
 
 const ms_difficulty EASY = {
     .grid_width = 8,
@@ -166,33 +163,10 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
 }
 
 void render_ms_window_nc(ms_window *window, uint16_t x, uint8_t y) {
-    ms_buffered_visual_cell **render = window->render;
-
-    uint8_t rows = window->tmplt->w_height;
-    uint8_t cols = window->tmplt->w_width;
-
-    ms_buffered_visual_cell *bv_cell;
     uint8_t r, c;
-
-    uint16_t x_p;
-    uint8_t y_p;
-    for (r = 0, y_p = y; r < rows; r++, y += 16) {
-        for (c = 0, x_p = x; c < cols; c++, x += 16) {
-            bv_cell = &(render[r][c]);
-
-            if (!ms_visual_cell_equ(bv_cell->actual_vc, bv_cell->buffer_vc)) {
-                if (bv_cell->actual_vc.bg < BG_NO_RENDER) {
-                    gfx_Sprite_NoClip(tiles16_tiles[bv_cell->actual_vc.bg], x, y);
-                }
-
-                if (bv_cell->actual_vc.fg < FG_NO_RENDER) {
-                    gfx_Sprite_NoClip(tiles16_tiles[9 + bv_cell->actual_vc.fg], x, y);
-                }
-            } 
-
-            // Swap buffer and screen!
-            bv_cell->buffer_vc = bv_cell->screen_vc;
-            bv_cell->screen_vc = bv_cell->actual_vc;
+    for (r = 0; r < window->tmplt->w_height; r++) {
+        for (c = 0; c < window->tmplt->w_width; c++) {
+           
         }
     } 
 }
