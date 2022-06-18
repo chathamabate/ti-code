@@ -1,5 +1,6 @@
 
 #include "minesweeper.h"
+#include <stdlib.h>
 
 #include <cutil/misc.h>
 #include <stdint.h>
@@ -32,12 +33,18 @@ ms_game *new_ms_game(const ms_difficulty *diff) {
     game->board = safe_malloc(sizeof(ms_cell *) * diff->grid_height);
 
     // Generate board cells for each row.
-    uint8_t r;
+    uint8_t r, c;
     for (r = 0; r < diff->grid_height; r++) {
         game->board[r] = safe_malloc(sizeof(ms_cell) * diff->grid_width);
+
+        // All hidden, no mines to start.
+        for (c = 0; c < diff->grid_width; c++) {
+            game->board[r][c].visibility = HIDDEN;
+            game->board[r][c].type = 0;
+        }
     }
 
-    init_ms_game(game);
+    reset_ms_game(game);
 
     return game;
 }
@@ -47,13 +54,13 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
     uint8_t mines = 0;
 
     uint8_t r_p, c_p;
-    for (r_p = r == 0 ? 0 : r - 1; r <= r + 1; r++) {
+    for (r_p = r == 0 ? 0 : r - 1; r_p <= r + 1; r_p++) {
         // Avoid unsigned overflow!
         if (r == UINT8_MAX && r_p == 0) {
             continue;
         }
 
-        for (c_p = c == 0 ? 0 : c - 1; c <= c + 1; c++) {
+        for (c_p = c == 0 ? 0 : c - 1; c_p <= c + 1; c_p++) {
             // Same thing again here.
             if (c == UINT8_MAX && c_p == 0) {
                 continue;
@@ -73,12 +80,10 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
     return mines;
 }
 
-void init_ms_game(ms_game *game) {
+void reset_ms_game(ms_game *game) {
     uint8_t mines_left = game->diff->mines;
 
-    uint8_t r, c;
-
-    // Randomly place mines.
+    uint8_t r, c; // Randomly place mines.
     while (mines_left) {
         r = random() % game->diff->grid_height;
         c = random() % game->diff->grid_width; 
@@ -91,9 +96,8 @@ void init_ms_game(ms_game *game) {
         mines_left--;
     }
 
-
-    for (r = 0; r < game->diff->grid_width; r++) {
-        for (c = 0; c < game->diff->grid_height; c++) {
+    for (r = 0; r < game->diff->grid_height; r++) {
+        for (c = 0; c < game->diff->grid_width; c++) {
             // All cells start hidden.
             game->board[r][c].visibility = HIDDEN;
 

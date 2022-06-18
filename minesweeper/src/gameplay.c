@@ -1,15 +1,20 @@
 
 #include <graphx.h>
+#include <stdlib.h>
 
 #include <cutil/gameloop.h>
 #include <cutil/keys.h>
 
-#include "cutil/cgraphx.h"
-#include "cutil/menu.h"
-#include "minesweeper/src/ms_misc.h"
-#include "minesweeper/src/ms_styles.h"
+#include <cutil/cgraphx.h>
+#include <cutil/menu.h>
+
+#include "ms_misc.h"
+#include "ms_styles.h"
 #include "states.h"
 #include "tice.h"
+#include "minesweeper.h"
+
+#include "gfx/tiles16.h"
 
 #define FOCUSED_KEYS_LEN 1
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
@@ -22,11 +27,35 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
 
     set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
 
+    // NOTE... THIS IS A TEST...
+    // MEMORY LEAK.
+    ms_game *game = new_ms_game((const ms_difficulty *)trans_state);
 
-    render_tile16_grid(4);
-    render_tile16_grid_nc(0, align(2), align(5), align(16), align(8));
-    cgfx_pane_nc(&PANE_STYLE_2, 0, 0, LCD_WIDTH, align(3));
+    // just render the grid.
+    render_tile16_grid(0);
+
+    uint8_t r, c;
+
+    uint16_t x;
+    uint8_t y;
+    
+    for (r = 0, y = 0; r < game->diff->grid_height && y < LCD_HEIGHT; r++, y += 16) {
+        for (c = 0, x = 0; c < game->diff->grid_width && x < LCD_WIDTH; c++, x += 16) {
+            gfx_Sprite_NoClip(tiles16_tile_1, x, y);
+
+            uint8_t t = game->board[r][c].type;
+
+            if (t == 0) {
+                continue;
+            }
+
+            gfx_TransparentSprite_NoClip(tiles16_tiles[9 + t], x, y);
+        }
+    }
+
+
     gfx_SwapDraw();
+
     return NULL;
 }
 

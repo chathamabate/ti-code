@@ -37,8 +37,16 @@ extern unsigned char tiles16_tile_14_data[258];
 #define tiles16_tile_14 ((gfx_sprite_t*)tiles16_tile_14_data)
 extern unsigned char tiles16_tile_15_data[258];
 #define tiles16_tile_15 ((gfx_sprite_t*)tiles16_tile_15_data)
-#define tiles16_num_tiles 16
-extern unsigned char *tiles16_tiles_data[16];
+extern unsigned char tiles16_tile_16_data[258];
+#define tiles16_tile_16 ((gfx_sprite_t*)tiles16_tile_16_data)
+extern unsigned char tiles16_tile_17_data[258];
+#define tiles16_tile_17 ((gfx_sprite_t*)tiles16_tile_17_data)
+extern unsigned char tiles16_tile_18_data[258];
+#define tiles16_tile_18 ((gfx_sprite_t*)tiles16_tile_18_data)
+extern unsigned char tiles16_tile_19_data[258];
+#define tiles16_tile_19 ((gfx_sprite_t*)tiles16_tile_19_data)
+#define tiles16_num_tiles 20
+extern unsigned char *tiles16_tiles_data[20];
 #define tiles16_tiles ((gfx_sprite_t**)tiles16_tiles_data)
 
 #ifdef __cplusplus
