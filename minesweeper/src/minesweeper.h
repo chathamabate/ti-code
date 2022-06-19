@@ -2,6 +2,7 @@
 #define MINESWEEPER_H
 
 #include <stdint.h>
+#include "ms_styles.h"
 
 typedef struct {
     // A board can be no larger than 255 by 255 cells.
@@ -19,10 +20,10 @@ extern const ms_difficulty EASY, MEDIUM, HARD;
 
 // Visibilities.
 #define HIDDEN  0
-#define FLAGGED 1
-#define EXPOSED 2
+#define EXPOSED 1 
+#define FLAGGED 2
 
-// There are 10 cell types.
+// There are 11 cell types.
 // 0 - 8 refer to the number of
 // bordering mines.
 // 9 is if the cell itself contains 
@@ -70,8 +71,13 @@ typedef struct {
     uint8_t fg : 4;  
 } ms_visual_cell;
 
-#define FG_NO_RENDER 10
-#define BG_NO_RENDER FG_NO_RENDER
+#define BG_HIDDEN(style) ((style) * 3)
+#define BG_EXPOSED(style) (((style) * 3) + 1)
+#define BG_BARRIER(style) (((style) * 3) + 2)
+#define BG_NO_RENDER 10 
+
+#define FG_NO_RENDER 9 
+
 #define ms_visual_cell_equ(v_cell_1, v_cell_2) \
     ((v_cell_1).bg == (v_cell_2).bg && (v_cell_1).fg == (v_cell_2).fg) 
 
@@ -113,6 +119,9 @@ typedef struct {
 
 // Create a window into some game.
 ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game);
+
+// Returns whether or not any state changed.
+uint8_t update_ms_window(ms_window *window);
 
 // Render the window.
 void render_ms_window_nc(ms_window *window, uint16_t x, uint8_t y);

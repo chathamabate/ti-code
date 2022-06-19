@@ -1,6 +1,7 @@
 
 #include <graphx.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 #include <cutil/gameloop.h>
 #include <cutil/keys.h>
@@ -53,6 +54,15 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
         }
     }
 
+    gfx_SetTextScale(2, 2);
+    gfx_SetTextFGColor(1);
+
+    char buff[30];
+
+    uint8_t t = 255;
+
+    sprintf(buff, "%d", (int16_t)t);
+    gfx_PrintStringXY(buff, 16, 16);
 
     gfx_SwapDraw();
 

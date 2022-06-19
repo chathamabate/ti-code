@@ -125,6 +125,9 @@ extern uint8_t repeat_delay;
 #define key_press(c_key) \
     (focused_keys[key_map[c_key]].count == 1 || focused_keys[key_map[c_key]].count == repeat_delay)
 
+#define key_down(c_key) \
+    (focused_keys[key_map[c_key]].count >= 1)
+
 // Convert a c_key_t to a kb_lkey_t.
 #define to_kb_lkey_t(c_key) (c_key_map[c_key])
 
