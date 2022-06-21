@@ -2,6 +2,8 @@
 #define MINESWEEPER_H
 
 #include <stdint.h>
+#include <cutil/data.h>
+
 #include "ms_styles.h"
 
 typedef struct {
@@ -51,6 +53,14 @@ ms_game *new_ms_game(const ms_difficulty *diff);
 // Initialize the board.
 // i.e. place mines and numbers.
 void reset_ms_game(ms_game *game);
+
+// Create a stack usable for the cell uncover algo.
+c_stack *new_ms_cell_stack();
+
+// Uncover the cell at position x, y on the game board.
+// Provide a stack, so one doesn't need to be made just
+// for this funciton call.
+void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c);
 
 // Delete a new minesweeper game.
 void del_ms_game(ms_game *game);

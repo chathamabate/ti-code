@@ -18,8 +18,10 @@ c_stack *new_c_stack(uint16_t c_size, uint16_t init_cap) {
 
 void *c_stack_push(c_stack *s) {
     if (s->top_ind == s->cap) {
+        uint16_t new_cap = 1 + 2*s->cap;
+   
         // Expansion is needed.
-        uint8_t *new_data = safe_malloc((1 + s->cap * 2) * s->cell_size);
+        uint8_t *new_data = safe_malloc(new_cap * s->cell_size);
         
         // Copy old data into new data.
         memcpy(new_data, s->data, s->cap * s->cell_size); 
@@ -27,7 +29,7 @@ void *c_stack_push(c_stack *s) {
         free(s->data);
 
         s->data = new_data;
-        s->cap *= 2;
+        s->cap  = new_cap;
     }
 
     return &(s->data[s->top_ind++ * s->cell_size]);

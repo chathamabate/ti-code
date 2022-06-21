@@ -9,6 +9,7 @@
 #include <stdint.h>
 #include <tice.h>
 
+#include "cutil/data.h"
 #include "gfx/tiles16.h"
 
 const ms_difficulty EASY = {
@@ -60,7 +61,7 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
 
     uint8_t r_p, c_p;
     for (r_p = r == 0 ? 0 : r - 1; r_p <= r + 1; r_p++) {
-        // Avoid unsigned overflow!
+        // Avoid unsigned overflow! NOTE WHAT????
         if (r == UINT8_MAX && r_p == 0) {
             continue;
         }
@@ -111,6 +112,91 @@ void reset_ms_game(ms_game *game) {
             }
 
             game->board[r][c].type = surrounding_mines(game, r, c);
+        }
+    }
+}
+
+// Probs could've used this in many places.
+// But alas... This structure is just used so
+// cooredinates can be stored correctly in a stack.
+typedef struct {
+    uint8_t r;
+    uint8_t c;
+} ms_cell_coord;
+
+c_stack *new_ms_cell_stack() {
+    // Arbitrary starting capacity.
+    return new_c_stack(sizeof(ms_cell_coord), 10);
+}
+
+void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c) {
+    game->board[r][c].visibility = EXPOSED;
+
+    // NOTE Skip the algorithm if uncovered cell is not blank.
+    if (game->board[r][c].type > 0) {
+        return;
+    }
+
+    ms_cell_coord *rt_cell_coord = (ms_cell_coord *)c_stack_push(s);    
+    rt_cell_coord->r = r;
+    rt_cell_coord->c = c;
+
+    // Current coord.
+    ms_cell_coord c_cd;
+
+    // Neighbor coords.
+    uint8_t n_r_i, n_c_i; // Iterators.
+    uint8_t n_r_e, n_c_e; // Bounds.
+    
+    ms_cell *n_cell; // Neighbor cell pointer.
+
+    // NOTE only freshly exposed empty cells will be placed in the 
+    // stack!
+    
+    while (!c_stack_empty(s)) {
+        c_cd = *(ms_cell_coord *)c_stack_peek(s);
+        c_stack_pop(s);
+
+        n_r_i = c_cd.r - 1;
+        n_r_e = c_cd.r + 1;
+
+        if (c_cd.r == 0) {
+            n_r_i = 0;
+        } else if (c_cd.r == game->diff->grid_height - 1) {
+            n_r_e = c_cd.r;
+        }
+
+        for (; n_r_i <= n_r_e; n_r_i++) {
+            n_c_i = c_cd.c - 1;
+            n_c_e = c_cd.c + 1;
+
+            if (c_cd.c == 0) {
+                n_c_i = 0;
+            } else if (c_cd.c == game->diff->grid_width - 1) {
+                n_c_e = c_cd.c;
+            }
+
+            for (; n_c_i <= n_c_e; n_c_i++) {
+                if (n_r_i == c_cd.r && n_c_i == c_cd.c) {
+                    continue; // Skip current cell.
+                }
+
+                n_cell = &(game->board[n_r_i][n_c_i]);
+
+                if (n_cell->visibility == EXPOSED) {
+                    continue; // Skip already exposed cells.
+                }
+
+                // Expose cell if needed.
+                game->board[n_r_i][n_c_i].visibility = EXPOSED;
+
+                if (game->board[n_r_i][n_c_i].type == 0) {
+                    // Push onto stack if empty cell has been exposed.
+                    rt_cell_coord = (ms_cell_coord *)c_stack_push(s); 
+                    rt_cell_coord->r = n_r_i;
+                    rt_cell_coord->c = n_c_i;
+                }
+            }
         }
     }
 }
