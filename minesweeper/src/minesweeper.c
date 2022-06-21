@@ -234,47 +234,81 @@ uint8_t update_ms_window(ms_window *window) {
     // Should return if any change requiring a re render has occured! 
     // Assume scan has already occured.
 
-    // Screen coordinates of cursor.
-    uint8_t curr_c_r = window->tmplt->s_r_offset + window->c_r;
-    uint8_t curr_c_c = window->tmplt->s_c_offset + window->c_c;
+    // Screen coordinates of cursor. (in 16s)
+    uint8_t screen_c_r = window->tmplt->s_r_offset + window->c_r;
+    uint8_t screen_c_c = window->tmplt->s_c_offset + window->c_c;
 
-    // Current cursor game position.
-    uint8_t move;
+    uint8_t game_c_r = screen_c_r + window->w_r;
+    uint8_t game_c_c = screen_c_c + window->w_c;
 
     if (key_press(c_8) || key_press(c_Up)) {
-        goto MS_UP_MOVE;
-    } else if (key_press(c_4) || key_press(c_Left)) {
-        goto MS_LEFT_MOVE;
-    } else if (key_press(c_5) || key_press(c_Down)) {
-        goto MS_DOWN_MOVE;
-    } else if (key_press(c_6) || key_press(c_Right)) {
-        goto MS_RIGHT_MOVE;
-    } else {
-        // No movement.. just return.
-        return 0;
+        if (game_c_r == 0) {
+            return 0;
+        }
+
+        if (window->c_r == 0) {
+            window->w_r--;
+            // Full screen needs a reload.
+            load_ms_window(window);
+            return 1;
+        }
+
+        window->c_r--;
+        goto MS_BASIC_MOVE;
+    } 
+    
+    if (key_press(c_4) || key_press(c_Left)) {
+        if (game_c_c == 0) {
+            return 0;
+        }
+
+        if (window->c_c == 0) {
+            window->w_c--;
+            load_ms_window(window);
+            return 1;
+        }
+
+        window->c_c--;
+        goto MS_BASIC_MOVE;
+    }
+    
+    if (key_press(c_5) || key_press(c_Down)) {
+        if (game_c_r == window->game->diff->grid_height - 1) {
+            return 0;
+        }
+
+        if (window->c_r == window->tmplt->s_height - 1) {
+            window->w_r++;
+            load_ms_window(window);
+            return 1;
+        }
+
+        window->c_r++;
+        goto MS_BASIC_MOVE;
+    }
+    
+    if (key_press(c_6) || key_press(c_Right)) {
+        if (game_c_c == window->game->diff->grid_width - 1) {
+            return 0;
+        }
+
+        if (window->c_c == window->tmplt->s_width - 1) {
+            window->w_c++;
+            load_ms_window(window);
+            return 1;
+        }
+
+        window->c_c++;
+        goto MS_BASIC_MOVE;
     }
 
-MS_UP_MOVE:
-    if (window->c_r == 0) {
-        window->w_r--;
-        // Full screen needs a reload.
-        load_ms_window(window);
-        return 1;
-    }
+MS_BASIC_MOVE:
+    // Gold to blue.
+    window->render[screen_c_r][screen_c_c].actual_vc.bg -= 3;
 
-    // From gold to blue.
-    window->render[curr_c_r][curr_c_c].actual_vc.bg -= 3;
-
-    // from blue to gold.
-    window->render[curr_c_r - 1][curr_c_c].actual_vc.bg += 3;
-
-    return 1;
-MS_LEFT_MOVE:
-
-MS_DOWN_MOVE:
-
-MS_RIGHT_MOVE: 
-
+    // Blue to gold.
+    window->render[window->tmplt->s_r_offset + window->c_r]
+        [window->tmplt->s_c_offset + window->c_c].actual_vc.bg += 3;
     return 1;
 }
 
