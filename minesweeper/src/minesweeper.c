@@ -147,18 +147,20 @@ static void load_ms_window(ms_window *window) {
     uint8_t g_width = window->game->diff->grid_width;
     uint8_t g_height = window->game->diff->grid_height;
 
+    const ms_window_template *tmplt = window->tmplt;
+
     ms_cell **board = window->game->board;
     ms_buffered_visual_cell **render = window->render;
 
     int16_t r, c;       // These are game coordinates.
     int8_t a_r, a_c;    // These are coordinates into the window. 
-    for (r = w_r; r < w_r + window->tmplt->w_height; r++) {
-        for (c = w_c; c < w_c + window->tmplt->w_width; c++) {
+    for (r = w_r; r < w_r + tmplt->w_height; r++) {
+        for (c = w_c; c < w_c + tmplt->w_width; c++) {
             a_r = r - w_r;
             a_c = c - w_c; 
             
-            if (r < 0 || r > (int16_t)g_height || 
-                    c < 0 || c > (int16_t)g_width) {
+            if (r < 0 || r >= (int16_t)g_height || 
+                    c < 0 || c >= (int16_t)g_width) {
                 // If the current cell is off the gameboard.
                 render[a_r][a_c].actual_vc.bg = BG_BARRIER(BLACK);  
                 render[a_r][a_c].actual_vc.fg = FG_NO_RENDER;
@@ -177,10 +179,24 @@ static void load_ms_window(ms_window *window) {
                 render[a_r][a_c].actual_vc.fg = FG_NO_RENDER;
             } else {
                 // EXPOSED CASE.
-                //
+                render[a_r][a_c].actual_vc.bg = BG_EXPOSED(BLACK);
+                render[a_r][a_c].actual_vc.fg = 
+                    board[r][c].type == 0 
+                    ? FG_NO_RENDER : board[r][c].type;
             }
         }
     }
+
+    uint8_t s_r, s_c;
+    for (s_r = tmplt->s_r_offset; s_r < tmplt->s_r_offset + tmplt->s_height; s_r++) {
+        for (s_c = tmplt->s_c_offset; s_c < tmplt->s_c_offset + tmplt->s_width; s_c++) {
+            render[s_r][s_c].actual_vc.bg -= 6; // Black to Light Blue.
+        }
+    }
+
+    // From light blue to gold.
+    render[tmplt->s_r_offset + window->c_r][tmplt->s_c_offset + window->c_c]
+        .actual_vc.bg += 3;
 }
 
 ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
@@ -214,33 +230,79 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
     return window;
 }
 
-
 uint8_t update_ms_window(ms_window *window) {
-    
+    // Should return if any change requiring a re render has occured! 
+    // Assume scan has already occured.
+
+    // Screen coordinates of cursor.
+    uint8_t curr_c_r = window->tmplt->s_r_offset + window->c_r;
+    uint8_t curr_c_c = window->tmplt->s_c_offset + window->c_c;
+
+    // Current cursor game position.
+    uint8_t move;
+
+    if (key_press(c_8) || key_press(c_Up)) {
+        goto MS_UP_MOVE;
+    } else if (key_press(c_4) || key_press(c_Left)) {
+        goto MS_LEFT_MOVE;
+    } else if (key_press(c_5) || key_press(c_Down)) {
+        goto MS_DOWN_MOVE;
+    } else if (key_press(c_6) || key_press(c_Right)) {
+        goto MS_RIGHT_MOVE;
+    } else {
+        // No movement.. just return.
+        return 0;
+    }
+
+MS_UP_MOVE:
+    if (window->c_r == 0) {
+        window->w_r--;
+        // Full screen needs a reload.
+        load_ms_window(window);
+        return 1;
+    }
+
+    // From gold to blue.
+    window->render[curr_c_r][curr_c_c].actual_vc.bg -= 3;
+
+    // from blue to gold.
+    window->render[curr_c_r - 1][curr_c_c].actual_vc.bg += 3;
+
+    return 1;
+MS_LEFT_MOVE:
+
+MS_DOWN_MOVE:
+
+MS_RIGHT_MOVE: 
+
+    return 1;
 }
 
-void render_ms_window_nc(ms_window *window, uint16_t x, uint8_t y) {
+void render_ms_window_nc(ms_window *window) {
     ms_buffered_visual_cell **render = window->render;
 
     uint8_t rows = window->tmplt->w_height;
     uint8_t cols = window->tmplt->w_width;
+
+    uint16_t x = window->tmplt->x;
+    uint8_t y = window->tmplt->y;
 
     ms_buffered_visual_cell *bv_cell;
     uint8_t r, c;
 
     uint16_t x_p;
     uint8_t y_p;
-    for (r = 0, y_p = y; r < rows; r++, y += 16) {
-        for (c = 0, x_p = x; c < cols; c++, x += 16) {
+    for (r = 0, y_p = y; r < rows; r++, y_p += 16) {
+        for (c = 0, x_p = x; c < cols; c++, x_p += 16) {
             bv_cell = &(render[r][c]);
 
             if (!ms_visual_cell_equ(bv_cell->actual_vc, bv_cell->buffer_vc)) {
                 if (bv_cell->actual_vc.bg < BG_NO_RENDER) {
-                    gfx_Sprite_NoClip(tiles16_tiles[bv_cell->actual_vc.bg], x, y);
+                    gfx_Sprite_NoClip(tiles16_tiles[bv_cell->actual_vc.bg], x_p, y_p);
                 }
 
                 if (bv_cell->actual_vc.fg < FG_NO_RENDER) {
-                    gfx_Sprite_NoClip(tiles16_tiles[9 + bv_cell->actual_vc.fg], x, y);
+                    gfx_Sprite_NoClip(tiles16_tiles[9 + bv_cell->actual_vc.fg], x_p, y_p);
                 }
             } 
 

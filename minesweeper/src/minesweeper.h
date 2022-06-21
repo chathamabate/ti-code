@@ -91,6 +91,10 @@ typedef struct {
 } ms_buffered_visual_cell;
 
 typedef struct {
+    // Real on screen coordinates.
+    uint16_t x; 
+    uint8_t y;
+
     // Width and height of window.
     uint8_t w_width, w_height;
 
@@ -124,7 +128,7 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game);
 uint8_t update_ms_window(ms_window *window);
 
 // Render the window.
-void render_ms_window_nc(ms_window *window, uint16_t x, uint8_t y);
+void render_ms_window_nc(ms_window *window);
 
 // NOTE, this does not delete the game the window looks into.
 void del_ms_window(ms_window *window);
