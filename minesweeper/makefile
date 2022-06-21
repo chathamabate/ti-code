@@ -8,7 +8,7 @@ DESCRIPTION = "CE C Toolchain Demo"
 COMPRESSED = NO
 ARCHIVED = NO
 
-CFLAGS = -Wall -Wextra -Oz -I..
+CFLAGS = -Wall -Wextra -Oz -I.. 
 CXXFLAGS = -Wall -Wextra -Oz -I..
 
 # This Actually Works!!!

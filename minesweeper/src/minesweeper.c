@@ -241,6 +241,28 @@ uint8_t update_ms_window(ms_window *window) {
     uint8_t game_c_r = screen_c_r + window->w_r;
     uint8_t game_c_c = screen_c_c + window->w_c;
 
+    // Flagging Logic.
+
+    if (key_press(c_7)) {
+        if (window->game->board[game_c_r][game_c_c].visibility == HIDDEN) {
+            window->game->board[game_c_r][game_c_c].visibility = FLAGGED;
+            window->render[screen_c_r][screen_c_c].actual_vc.fg = 0;
+
+            return 1;
+        }
+        
+        if (window->game->board[game_c_r][game_c_c].visibility == FLAGGED) {
+            window->game->board[game_c_r][game_c_c].visibility = HIDDEN;
+            window->render[screen_c_r][screen_c_c].actual_vc.fg = FG_NO_RENDER;
+
+            return 1;
+        }
+
+        return 0;
+    } 
+
+    // Final movement logic.
+    
     if (key_press(c_8) || key_press(c_Up)) {
         if (game_c_r == 0) {
             return 0;
@@ -254,10 +276,7 @@ uint8_t update_ms_window(ms_window *window) {
         }
 
         window->c_r--;
-        goto MS_BASIC_MOVE;
-    } 
-    
-    if (key_press(c_4) || key_press(c_Left)) {
+    } else if (key_press(c_4) || key_press(c_Left)) {
         if (game_c_c == 0) {
             return 0;
         }
@@ -269,10 +288,7 @@ uint8_t update_ms_window(ms_window *window) {
         }
 
         window->c_c--;
-        goto MS_BASIC_MOVE;
-    }
-    
-    if (key_press(c_5) || key_press(c_Down)) {
+    } else if (key_press(c_5) || key_press(c_Down)) {
         if (game_c_r == window->game->diff->grid_height - 1) {
             return 0;
         }
@@ -284,10 +300,7 @@ uint8_t update_ms_window(ms_window *window) {
         }
 
         window->c_r++;
-        goto MS_BASIC_MOVE;
-    }
-    
-    if (key_press(c_6) || key_press(c_Right)) {
+    } else if (key_press(c_6) || key_press(c_Right)) {
         if (game_c_c == window->game->diff->grid_width - 1) {
             return 0;
         }
@@ -299,10 +312,10 @@ uint8_t update_ms_window(ms_window *window) {
         }
 
         window->c_c++;
-        goto MS_BASIC_MOVE;
+    } else {
+        return 0;
     }
 
-MS_BASIC_MOVE:
     // Gold to blue.
     window->render[screen_c_r][screen_c_c].actual_vc.bg -= 3;
 
@@ -336,7 +349,8 @@ void render_ms_window_nc(ms_window *window) {
                 }
 
                 if (bv_cell->actual_vc.fg < FG_NO_RENDER) {
-                    gfx_Sprite_NoClip(tiles16_tiles[9 + bv_cell->actual_vc.fg], x_p, y_p);
+                    gfx_TransparentSprite_NoClip(
+                            tiles16_tiles[9 + bv_cell->actual_vc.fg], x_p, y_p);
                 }
             } 
 

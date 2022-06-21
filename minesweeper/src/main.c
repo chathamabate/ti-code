@@ -11,6 +11,7 @@
 
 #include <cutil/menu.h>
 #include <cutil/keys.h>
+#include <cutil/data.h>
 
 #include "gfx/ms_palette.h"
 #include "gfx/tiles16.h"
