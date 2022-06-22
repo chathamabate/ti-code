@@ -59,30 +59,44 @@ ms_game *new_ms_game(const ms_difficulty *diff) {
 static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
     uint8_t mines = 0;
 
-    uint8_t r_p, c_p;
-    for (r_p = r == 0 ? 0 : r - 1; r_p <= r + 1; r_p++) {
-        // Avoid unsigned overflow! NOTE WHAT????
-        if (r == UINT8_MAX && r_p == 0) {
-            continue;
-        }
+    uint8_t s_c_i;
+    uint8_t c_i, c_e;
+    uint8_t r_i, r_e;
 
-        for (c_p = c == 0 ? 0 : c - 1; c_p <= c + 1; c_p++) {
-            // Same thing again here.
-            if (c == UINT8_MAX && c_p == 0) {
-                continue;
-            }
+    r_i = r - 1;
+    r_e = r + 1;
 
-            if (game->board[r_p][c_p].type == MINE) {
+    if (r == 0) {
+        r_i = 0;
+    } 
+    
+    if (r == game->diff->grid_height - 1) {
+        r_e = r;
+    }
+
+    s_c_i = c - 1;
+    c_e = c + 1;
+
+    if (c == 0) {
+        s_c_i = 0;
+    } 
+    
+    if (c == game->diff->grid_width - 1) {
+        c_e = c;
+    }
+
+    for (; r_i <= r_e; r_i++) {
+        for (c_i = s_c_i; c_i <= c_e; c_i++) {
+            if (game->board[r_i][c_i].type == MINE) {
                 mines++;
             }
         }
     }
 
-    // Do not include given cell.
     if (game->board[r][c].type == MINE) {
         mines--;
     }
-
+       
     return mines;
 }
 
@@ -144,9 +158,10 @@ void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c) {
     // Current coord.
     ms_cell_coord c_cd;
 
-    // Neighbor coords.
-    uint8_t n_r_i, n_c_i; // Iterators.
-    uint8_t n_r_e, n_c_e; // Bounds.
+    // Neighbor coords iteration helper variables.
+    uint8_t n_r_i, n_r_e;
+    uint8_t n_c_i, n_c_e, s_n_c_i;
+
     
     ms_cell *n_cell; // Neighbor cell pointer.
 
@@ -162,21 +177,26 @@ void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c) {
 
         if (c_cd.r == 0) {
             n_r_i = 0;
-        } else if (c_cd.r == game->diff->grid_height - 1) {
+        } 
+        
+        if (c_cd.r == game->diff->grid_height - 1) {
             n_r_e = c_cd.r;
         }
 
+        s_n_c_i = c_cd.c - 1;
+        n_c_e = c_cd.c + 1;
+
+        if (c_cd.c == 0) {
+            s_n_c_i = 0;
+        }
+
+        if (c_cd.c == game->diff->grid_width - 1) {
+            n_c_e = c_cd.c;
+        }
+
+
         for (; n_r_i <= n_r_e; n_r_i++) {
-            n_c_i = c_cd.c - 1;
-            n_c_e = c_cd.c + 1;
-
-            if (c_cd.c == 0) {
-                n_c_i = 0;
-            } else if (c_cd.c == game->diff->grid_width - 1) {
-                n_c_e = c_cd.c;
-            }
-
-            for (; n_c_i <= n_c_e; n_c_i++) {
+            for (n_c_i = s_n_c_i; n_c_i <= n_c_e; n_c_i++) {
                 if (n_r_i == c_cd.r && n_c_i == c_cd.c) {
                     continue; // Skip current cell.
                 }
@@ -290,6 +310,7 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
 
     window->tmplt = tmplt;
     window->game = game;
+    window->s = new_ms_cell_stack();
 
     // Unsure if cast is really needed here.
     window->w_r = -(int16_t)(tmplt->s_r_offset);
@@ -326,6 +347,20 @@ uint8_t update_ms_window(ms_window *window) {
 
     uint8_t game_c_r = screen_c_r + window->w_r;
     uint8_t game_c_c = screen_c_c + window->w_c;
+
+    // Uncover logic.
+    if (key_press(c_9)) {
+        if (window->game->board[game_c_r][game_c_c].visibility == HIDDEN) {
+            uncover_ms_cell(window->game, window->s, game_c_r, game_c_c);
+
+            // NOTE Slight optimizations could be put here.
+            load_ms_window(window); // Reload screen.
+                                    
+            return 1;
+        }
+
+        return 0;
+    }
 
     // Flagging Logic.
 
@@ -408,6 +443,7 @@ uint8_t update_ms_window(ms_window *window) {
     // Blue to gold.
     window->render[window->tmplt->s_r_offset + window->c_r]
         [window->tmplt->s_c_offset + window->c_c].actual_vc.bg += 3;
+
     return 1;
 }
 
@@ -454,6 +490,7 @@ void del_ms_window(ms_window *window) {
     } 
 
     free(window->render);
+    del_c_stack(window->s);
     free(window);
 
     // NOTE, the game is not freed here!!!!

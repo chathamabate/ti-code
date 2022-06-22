@@ -9,6 +9,7 @@
 #include <cutil/cgraphx.h>
 #include <cutil/menu.h>
 
+#include "cutil/data.h"
 #include "cutil/misc.h"
 #include "ms_misc.h"
 #include "ms_styles.h"
@@ -18,12 +19,12 @@
 
 #include "gfx/tiles16.h"
 
-#define FOCUSED_KEYS_LEN 10
+#define FOCUSED_KEYS_LEN 11
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
     c_Clear,
     c_8, c_4, c_5, c_6,
     c_Up, c_Left, c_Down, c_Right,
-    c_7
+    c_7, c_9
 };
 
 static const ms_window_template WINDOW_TMPLT = {

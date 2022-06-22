@@ -1,5 +1,4 @@
 
-#include <cstdint>
 #include <cutil/gameloop.h>
 #include <cutil/misc.h>
 #include <cutil/cgraphx.h>

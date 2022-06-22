@@ -25,7 +25,7 @@ extern const ms_difficulty EASY, MEDIUM, HARD;
 #define EXPOSED 1 
 #define FLAGGED 2
 
-// There are 11 cell types.
+// There are 10 cell types.
 // 0 - 8 refer to the number of
 // bordering mines.
 // 9 is if the cell itself contains 
@@ -86,7 +86,10 @@ typedef struct {
 #define BG_BARRIER(style) (((style) * 3) + 2)
 #define BG_NO_RENDER 10 
 
-#define FG_NO_RENDER 9 
+// 0 is X
+// 1 - 8 are themx selves.
+// 9 is mine.
+#define FG_NO_RENDER 10
 
 #define ms_visual_cell_equ(v_cell_1, v_cell_2) \
     ((v_cell_1).bg == (v_cell_2).bg && (v_cell_1).fg == (v_cell_2).fg) 
@@ -119,6 +122,9 @@ typedef struct {
 typedef struct {
     const ms_window_template *tmplt;
     ms_game *game; // NOTE, this is independent of the window.
+    
+    // Stack for cell uncovering.
+    c_stack *s;
 
     // Position of window...
     // IN THE MINESWEEPER GRID! 
