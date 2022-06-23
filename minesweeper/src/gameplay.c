@@ -16,6 +16,7 @@
 #include "states.h"
 #include "tice.h"
 #include "minesweeper.h"
+#include "ms_window.h"
 
 #include "gfx/tiles16.h"
 
@@ -42,7 +43,6 @@ static const ms_window_template WINDOW_TMPLT = {
 };
 
 typedef struct {
-    ms_game *game;
     ms_window *window;
 
     uint8_t redraw;
@@ -53,10 +53,8 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
 
     gameplay_state *gp_state = safe_malloc(sizeof(gameplay_state));
 
-
-    gp_state->game = new_ms_game((const ms_difficulty *)trans_state);
-    gp_state->window = new_ms_window(&WINDOW_TMPLT, gp_state->game);
-
+    gp_state->window = 
+        new_ms_window(&WINDOW_TMPLT, (const ms_difficulty *)trans_state);
 
     cgfx_pane_nc(&PANE_STYLE_0, 0, 0, LCD_WIDTH, align(3)); 
     render_ms_window_nc(gp_state->window);
@@ -106,7 +104,6 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
     gameplay_state *gp_state = (gameplay_state *)loc_state;
 
     del_ms_window(gp_state->window);
-    del_ms_game(gp_state->game);
     free(gp_state);
 
     return NULL;

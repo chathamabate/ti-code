@@ -51,7 +51,7 @@ static void render_difficulty_info(const slide_pane_template *tmplt,
     gfx_SetTextScale(INFO_W_SCALE, INFO_H_SCALE);
 
     // Print grid width and height.
-    sprintf(buff, "%d x %d", diff->grid_width, diff->grid_height);
+    sprintf(buff, "%d x %d", diff->grid_height, diff->grid_width);
 
     x_p = slide_pane_center_x(tmplt, buff);
     y_p += INFO_SPACER + DIFF_H_SCALE * 8;
