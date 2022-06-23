@@ -128,6 +128,13 @@ void reset_ms_game(ms_game *game) {
             game->board[r][c].type = surrounding_mines(game, r, c);
         }
     }
+
+    // Set starting constants.
+    game->non_exposed_cells = (uint16_t)game->diff->grid_width * 
+        (uint16_t)game->diff->grid_height;
+
+    game->flags_placed = 0;
+    game->game_state = MS_WAITING;
 }
 
 // Probs could've used this in many places.
@@ -145,6 +152,7 @@ c_stack *new_ms_cell_stack() {
 
 void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c) {
     game->board[r][c].visibility = EXPOSED;
+    game->non_exposed_cells--;
 
     // NOTE Skip the algorithm if uncovered cell is not blank.
     if (game->board[r][c].type > 0) {
@@ -209,6 +217,7 @@ void uncover_ms_cell(ms_game *game, c_stack *s, uint8_t r, uint8_t c) {
 
                 // Expose cell if needed.
                 game->board[n_r_i][n_c_i].visibility = EXPOSED;
+                game->non_exposed_cells--;
 
                 if (game->board[n_r_i][n_c_i].type == 0) {
                     // Push onto stack if empty cell has been exposed.
@@ -305,6 +314,10 @@ static void load_ms_window(ms_window *window) {
         .actual_vc.bg += 3;
 }
 
+// Number of frames to wait before switching the window skin
+// during an animation.
+#define MS_WINDOW_ANIMATION_DEL 5 
+
 ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
     ms_window *window = safe_malloc(sizeof(ms_window));
 
@@ -318,6 +331,9 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
 
     window->c_r = 0;
     window->c_c = 0;
+
+    window->animation_frame = MS_WINDOW_ANIMATION_DEL;
+    window->animation_tick = 0;
 
     window->render = (ms_buffered_visual_cell **)
         safe_malloc(sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
@@ -337,7 +353,130 @@ ms_window *new_ms_window(const ms_window_template *tmplt, ms_game *game) {
     return window;
 }
 
+// NOTE this struct is used for animation stylings.
+// All will be indicies into background tiles.
+typedef struct {
+    uint8_t exposed_bg;
+    uint8_t hidden_bg;
+    uint8_t mine_bg;
+} ms_window_skin;
+
+// Change the appearance of all exposed and hidden cells
+// displayed in a window... (Flagged = Hidden in this case)
+static void mask_ms_window(ms_window *window, const ms_window_skin *skin) {
+    // Iterators for rows and columns in window coordinates.
+    uint8_t r_i, r_e;
+    uint8_t c_i, c_e, s_c_i;
+
+    // game coordinate versions.
+    uint8_t r, c, s_c;
+
+    r_i = 0;
+    if (window->w_r < 0) {
+        r_i = (uint8_t)(-window->w_r);
+    }
+
+    r_e = window->tmplt->w_height; // NOTE all this casting to prevent rollover.
+    if ((uint16_t)r_i + (uint16_t)window->game->diff->grid_height < (uint16_t)r_e) {
+        r_e = r_i + window->game->diff->grid_height; // must be uint8_t here. 
+    }
+
+    s_c_i = 0;
+    if (window->w_c < 0) {
+        s_c_i = (uint8_t)(-window->w_c);  
+    } 
+
+    c_e = window->tmplt->w_width;
+    if ((uint16_t)s_c_i + (uint16_t)window->game->diff->grid_width < (uint16_t)c_e) {
+        c_e = s_c_i + window->game->diff->grid_width;
+    }
+
+    // Game coordinate versions of r_i and c_i.
+    r = window->w_r + r_i;
+    s_c = window->w_c + s_c_i;
+
+    ms_buffered_visual_cell **render = window->render;
+    ms_cell **board = window->game->board;
+
+    for (; r_i < r_e; r_i++, r++) {
+        for (c_i = s_c_i, c = s_c; c_i < c_e; c_i++, c++) {
+            if (board[r][c].type == MINE) {
+                render[r_i][c_i].actual_vc.bg = skin->mine_bg;
+            } else if (board[r][c].visibility == EXPOSED) {
+                render[r_i][c_i].actual_vc.bg = skin->exposed_bg;
+            } else {
+                render[r_i][c_i].actual_vc.bg = skin->hidden_bg;
+            }
+
+            // All game cells are striped of FG.
+            render[r_i][c_i].actual_vc.fg = FG_NO_RENDER;
+        }
+    }
+}
+
+
+static uint8_t animate_ms_window(ms_window *window, 
+        const ms_window_skin **skins, uint8_t skins_len) {
+    // Advance animation.
+    window->animation_tick = 
+        (window->animation_tick + 1) % MS_WINDOW_ANIMATION_DEL;
+
+    if (window->animation_tick != 0) {
+        // No flick needed.
+        return 0;
+    }
+
+    // Switch frame.
+    window->animation_frame = (window->animation_frame + 1) % skins_len;
+    mask_ms_window(window, skins[window->animation_frame]);
+    return 1;
+}
+
+static const ms_window_skin WIN_SKIN_0 = {
+    .exposed_bg = BG_EXPOSED(LIGHT_BLUE),
+    .hidden_bg = BG_NO_RENDER, // Should never be used in win case.
+    .mine_bg = BG_HIDDEN(GOLD)
+};
+
+static const ms_window_skin WIN_SKIN_1 = {
+    .exposed_bg = BG_EXPOSED(GOLD),
+    .hidden_bg = BG_NO_RENDER, // Should never be used in win case.
+    .mine_bg = BG_HIDDEN(LIGHT_BLUE)
+};
+
+#define WIN_SKINS_LEN 2
+static const ms_window_skin *WIN_SKINS[WIN_SKINS_LEN] = {
+    &WIN_SKIN_0, &WIN_SKIN_1 
+};
+
+static const ms_window_skin DEFEAT_SKIN_0 = {
+    .exposed_bg = BG_EXPOSED(BLACK),
+    .hidden_bg = BG_HIDDEN(BLACK),
+    .mine_bg = BG_HIDDEN(RED)
+};
+
+static const ms_window_skin DEFEAT_SKIN_1 = {
+    .exposed_bg = BG_EXPOSED(RED),
+    .hidden_bg = BG_HIDDEN(RED),
+    .mine_bg = BG_HIDDEN(BLACK)
+};
+
+#define DEFEAT_SKINS_LEN 2 
+static const ms_window_skin *DEFEAT_SKINS[DEFEAT_SKINS_LEN] = {
+    &DEFEAT_SKIN_0, &DEFEAT_SKIN_1
+};
+
 uint8_t update_ms_window(ms_window *window) {
+    // NOTE, during win/loss states...
+    // no normal game logic registers.
+    if (window->game->game_state == MS_WIN) {
+        return animate_ms_window(window, WIN_SKINS, WIN_SKINS_LEN);
+    }
+
+    if (window->game->game_state == MS_DEFEAT) {
+        return animate_ms_window(window, DEFEAT_SKINS, DEFEAT_SKINS_LEN);
+    }
+
     // Should return if any change requiring a re render has occured! 
     // Assume scan has already occured.
 
@@ -349,23 +488,41 @@ uint8_t update_ms_window(ms_window *window) {
     uint8_t game_c_c = screen_c_c + window->w_c;
 
     // Uncover logic.
-    if (key_press(c_9)) {
-        if (window->game->board[game_c_r][game_c_c].visibility == HIDDEN) {
-            uncover_ms_cell(window->game, window->s, game_c_r, game_c_c);
 
-            // NOTE Slight optimizations could be put here.
-            load_ms_window(window); // Reload screen.
-                                    
-            return 1;
+    if (key_press(c_9)) {
+        if (window->game->board[game_c_r][game_c_c].visibility != HIDDEN) {
+            return 0; // Only can uncover hidden cells.
         }
 
-        return 0;
+        if (window->game->board[game_c_r][game_c_c].type == MINE) {
+            // IF we hit a mine, do not uncover, simply end game.
+            window->game->game_state = MS_DEFEAT;
+
+            return 0; // TODO The window does not change here at all.
+                      // We assume some other defeat animation will run?
+        }
+
+        // Finally, just run normal uncover logic.
+        uncover_ms_cell(window->game, window->s, game_c_r, game_c_c);
+
+        // Check for win after uncover.
+        if (window->game->non_exposed_cells == window->game->diff->mines) {
+            window->game->game_state = MS_WIN;
+        }
+
+        // NOTE Slight optimizations could be put here.
+        load_ms_window(window); // Reload screen.
+                                
+        return 1;
     }
 
     // Flagging Logic.
 
     if (key_press(c_7)) {
-        if (window->game->board[game_c_r][game_c_c].visibility == HIDDEN) {
+        if (window->game->board[game_c_r][game_c_c].visibility == HIDDEN &&
+                window->game->flags_placed < window->game->diff->mines) {
+            // Only allow a flag place if we have flags left.
+            window->game->flags_placed++;
             window->game->board[game_c_r][game_c_c].visibility = FLAGGED;
             window->render[screen_c_r][screen_c_c].actual_vc.fg = 0;
 
@@ -373,6 +530,8 @@ uint8_t update_ms_window(ms_window *window) {
         }
         
         if (window->game->board[game_c_r][game_c_c].visibility == FLAGGED) {
+            // Take back a flag here.
+            window->game->flags_placed--;
             window->game->board[game_c_r][game_c_c].visibility = HIDDEN;
             window->render[screen_c_r][screen_c_c].actual_vc.fg = FG_NO_RENDER;
 
@@ -472,7 +631,7 @@ void render_ms_window_nc(ms_window *window) {
 
                 if (bv_cell->actual_vc.fg < FG_NO_RENDER) {
                     gfx_TransparentSprite_NoClip(
-                            tiles16_tiles[9 + bv_cell->actual_vc.fg], x_p, y_p);
+                            tiles16_tiles[BG_NO_RENDER + bv_cell->actual_vc.fg], x_p, y_p);
                 }
             } 
 

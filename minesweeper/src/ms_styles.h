@@ -7,6 +7,7 @@
 #define LIGHT_BLUE  0
 #define GOLD        1
 #define BLACK       2
+#define RED         3
 
 extern const cgfx_pane_style PANE_STYLE_0;
 extern const cgfx_pane_style PANE_STYLE_1;

@@ -37,6 +37,15 @@ typedef struct {
     uint8_t type : 4;
 } ms_cell;
 
+// MS Game states.
+#define MS_WIN      0
+#define MS_DEFEAT   1
+#define MS_IN_PLAY  2
+
+// MS_WAITING For when a game has been created but
+// not started.
+#define MS_WAITING  3 
+
 typedef struct {
     // Difficulty of the game.
     const ms_difficulty *diff;
@@ -44,6 +53,15 @@ typedef struct {
     // gameboard with dimmensions found
     // in diff.
     ms_cell **board;
+
+    // Number of non exposed cell left.
+    uint16_t non_exposed_cells;
+
+    // Number of flags placed by user.
+    uint8_t flags_placed;
+
+    // State of the game.
+    uint8_t game_state;
 } ms_game;
 
 // Create a new minesweeper game.
@@ -84,7 +102,9 @@ typedef struct {
 #define BG_HIDDEN(style) ((style) * 3)
 #define BG_EXPOSED(style) (((style) * 3) + 1)
 #define BG_BARRIER(style) (((style) * 3) + 2)
-#define BG_NO_RENDER 10 
+
+// i.e. number of background tiles
+#define BG_NO_RENDER 12 
 
 // 0 is X
 // 1 - 8 are themx selves.
@@ -132,6 +152,10 @@ typedef struct {
 
     // Cursor position in the selection area.
     uint8_t c_r, c_c; 
+
+    // To be used when game has been won or lost.
+    uint8_t animation_frame;
+    uint8_t animation_tick;
 
     // The state of all renderable cell locations.
     ms_buffered_visual_cell **render;
