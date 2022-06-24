@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <cutil/cgraphx.h>
+#include <cutil/misc.h>
 
 #define MENU_VERTICAL   0
 #define MENU_HORIZONTAL 1
@@ -192,7 +193,6 @@ slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render);
 void render_slide_pane_nc(slide_pane *s_pane, void *data);
 
 // s_pane has no large dynamic parts!
-#define del_slide_pane(s_pane) free(s_pane)
-
+#define del_slide_pane(s_pane) safe_free(MENU_CHANNEL, s_pane)
 
 #endif

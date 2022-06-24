@@ -10,10 +10,10 @@
 
 // Create a new text menu.
 text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style) {
-    text_menu *menu = safe_malloc(sizeof(text_menu));
+    text_menu *menu = safe_malloc(MENU_CHANNEL, sizeof(text_menu));
 
     menu->template = tmplt;
-    menu->styles = (buffered_styling *)safe_malloc(sizeof(buffered_styling) * tmplt->len);
+    menu->styles = (buffered_styling *)safe_malloc(MENU_CHANNEL, sizeof(buffered_styling) * tmplt->len);
 
     uint8_t i;
     for (i = 0; i < tmplt->len; i++) {
@@ -73,15 +73,15 @@ void render_text_menu_nc(text_menu *menu) {
 }
 
 void del_text_menu(text_menu *menu) {
-    free(menu->styles);
-    free(menu);
+    safe_free(MENU_CHANNEL, menu->styles);
+    safe_free(MENU_CHANNEL, menu);
 }
 
 basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, const selection_styling *ss) {
     // Start unfocused.
     text_menu *super = new_text_menu(tmplt, ss->unfocus_style);
 
-    basic_text_menu *tt_menu = safe_malloc(sizeof(basic_text_menu));
+    basic_text_menu *tt_menu = safe_malloc(MENU_CHANNEL, sizeof(basic_text_menu));
     tt_menu->super = super;
     tt_menu->ss = ss;
 
@@ -140,7 +140,7 @@ uint8_t update_basic_text_menu(basic_text_menu *tt_menu) {
 
 void del_basic_text_menu(basic_text_menu *bt_menu) {
     del_text_menu(bt_menu->super);
-    free(bt_menu);
+    safe_free(MENU_CHANNEL, bt_menu);
 }
 
 // NOTE : 
@@ -162,7 +162,7 @@ toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const se
     // Start unfocused.
     text_menu *super = new_text_menu(tmplt, ss->unfocus_style);
 
-    toggle_text_menu *tt_menu = safe_malloc(sizeof(toggle_text_menu));
+    toggle_text_menu *tt_menu = safe_malloc(MENU_CHANNEL, sizeof(toggle_text_menu));
     tt_menu->super = super;
     tt_menu->ss = ss;
 
@@ -243,7 +243,7 @@ uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
 
 void del_toggle_text_menu(toggle_text_menu *tt_menu) {
     del_text_menu(tt_menu->super);
-    free(tt_menu);
+    safe_free(MENU_CHANNEL, tt_menu);
 }
 
 // Slide Pane code.
@@ -254,7 +254,7 @@ const render UNRENDERED_SLIDE = {
 };
 
 slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render) {
-    slide_pane *s_pane = safe_malloc(sizeof(slide_pane)); 
+    slide_pane *s_pane = safe_malloc(MENU_CHANNEL, sizeof(slide_pane)); 
     s_pane->tmplt = tmp;
 
     s_pane->slide.buffer_render = UNRENDERED_SLIDE;

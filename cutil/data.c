@@ -5,9 +5,9 @@
 #include <cutil/misc.h>
 
 c_stack *new_c_stack(uint16_t c_size, uint16_t init_cap) {
-    c_stack *s = safe_malloc(sizeof(c_stack));
+    c_stack *s = safe_malloc(DATA_CHANNEL, sizeof(c_stack));
     
-    s->data = (uint8_t *)safe_malloc(c_size * init_cap);
+    s->data = (uint8_t *)safe_malloc(DATA_CHANNEL, c_size * init_cap);
    
     s->cell_size = c_size;
     s->top_ind = 0;
@@ -21,12 +21,12 @@ void *c_stack_push(c_stack *s) {
         uint16_t new_cap = 1 + 2*s->cap;
    
         // Expansion is needed.
-        uint8_t *new_data = safe_malloc(new_cap * s->cell_size);
+        uint8_t *new_data = safe_malloc(DATA_CHANNEL, new_cap * s->cell_size);
         
         // Copy old data into new data.
         memcpy(new_data, s->data, s->cap * s->cell_size); 
 
-        free(s->data);
+        safe_free(DATA_CHANNEL, s->data);
 
         s->data = new_data;
         s->cap  = new_cap;

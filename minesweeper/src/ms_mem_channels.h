@@ -1,0 +1,12 @@
+#ifndef MEM_CHANNELS_H
+#define MEM_CHANNELS_H
+
+#include <cutil/misc.h>
+
+#define MS_GAME_CHANNEL     FREE_CHANNEL(0)
+#define MS_WINDOW_CHANNEL   FREE_CHANNEL(1) 
+#define GAMEMODE_CHANNEL    FREE_CHANNEL(2)
+#define GAMEPLAY_CHANNEL    FREE_CHANNEL(3)
+#define HOMEPAGE_CHANNEL    FREE_CHANNEL(4)
+
+#endif

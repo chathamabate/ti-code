@@ -11,8 +11,10 @@
 
 #include "cutil/data.h"
 #include "gfx/tiles16.h"
-#include "minesweeper/src/minesweeper.h"
+#include "minesweeper.h"
 #include "sys/timers.h"
+
+#include "ms_mem_channels.h"
 
 #define INIT_VIS_CELL(v_cell) \
     (v_cell).bg = BG_NO_RENDER; \
@@ -95,7 +97,7 @@ static void load_ms_window(ms_window *window) {
 // 
 
 ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff) {
-    ms_window *window = safe_malloc(sizeof(ms_window));
+    ms_window *window = safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_window));
 
     window->tmplt = tmplt;
     window->game = new_ms_game(diff);
@@ -111,12 +113,12 @@ ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *d
     window->animation_tick = 0;
 
     window->render = (ms_buffered_visual_cell **)
-        safe_malloc(sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
+        safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
 
     uint8_t r, c;
     for (r = 0; r < tmplt->w_height; r++) {
         window->render[r] = (ms_buffered_visual_cell *)
-            safe_malloc(sizeof(ms_buffered_visual_cell) * tmplt->w_width);
+            safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell) * tmplt->w_width);
 
         for (c = 0; c < tmplt->w_width; c++) {
             INIT_BUFF_VIS_CELL(window->render[r][c]);
@@ -449,11 +451,11 @@ void del_ms_window(ms_window *window) {
 
     uint8_t r;
     for (r = 0; r < window->tmplt->w_height; r++) {
-        free(window->render[r]);
+        safe_free(MS_WINDOW_CHANNEL, window->render[r]);
     } 
 
-    free(window->render);
-    free(window);
+    safe_free(MS_WINDOW_CHANNEL, window->render);
+    safe_free(MS_WINDOW_CHANNEL, window);
 
     // NOTE, the game is not freed here!!!!
 }

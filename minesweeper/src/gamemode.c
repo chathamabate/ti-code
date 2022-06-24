@@ -13,6 +13,7 @@
 #include "ms_styles.h"
 #include "ms_misc.h"
 #include "minesweeper.h"
+#include "ms_mem_channels.h"
 
 // Game mode code..
 
@@ -174,7 +175,7 @@ static void *enter_gamemode(void *glb_state, void *trans_state) {
     // Gamemode page gets a NULL transiiton state.
     (void)trans_state;
 
-    gamemode_state *gm_state = safe_malloc(sizeof(gamemode_state));
+    gamemode_state *gm_state = safe_malloc(GAMEMODE_CHANNEL, sizeof(gamemode_state));
 
     gm_state->gm_menu = new_toggle_text_menu(&GM_MENU_TEMPLATE, &MS_MENU_SS);
     focus_toggle_text_menu(gm_state->gm_menu);
@@ -292,7 +293,8 @@ static void *exit_gamemode(void *glb_state, void *loc_state, const loc_life_cycl
     del_toggle_text_menu(gm_state->gm_menu);
     del_slide_pane(gm_state->diff_pane);
     del_basic_text_menu(gm_state->play_menu);
-    free(gm_state);
+
+    safe_free(GAMEMODE_CHANNEL, gm_state);
 
     if (next_loc_lc == &HOMEPAGE) {
         return NULL;

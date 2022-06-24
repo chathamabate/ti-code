@@ -96,7 +96,7 @@ void set_focused_keys(const c_key_t *keys, uint8_t num_keys) {
     num_focused_keys = num_keys;
 
     // Will be NULL if num_focused_keys == 0.
-    focused_keys = (focused_key *)safe_malloc(sizeof(focused_key) * num_keys);
+    focused_keys = (focused_key *)safe_malloc(KEY_CHANNEL, sizeof(focused_key) * num_keys);
 
     for (i = 0; i < num_focused_keys; i++) {
         focused_keys[i].key = keys[i];
@@ -108,8 +108,8 @@ void set_focused_keys(const c_key_t *keys, uint8_t num_keys) {
     }
 
     // Finally, free the old focused keys array.
-    if (!focused_keys_temp) {
-        free(focused_keys_temp);
+    if (focused_keys_temp) {
+        safe_free(KEY_CHANNEL, focused_keys_temp);
     }
 }
 

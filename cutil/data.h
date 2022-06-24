@@ -3,6 +3,7 @@
 
 #include <stdint.h>
 #include <stdlib.h>
+#include <cutil/misc.h>
 
 typedef struct {
     uint8_t *data;
@@ -31,7 +32,7 @@ void *c_stack_push(c_stack *s);
     ((s)->top_ind == 0)
 
 #define del_c_stack(s) \
-    free((s)->data); \
-    free(s);
+    safe_free(DATA_CHANNEL, (s)->data); \
+    safe_free(DATA_CHANNEL, s);
 
 #endif

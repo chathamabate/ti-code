@@ -9,6 +9,7 @@
 #include <tice.h>
 
 #include "cutil/data.h"
+#include "ms_mem_channels.h"
 
 const ms_difficulty EASY = {
     .grid_width = 8,
@@ -38,17 +39,17 @@ typedef struct {
 } ms_cell_coord;
 
 ms_game *new_ms_game(const ms_difficulty *diff) {
-    ms_game *game = safe_malloc(sizeof(ms_game));
+    ms_game *game = safe_malloc(MS_GAME_CHANNEL, sizeof(ms_game));
 
     game->diff = diff;
 
     // Generate board rows.
-    game->board = safe_malloc(sizeof(ms_cell *) * diff->grid_height);
+    game->board = safe_malloc(MS_GAME_CHANNEL, sizeof(ms_cell *) * diff->grid_height);
 
     // Generate board cells for each row.
     uint8_t r;
     for (r = 0; r < diff->grid_height; r++) {
-        game->board[r] = safe_malloc(sizeof(ms_cell) * diff->grid_width);
+        game->board[r] = safe_malloc(MS_GAME_CHANNEL, sizeof(ms_cell) * diff->grid_width);
     }
 
     game->uncover_stack = new_c_stack(sizeof(ms_cell_coord), 10);
@@ -257,17 +258,17 @@ void del_ms_game(ms_game *game) {
     // Free each row.
     uint8_t r;
     for (r = 0; r < game->diff->grid_height; r++) {
-        free(game->board[r]);
+        safe_free(MS_GAME_CHANNEL, game->board[r]);
     }
 
     // Free the full table.
-    free(game->board);
+    safe_free(MS_GAME_CHANNEL, game->board);
 
     // Delete the uncover stack.
     del_c_stack(game->uncover_stack);
 
     // finally free the game itself.
-    free(game);
+    safe_free(MS_GAME_CHANNEL, game);
 }
 
 

@@ -16,6 +16,7 @@
 #include "gfx/ms_palette.h"
 #include "gfx/tiles16.h"
 #include "gfx/borders.h"
+#include "ti/getcsc.h"
 
 // Game states and menus could be improved from snake...
 // Archiving will probs be the same TBH...

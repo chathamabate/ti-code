@@ -18,6 +18,7 @@
 #include "tice.h"
 #include "minesweeper.h"
 #include "ms_window.h"
+#include "ms_mem_channels.h"
 
 #include "gfx/tiles16.h"
 
@@ -120,7 +121,7 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
     (void)glb_state;
     const ms_difficulty *diff = (const ms_difficulty *)trans_state;
 
-    gameplay_state *gp_state = safe_malloc(sizeof(gameplay_state));
+    gameplay_state *gp_state = safe_malloc(GAMEPLAY_CHANNEL, sizeof(gameplay_state));
 
     gp_state->window = 
         new_ms_window(&WINDOW_TMPLT, diff);
@@ -180,7 +181,7 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
     gameplay_state *gp_state = (gameplay_state *)loc_state;
 
     del_ms_window(gp_state->window);
-    free(gp_state);
+    safe_free(GAMEPLAY_CHANNEL, gp_state);
 
     return NULL;
 }

@@ -10,6 +10,7 @@
 
 #include "ms_styles.h"
 #include "ms_misc.h"
+#include "ms_mem_channels.h"
 #include "gfx/logo.h"
 
 #define FOCUSED_KEYS_LEN 5
@@ -60,7 +61,7 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
     (void)trans_state;
 
     // Allocate the homepage local state.
-    homepage_state *hp_state = safe_malloc(sizeof(homepage_state));
+    homepage_state *hp_state = safe_malloc(HOMEPAGE_CHANNEL, sizeof(homepage_state));
 
     hp_state->bt_menu = new_basic_text_menu(&MENU_TEMPLATE, &MS_MENU_SS);
 
@@ -133,7 +134,7 @@ static void *exit_homepage(void *glb_state, void *loc_state, const loc_life_cycl
     del_basic_text_menu(hp_state->bt_menu);
 
     // Free the state as a whole.
-    free(hp_state);
+    safe_free(HOMEPAGE_CHANNEL, hp_state);
 
     return NULL;
 }
