@@ -12,6 +12,7 @@
 #include "cutil/data.h"
 #include "gfx/tiles16.h"
 #include "minesweeper/src/minesweeper.h"
+#include "sys/timers.h"
 
 #define INIT_VIS_CELL(v_cell) \
     (v_cell).bg = BG_NO_RENDER; \
@@ -242,6 +243,12 @@ static const ms_window_skin *DEFEAT_SKINS[DEFEAT_SKINS_LEN] = {
     &DEFEAT_SKIN_0, &DEFEAT_SKIN_1
 };
 
+// Timer frequencies from example.
+#define TIMER_FREQ      32768 /* Frequency of timer in Hz */
+#define ONE_SECOND      (TIMER_FREQ / 1)
+#define HALF_SECOND     (TIMER_FREQ / 2)
+#define QUARTER_SECOND  (TIMER_FREQ / 4)
+
 uint8_t update_ms_window(ms_window *window) {
     // NOTE, during win/loss states...
     // no normal game logic registers.
@@ -251,6 +258,15 @@ uint8_t update_ms_window(ms_window *window) {
 
     if (window->game->game_state == MS_DEFEAT) {
         return animate_ms_window(window, DEFEAT_SKINS, DEFEAT_SKINS_LEN);
+    }
+
+    // Do timer check when the game is in play.
+    if (window->game->game_state == MS_IN_PLAY &&
+            timer_ChkInterrupt(1, TIMER_RELOADED)) {
+        if (window->game->time_elapsed < MS_TIMEOUT) {
+            window->game->time_elapsed++;
+        }
+        timer_AckInterrupt(1, TIMER_RELOADED);
     }
 
     // Should return if any change requiring a re render has occured! 
@@ -274,12 +290,18 @@ uint8_t update_ms_window(ms_window *window) {
             // IF we hit a mine, do not uncover, simply end game.
             window->game->game_state = MS_DEFEAT;
 
-            return 0; // TODO The window does not change here at all.
-                      // We assume some other defeat animation will run?
+            return 0; 
         }
 
         if (window->game->game_state == MS_WAITING) {
             start_ms_game(window->game, game_c_r, game_c_c);
+
+            // Additionally, reset the timer.
+            // NOTE probs will make this a separate function later.
+            timer_Disable(1);
+            timer_Set(1, ONE_SECOND);
+            timer_SetReload(1, ONE_SECOND);
+            timer_Enable(1, TIMER_32K, TIMER_0INT, TIMER_DOWN);
         } else {
             uncover_ms_cell(window->game, game_c_r, game_c_c);
         }

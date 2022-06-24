@@ -49,7 +49,7 @@ const glb_life_cycle GLOBAL_LC = {
 };
 
 int main(void) {
-   run_game(50, &GLOBAL_LC, &HOMEPAGE);
+    run_game(50, &GLOBAL_LC, &HOMEPAGE);
 
     return 0;
 }

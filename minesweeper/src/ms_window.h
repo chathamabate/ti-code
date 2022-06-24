@@ -2,6 +2,7 @@
 #define MS_WINDOW_H
 
 #include "minesweeper.h"
+#include <sys/timers.h>
 
 // NOTE, all below integral dimensions are in terms of
 // of 16 x 16 tiles.
@@ -80,6 +81,17 @@ typedef struct {
 
 // Create a window into some game.
 ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff);
+
+// Macro for pausing window.
+// Should only be used when game is in play.
+#define pause_ms_window(window) \
+    (window)->game->game_state = MS_PAUSED; \
+    timer_Disable(1)
+
+// Should only be used when game is paused.
+#define resume_ms_window(window) \
+    window->game->game_state = MS_IN_PLAY; \
+    timer_Enable(1, TIMER_32K, TIMER_OINT, TIMER_DOWN)
 
 // Returns whether or not any state changed.
 uint8_t update_ms_window(ms_window *window);

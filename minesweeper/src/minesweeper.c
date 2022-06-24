@@ -68,6 +68,7 @@ void reset_ms_game(ms_game *game) {
     }
 
     game->game_state = MS_WAITING;
+    game->time_elapsed = 0;
     game->flags_left = game->diff->mines;
     game->non_exposed_cells = (uint16_t)game->diff->grid_width * 
         (uint16_t)game->diff->grid_height;
@@ -146,9 +147,6 @@ void start_ms_game(ms_game *game, uint8_t r, uint8_t c) {
 
     for (t_r = 0; t_r < game->diff->grid_height; t_r++) {
         for (t_c = 0; t_c < game->diff->grid_width; t_c++) {
-            // All cells start hidden.
-            game->board[t_r][t_c].visibility = HIDDEN;
-
             if (game->board[t_r][t_c].type == MINE) {
                 continue;
             }
@@ -232,6 +230,12 @@ void uncover_ms_cell(ms_game *game, uint8_t r, uint8_t c) {
 
                 if (n_cell->visibility == EXPOSED) {
                     continue; // Skip already exposed cells.
+                }
+
+                // Incorrectly flagged cells will be exposed here
+                // just to be nice.
+                if (n_cell->visibility == FLAGGED) {
+                    game->flags_left++;
                 }
 
                 // Expose cell if needed.
