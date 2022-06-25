@@ -15,6 +15,7 @@
 #include "ms_misc.h"
 #include "ms_styles.h"
 #include "states.h"
+#include "sys/lcd.h"
 #include "tice.h"
 #include "minesweeper.h"
 #include "ms_window.h"
@@ -22,9 +23,9 @@
 
 #include "gfx/tiles16.h"
 
-#define FOCUSED_KEYS_LEN 11
+#define FOCUSED_KEYS_LEN 12
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
-    c_Clear,
+    c_Clear, c_Enter,
     c_8, c_4, c_5, c_6,
     c_Up, c_Left, c_Down, c_Right,
     c_7, c_9
@@ -42,6 +43,29 @@ static const ms_window_template WINDOW_TMPLT = {
 
     .s_r_offset = 2,
     .s_c_offset = 6 
+};
+
+#define PAUSE_LABELS_LEN 3
+static const char *PAUSE_LABELS[PAUSE_LABELS_LEN] = {
+    "Resume",
+    "Restart",
+    "Exit"
+};
+
+#define BTN_WIDTH align(8) 
+
+static const text_menu_template PAUSE_MENU_TMPLT = {
+    .button_height = 32,
+    .button_width = BTN_WIDTH,
+    .label_height_scale = 1,
+    .label_width_scale = 1,
+    .labels = PAUSE_LABELS,
+    .len = PAUSE_LABELS_LEN,
+    .format = MENU_VERTICAL,
+    .style_palette = PANE_STYLE_PALETTE,
+    .style_palette_len = PANE_STYLE_PALETTE_LEN,
+    .x = (LCD_WIDTH - BTN_WIDTH) / 2,
+    .y = align(6) 
 };
 
 // Information used for rendering flags left and time elapsed.
@@ -111,9 +135,19 @@ static void render_score_render(score_render *sr) {
 // 999 is max time elapsed.
 #define TIME_EL_NO_RENDER (MS_TIMEOUT + 1) 
 
+// Number of ticks of end animation to run.
+#define END_ANIMATION_LEN 20
+
 typedef struct {
     ms_window *window;
+    basic_text_menu *pause_menu;
     score_render sr;
+
+    // This is if we just paused.
+    // Signifying a single background render and BLit
+    // is needed.
+    uint8_t recent_pause;
+
     uint8_t redraw;
 } gameplay_state;
 
@@ -125,9 +159,18 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
 
     gp_state->window = 
         new_ms_window(&WINDOW_TMPLT, diff);
+    
+    gp_state->pause_menu = new_basic_text_menu(&PAUSE_MENU_TMPLT, &MS_MENU_SS);
+    focus_basic_text_menu(gp_state->pause_menu);
 
+    // Initialize the status row render memory.
     gp_state->sr.fl_actual = FLAGS_LEFT_NO_RENDER;
+    gp_state->sr.fl_buffer = FLAGS_LEFT_NO_RENDER;
+    gp_state->sr.fl_screen = FLAGS_LEFT_NO_RENDER;
+
     gp_state->sr.te_actual = TIME_EL_NO_RENDER;
+    gp_state->sr.te_buffer = TIME_EL_NO_RENDER;
+    gp_state->sr.te_screen = TIME_EL_NO_RENDER;
 
     cgfx_pane_nc(&PANE_STYLE_2, 0, 0, LCD_WIDTH, align(3)); 
     gfx_BlitBuffer();
@@ -145,13 +188,45 @@ static const loc_life_cycle *update_gameplay(void *glb_state, void *loc_state) {
 
     scan_focused_keys();
 
-    if (key_press(c_Clear)) {
-        return &HOMEPAGE;
+    if (!gp_state->window->paused) {
+        gp_state->redraw |= update_score_render(&(gp_state->sr), gp_state->window->game);
+        gp_state->redraw |= update_ms_window(gp_state->window);
+
+        // TODO put in Defeat and Victory screens.
+        // For now just return to homepage.
+        if (gp_state->window->animation_tick > END_ANIMATION_LEN) {
+            return &HOMEPAGE; 
+        }
+
+        // Check if the update triggered a pause.
+        if (gp_state->window->paused) {
+            gp_state->recent_pause = 1;
+
+            // Make sure the menu is aware that none of itself
+            // might be on the screen or in the buffer at this point.
+            reset_render_text_menu(gp_state->pause_menu->super);
+        }
+
+        return &GAMEPLAY;
     }
 
-    gp_state->redraw |= update_score_render(&(gp_state->sr), gp_state->window->game);
+    // Pause update logic.
 
-    gp_state->redraw |= update_ms_window(gp_state->window);
+    if (key_press(c_Enter)) {
+        switch (gp_state->pause_menu->selection) {
+        case 0:
+            resume_ms_window(gp_state->window);
+            gp_state->redraw = 1;
+            return &GAMEPLAY;
+        case 1:
+            break; // TODO write restart logic.
+        case 2:
+            return &HOMEPAGE;
+        }
+    }
+
+    // update.
+    gp_state->redraw |= update_basic_text_menu(gp_state->pause_menu);    
 
     return &GAMEPLAY;
 }
@@ -165,9 +240,23 @@ static void render_gameplay(void *glb_state, void *loc_state) {
     }
 
     // Must render flags left and time elapsed.
-    
     render_score_render(&(gp_state->sr));
-    render_ms_window_nc(gp_state->window);
+
+    if (gp_state->recent_pause) {
+        // Place pause menu background in both buffer and screen.
+        render_tile16_grid_nc(BG_HIDDEN(BLACK), 0, align(3), LCD_WIDTH, align(12));
+        gfx_BlitRectangle(gfx_buffer, 0, align(3), LCD_WIDTH, align(12));
+
+        gp_state->recent_pause = 0;
+    }
+
+    if (gp_state->window->paused) {
+        render_text_menu_nc(gp_state->pause_menu->super);
+    } else {
+        // Only render when not paused.
+        render_ms_window_nc(gp_state->window);
+    }
+
     gfx_SwapDraw();
 
     gp_state->redraw = 0;
@@ -181,6 +270,7 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
     gameplay_state *gp_state = (gameplay_state *)loc_state;
 
     del_ms_window(gp_state->window);
+    del_basic_text_menu(gp_state->pause_menu);
     safe_free(GAMEPLAY_CHANNEL, gp_state);
 
     return NULL;

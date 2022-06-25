@@ -41,12 +41,11 @@ typedef struct {
 #define MS_WIN      0
 #define MS_DEFEAT   1
 #define MS_IN_PLAY  2
-#define MS_PAUSED   3
 
 // MS_WAITING For when a game has been created but
 // not started. In this state the board has been allocated
 // space, but no mines have been placed.
-#define MS_WAITING  4 
+#define MS_WAITING  3
 
 // Max time amount.
 #define MS_TIMEOUT 999

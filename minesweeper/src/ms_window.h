@@ -63,6 +63,8 @@ typedef struct {
 typedef struct {
     const ms_window_template *tmplt;
     ms_game *game; 
+    uint8_t paused; // this will be a feature of the window
+                    // not the game.
     
     // Position of window...
     // IN THE MINESWEEPER GRID! 
@@ -83,21 +85,25 @@ typedef struct {
 ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff);
 
 // Macro for pausing window.
-// Should only be used when game is in play.
+// Should only be used when game is in play or waiting.
 #define pause_ms_window(window) \
-    (window)->game->game_state = MS_PAUSED; \
-    timer_Disable(1)
+    timer_Disable(1); \
+    (window)->paused = 1; \
+    reset_render_ms_window(window)
 
 // Should only be used when game is paused.
 #define resume_ms_window(window) \
-    window->game->game_state = MS_IN_PLAY; \
-    timer_Enable(1, TIMER_32K, TIMER_OINT, TIMER_DOWN)
+    (window)->paused = 0; \
+    timer_Enable(1, TIMER_32K, TIMER_0INT, TIMER_DOWN)
 
 // Returns whether or not any state changed.
 uint8_t update_ms_window(ms_window *window);
 
 // Render the window.
 void render_ms_window_nc(ms_window *window);
+
+// Clear window's render memory.
+void reset_render_ms_window(ms_window *window);
 
 // NOTE, this does not delete the game the window looks into.
 void del_ms_window(ms_window *window);

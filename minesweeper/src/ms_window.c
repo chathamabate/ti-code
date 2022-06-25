@@ -101,6 +101,7 @@ ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *d
 
     window->tmplt = tmplt;
     window->game = new_ms_game(diff);
+    window->paused = 0;
 
     // Unsure if cast is really needed here.
     window->w_r = -(int16_t)(tmplt->s_r_offset);
@@ -197,10 +198,9 @@ static void mask_ms_window(ms_window *window, const ms_window_skin *skin) {
 static uint8_t animate_ms_window(ms_window *window, 
         const ms_window_skin **skins, uint8_t skins_len) {
     // Advance animation.
-    window->animation_tick = 
-        (window->animation_tick + 1) % MS_WINDOW_ANIMATION_DEL;
+    window->animation_tick = (window->animation_tick + 1);
 
-    if (window->animation_tick != 0) {
+    if (window->animation_tick % MS_WINDOW_ANIMATION_DEL != 0) {
         // No flick needed.
         return 0;
     }
@@ -262,6 +262,10 @@ uint8_t update_ms_window(ms_window *window) {
         return animate_ms_window(window, DEFEAT_SKINS, DEFEAT_SKINS_LEN);
     }
 
+    // NOTE we do not check if the window is paused ever.
+    // Is the window is paused, it should not be updated
+    // until being resumed.
+
     // Do timer check when the game is in play.
     if (window->game->game_state == MS_IN_PLAY &&
             timer_ChkInterrupt(1, TIMER_RELOADED)) {
@@ -269,6 +273,18 @@ uint8_t update_ms_window(ms_window *window) {
             window->game->time_elapsed++;
         }
         timer_AckInterrupt(1, TIMER_RELOADED);
+    }
+
+    // If we make it here, must be in play or waiting.
+    // Pause logic is appropriate.
+    
+    if (key_press(c_Clear)) {
+        pause_ms_window(window); 
+
+        // It is assumed during a pause, the window
+        // will not be rendered, however something else
+        // will be in its place.
+        return 1;
     }
 
     // Should return if any change requiring a re render has occured! 
@@ -443,6 +459,16 @@ void render_ms_window_nc(ms_window *window) {
             bv_cell->screen_vc = bv_cell->actual_vc;
         }
     } 
+}
+
+void reset_render_ms_window(ms_window *window) {
+    uint8_t r, c;
+    for (r = 0; r < window->tmplt->w_height; r++) {
+        for (c = 0; c < window->tmplt->w_width; c++) {
+            INIT_VIS_CELL(window->render[r][c].buffer_vc);
+            INIT_VIS_CELL(window->render[r][c].screen_vc);
+        }
+    }
 }
 
 void del_ms_window(ms_window *window) {

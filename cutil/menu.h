@@ -38,7 +38,7 @@ typedef struct {
 
 // This signifies that a button is yet to exist on
 // the screen or in the buffer.
-#define NOT_RENDERED 255
+#define MENU_BTN_NOT_RENDERED 255
 
 // Way to deal with buffering issues.
 typedef struct {
@@ -48,7 +48,7 @@ typedef struct {
 } buffered_styling;
 
 typedef struct {
-    const text_menu_template *template;
+    const text_menu_template *tmplt;
 
     // The style states of each button.
     buffered_styling *styles;
@@ -62,6 +62,9 @@ text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style);
 // This function will only draw buttons whose styles
 // differ from that which exists in the buffer.
 void render_text_menu_nc(text_menu *menu);
+
+// Reset the text menu's render memory.
+void reset_render_text_menu(text_menu *menu);
 
 // delete a text menu.
 void del_text_menu(text_menu *menu);

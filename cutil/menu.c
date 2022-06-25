@@ -12,13 +12,13 @@
 text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style) {
     text_menu *menu = safe_malloc(MENU_CHANNEL, sizeof(text_menu));
 
-    menu->template = tmplt;
+    menu->tmplt = tmplt;
     menu->styles = (buffered_styling *)safe_malloc(MENU_CHANNEL, sizeof(buffered_styling) * tmplt->len);
 
     uint8_t i;
     for (i = 0; i < tmplt->len; i++) {
-        menu->styles[i].buffer_style = NOT_RENDERED;
-        menu->styles[i].screen_style = NOT_RENDERED;
+        menu->styles[i].buffer_style = MENU_BTN_NOT_RENDERED;
+        menu->styles[i].screen_style = MENU_BTN_NOT_RENDERED;
         menu->styles[i].style = style;
     }
 
@@ -28,7 +28,7 @@ text_menu *new_text_menu(const text_menu_template *tmplt, uint8_t style) {
 // Render a single button of a menu.
 // Always performs redraw, does not rotate styling states.
 static void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
-    const text_menu_template *template = menu->template;
+    const text_menu_template *template = menu->tmplt;
     const cgfx_pane_style *pane_style = template->style_palette[menu->styles[i].style];
 
     uint16_t x_p;
@@ -59,7 +59,7 @@ static void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
 void render_text_menu_nc(text_menu *menu) {
     buffered_styling *styles = menu->styles;
 
-    uint8_t i, len = menu->template->len;
+    uint8_t i, len = menu->tmplt->len;
     for (i = 0; i < len; i++) {
         // Only render a button if it needs to be rendered.
         if (styles[i].buffer_style != styles[i].style) {
@@ -69,6 +69,14 @@ void render_text_menu_nc(text_menu *menu) {
         // Regardless of whether drawing occured, rotate the styles.
         styles[i].buffer_style = styles[i].screen_style;
         styles[i].screen_style = styles[i].style;
+    }
+}
+
+void reset_render_text_menu(text_menu *menu) {
+    uint8_t i;
+    for (i = 0; i < menu->tmplt->len; i++) {
+        menu->styles[i].buffer_style = MENU_BTN_NOT_RENDERED;
+        menu->styles[i].screen_style = MENU_BTN_NOT_RENDERED;
     }
 }
 
@@ -92,7 +100,7 @@ basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, const sele
 }
 
 void focus_basic_text_menu(basic_text_menu *tt_menu) {
-    uint8_t i, len = tt_menu->super->template->len;
+    uint8_t i, len = tt_menu->super->tmplt->len;
     for (i = 0; i < len; i++) {
         tt_menu->super->styles[i].style = tt_menu->ss->deselection_style;
     }
@@ -101,7 +109,7 @@ void focus_basic_text_menu(basic_text_menu *tt_menu) {
 }
 
 void unfocus_basic_text_menu(basic_text_menu *tt_menu) {
-    uint8_t i, len = tt_menu->super->template->len;
+    uint8_t i, len = tt_menu->super->tmplt->len;
     for (i = 0; i < len; i++) {
         tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
     }
@@ -118,7 +126,7 @@ void unfocus_basic_text_menu(basic_text_menu *tt_menu) {
     ((format) == MENU_HORIZONTAL && (key_press(c_Right) || key_press(c_6)))) 
 
 uint8_t update_basic_text_menu(basic_text_menu *tt_menu) {
-    uint8_t format = tt_menu->super->template->format;
+    uint8_t format = tt_menu->super->tmplt->format;
     buffered_styling *styles = tt_menu->super->styles;
 
     if (advance_previous(format) && tt_menu->selection != 0) {
@@ -128,7 +136,7 @@ uint8_t update_basic_text_menu(basic_text_menu *tt_menu) {
         return 1;
     }
     
-    if (advance_next(format) && tt_menu->selection != tt_menu->super->template->len - 1) {
+    if (advance_next(format) && tt_menu->selection != tt_menu->super->tmplt->len - 1) {
         styles[tt_menu->selection].style = tt_menu->ss->deselection_style;
         styles[++(tt_menu->selection)].style = tt_menu->ss->selection_style;
 
@@ -177,7 +185,7 @@ toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const se
 }
 
 void focus_toggle_text_menu(toggle_text_menu *tt_menu) {
-    uint8_t i, len = tt_menu->super->template->len;
+    uint8_t i, len = tt_menu->super->tmplt->len;
     for (i = 0; i < len; i++) {
         tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
     }
@@ -187,7 +195,7 @@ void focus_toggle_text_menu(toggle_text_menu *tt_menu) {
 }
 
 void unfocus_toggle_text_menu(toggle_text_menu *tt_menu) {
-    uint8_t i, len = tt_menu->super->template->len;
+    uint8_t i, len = tt_menu->super->tmplt->len;
     for (i = 0; i < len; i++) {
         tt_menu->super->styles[i].style = tt_menu->ss->unfocus_style;
     }
@@ -196,7 +204,7 @@ void unfocus_toggle_text_menu(toggle_text_menu *tt_menu) {
 }
 
 uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
-    uint8_t format = tt_menu->super->template->format;
+    uint8_t format = tt_menu->super->tmplt->format;
     buffered_styling *styles = tt_menu->super->styles;
     const selection_styling *ss = tt_menu->ss;
 
@@ -226,7 +234,7 @@ uint8_t update_toggle_text_menu(toggle_text_menu *tt_menu) {
         return 1;
     }
     
-    if (advance_next(format) && tt_menu->selection != tt_menu->super->template->len - 1) {
+    if (advance_next(format) && tt_menu->selection != tt_menu->super->tmplt->len - 1) {
         styles[tt_menu->selection].style = tt_menu->selection == tt_menu->toggle 
             ? tt_menu->ss->selection_style : tt_menu->ss->unfocus_style;
 
@@ -249,8 +257,8 @@ void del_toggle_text_menu(toggle_text_menu *tt_menu) {
 // Slide Pane code.
 
 const render UNRENDERED_SLIDE = {
-    .bg_style = NOT_RENDERED,
-    .fg_style = NOT_RENDERED
+    .bg_style = MENU_BTN_NOT_RENDERED,
+    .fg_style = MENU_BTN_NOT_RENDERED
 };
 
 slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render) {
