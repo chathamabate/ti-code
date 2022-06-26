@@ -40,7 +40,7 @@ static void exit_game(void *glb_state) {
     (void)glb_state;
 
     gfx_End();
-
+    unfocus_keys(); // Free Key channel memory.
     set_malloc_fail_routine(normal_malloc_fail_routine);
 }
 
@@ -51,6 +51,11 @@ const glb_life_cycle GLOBAL_LC = {
 
 int main(void) {
     run_game(50, &GLOBAL_LC, &HOMEPAGE);
+    
+    /*
+    print_malloc_channels();
+    while (!os_GetCSC());
+    */
 
     return 0;
 }

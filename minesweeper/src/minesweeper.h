@@ -75,11 +75,10 @@ typedef struct {
 } ms_game;
 
 // Create a new minesweeper game.
-// NOTE, this calls init_ms_game.
 ms_game *new_ms_game(const ms_difficulty *diff);
 
 // Set the game to waiting... remove all mines.
-void reset_ms_game(ms_game *game);
+void init_ms_game(ms_game *game);
 
 // Start the game with the first cell to be pressed.
 void start_ms_game(ms_game *game, uint8_t r, uint8_t c);

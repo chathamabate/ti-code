@@ -127,3 +127,19 @@ void scan_focused_keys(void) {
         }
     }
 }
+
+void unfocus_keys(void) {
+    if (!focused_keys) {
+        return; 
+    }
+
+    uint8_t i;
+    for (i = 0; i < c_NumKeys; i++) {
+        key_map[i] = UNFOCUSED; // Unfocus all keys.
+    } 
+
+    safe_free(KEY_CHANNEL, focused_keys); 
+
+    focused_keys = NULL;
+    num_focused_keys = 0;
+}

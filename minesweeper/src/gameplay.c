@@ -159,6 +159,9 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
 
     gp_state->window = 
         new_ms_window(&WINDOW_TMPLT, diff);
+
+    // Initialize the first game.
+    init_ms_window(gp_state->window);
     
     gp_state->pause_menu = new_basic_text_menu(&PAUSE_MENU_TMPLT, &MS_MENU_SS);
     focus_basic_text_menu(gp_state->pause_menu);
@@ -219,7 +222,9 @@ static const loc_life_cycle *update_gameplay(void *glb_state, void *loc_state) {
             gp_state->redraw = 1;
             return &GAMEPLAY;
         case 1:
-            break; // TODO write restart logic.
+            init_ms_window(gp_state->window);
+            gp_state->redraw = 1;
+            return &GAMEPLAY;
         case 2:
             return &HOMEPAGE;
         }

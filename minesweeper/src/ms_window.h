@@ -81,8 +81,11 @@ typedef struct {
     ms_buffered_visual_cell **render;
 } ms_window;
 
-// Create a window into some game.
+// Create the memory for the window.
 ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff);
+
+// Set window up to be used.
+void init_ms_window(ms_window *window);
 
 // Macro for pausing window.
 // Should only be used when game is in play or waiting.

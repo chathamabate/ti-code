@@ -107,6 +107,10 @@ void set_focused_keys(const c_key_t *keys, uint8_t num_keys);
 // Uses kb_Scan().
 void scan_focused_keys(void);
 
+// Unfocuses all keys.
+// Deallocates memory used by key library.
+void unfocus_keys(void);
+
 typedef struct {
     c_key_t key;
     uint8_t count;

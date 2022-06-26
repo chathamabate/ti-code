@@ -101,6 +101,22 @@ ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *d
 
     window->tmplt = tmplt;
     window->game = new_ms_game(diff);
+
+    window->render = (ms_buffered_visual_cell **)
+        safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
+
+    uint8_t r;
+    for (r = 0; r < tmplt->w_height; r++) {
+        window->render[r] = (ms_buffered_visual_cell *)
+            safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell) * tmplt->w_width);
+    }
+    
+    return window;
+}
+
+void init_ms_window(ms_window *window) {
+    const ms_window_template *tmplt = window->tmplt;
+
     window->paused = 0;
 
     // Unsure if cast is really needed here.
@@ -113,22 +129,15 @@ ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *d
     window->animation_frame = MS_WINDOW_ANIMATION_DEL;
     window->animation_tick = 0;
 
-    window->render = (ms_buffered_visual_cell **)
-        safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
-
-    uint8_t r, c;
+    uint8_t r,c;
     for (r = 0; r < tmplt->w_height; r++) {
-        window->render[r] = (ms_buffered_visual_cell *)
-            safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell) * tmplt->w_width);
-
         for (c = 0; c < tmplt->w_width; c++) {
             INIT_BUFF_VIS_CELL(window->render[r][c]);
         }
     }
 
+    init_ms_game(window->game);
     load_ms_window(window);
-    
-    return window;
 }
 
 // NOTE this struct is used for animation stylings.

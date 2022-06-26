@@ -54,12 +54,10 @@ ms_game *new_ms_game(const ms_difficulty *diff) {
 
     game->uncover_stack = new_c_stack(sizeof(ms_cell_coord), 10);
 
-    reset_ms_game(game);
-
     return game;
 }
 
-void reset_ms_game(ms_game *game) {
+void init_ms_game(ms_game *game) {
     uint8_t r, c;
     for (r = 0; r < game->diff->grid_height; r++) {
         for (c = 0; c < game->diff->grid_width; c++) {
