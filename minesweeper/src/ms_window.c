@@ -31,8 +31,10 @@ static void load_ms_window(ms_window *window) {
     int16_t w_r = window->w_r;
     int16_t w_c = window->w_c;
 
-    uint8_t g_width = window->game->diff->grid_width;
-    uint8_t g_height = window->game->diff->grid_height;
+    const ms_difficulty *diff = DIFFS[window->game->diff_ind];
+
+    uint8_t g_width = diff->grid_width;
+    uint8_t g_height = diff->grid_height;
 
     const ms_window_template *tmplt = window->tmplt;
 
@@ -96,11 +98,11 @@ static void load_ms_window(ms_window *window) {
 // This way the first press by the user can always be a blank space???
 // 
 
-ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff) {
+ms_window *new_ms_window(const ms_window_template *tmplt, uint8_t d_i) {
     ms_window *window = safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_window));
 
     window->tmplt = tmplt;
-    window->game = new_ms_game(diff);
+    window->game = new_ms_game(d_i);
 
     window->render = (ms_buffered_visual_cell **)
         safe_malloc(MS_WINDOW_CHANNEL, sizeof(ms_buffered_visual_cell *) * tmplt->w_height);
@@ -151,6 +153,8 @@ typedef struct {
 // Change the appearance of all exposed and hidden cells
 // displayed in a window... (Flagged = Hidden in this case)
 static void mask_ms_window(ms_window *window, const ms_window_skin *skin) {
+    const ms_difficulty *diff = DIFFS[window->game->diff_ind];
+
     // Iterators for rows and columns in window coordinates.
     uint8_t r_i;
     uint8_t c_i, s_c_i;
@@ -165,7 +169,7 @@ static void mask_ms_window(ms_window *window, const ms_window_skin *skin) {
         r_i = (uint8_t)(-window->w_r);
     }
 
-    r_e = (uint16_t)window->game->diff->grid_height - (uint16_t)window->w_r;
+    r_e = (uint16_t)diff->grid_height - (uint16_t)window->w_r;
     if (r_e > window->tmplt->w_height) {
         r_e = window->tmplt->w_height;
     }
@@ -175,7 +179,7 @@ static void mask_ms_window(ms_window *window, const ms_window_skin *skin) {
         s_c_i = (uint8_t)(-window->w_c);  
     } 
 
-    c_e = (uint16_t)window->game->diff->grid_width - (uint16_t)window->w_c;
+    c_e = (uint16_t)diff->grid_width - (uint16_t)window->w_c;
     if (c_e > window->tmplt->w_width) {
         c_e = window->tmplt->w_width;
     } 
@@ -298,6 +302,8 @@ uint8_t update_ms_window(ms_window *window) {
 
     // Should return if any change requiring a re render has occured! 
     // Assume scan has already occured.
+    
+    const ms_difficulty *diff = DIFFS[window->game->diff_ind];
 
     // Screen coordinates of cursor. (in 16s)
     uint8_t screen_c_r = window->tmplt->s_r_offset + window->c_r;
@@ -334,7 +340,7 @@ uint8_t update_ms_window(ms_window *window) {
         }
 
         // Check for win after uncover.
-        if (window->game->non_exposed_cells == window->game->diff->mines) {
+        if (window->game->non_exposed_cells == diff->mines) {
             window->game->game_state = MS_WIN;
         }
 
@@ -397,7 +403,7 @@ uint8_t update_ms_window(ms_window *window) {
 
         window->c_c--;
     } else if (key_press(c_5) || key_press(c_Down)) {
-        if (game_c_r == window->game->diff->grid_height - 1) {
+        if (game_c_r == diff->grid_height - 1) {
             return 0;
         }
 
@@ -409,7 +415,7 @@ uint8_t update_ms_window(ms_window *window) {
 
         window->c_r++;
     } else if (key_press(c_6) || key_press(c_Right)) {
-        if (game_c_c == window->game->diff->grid_width - 1) {
+        if (game_c_c == diff->grid_width - 1) {
             return 0;
         }
 

@@ -29,6 +29,10 @@ const ms_difficulty HARD = {
     .mines = 99 
 };
 
+const ms_difficulty *DIFFS[MS_NUM_DIFFS] = {
+    &EASY, &MEDIUM, &HARD
+};
+
 // Probs could've used this in many places.
 // Probs could've used this in many places.
 // But alas... This structure is just used so
@@ -38,10 +42,11 @@ typedef struct {
     uint8_t c;
 } ms_cell_coord;
 
-ms_game *new_ms_game(const ms_difficulty *diff) {
+ms_game *new_ms_game(uint8_t d_i) {
     ms_game *game = safe_malloc(MS_GAME_CHANNEL, sizeof(ms_game));
 
-    game->diff = diff;
+    game->diff_ind = d_i;
+    const ms_difficulty *diff = DIFFS[d_i];
 
     // Generate board rows.
     game->board = safe_malloc(MS_GAME_CHANNEL, sizeof(ms_cell *) * diff->grid_height);
@@ -58,9 +63,11 @@ ms_game *new_ms_game(const ms_difficulty *diff) {
 }
 
 void init_ms_game(ms_game *game) {
+    const ms_difficulty *diff = DIFFS[game->diff_ind];
+
     uint8_t r, c;
-    for (r = 0; r < game->diff->grid_height; r++) {
-        for (c = 0; c < game->diff->grid_width; c++) {
+    for (r = 0; r < diff->grid_height; r++) {
+        for (c = 0; c < diff->grid_width; c++) {
             game->board[r][c].visibility = HIDDEN;
             game->board[r][c].type = 0;
         }
@@ -68,13 +75,15 @@ void init_ms_game(ms_game *game) {
 
     game->game_state = MS_WAITING;
     game->time_elapsed = 0;
-    game->flags_left = game->diff->mines;
-    game->non_exposed_cells = (uint16_t)game->diff->grid_width * 
-        (uint16_t)game->diff->grid_height;
+    game->flags_left = diff->mines;
+    game->non_exposed_cells = (uint16_t)diff->grid_width * 
+        (uint16_t)diff->grid_height;
 }
 
 // Get the number of surrounding mines of a cell.
 static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
+    const ms_difficulty *diff = DIFFS[game->diff_ind];
+
     uint8_t mines = 0;
 
     uint8_t s_c_i;
@@ -88,7 +97,7 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
         r_i = 0;
     } 
     
-    if (r == game->diff->grid_height - 1) {
+    if (r == diff->grid_height - 1) {
         r_e = r;
     }
 
@@ -99,7 +108,7 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
         s_c_i = 0;
     } 
     
-    if (c == game->diff->grid_width - 1) {
+    if (c == diff->grid_width - 1) {
         c_e = c;
     }
 
@@ -119,13 +128,15 @@ static uint8_t surrounding_mines(ms_game *game, uint8_t r, uint8_t c) {
 }
 
 void start_ms_game(ms_game *game, uint8_t r, uint8_t c) {
-    uint8_t mines_left = game->diff->mines;
+    const ms_difficulty *diff = DIFFS[game->diff_ind];
+
+    uint8_t mines_left = diff->mines;
 
     uint8_t t_r, t_c; // Randomly place mines.
     int16_t r_diff, c_diff;
     while (mines_left) {
-        t_r = random() % game->diff->grid_height;
-        t_c = random() % game->diff->grid_width; 
+        t_r = random() % diff->grid_height;
+        t_c = random() % diff->grid_width; 
 
         if (game->board[t_r][t_c].type == MINE) {
             continue;
@@ -144,8 +155,8 @@ void start_ms_game(ms_game *game, uint8_t r, uint8_t c) {
         mines_left--;
     }
 
-    for (t_r = 0; t_r < game->diff->grid_height; t_r++) {
-        for (t_c = 0; t_c < game->diff->grid_width; t_c++) {
+    for (t_r = 0; t_r < diff->grid_height; t_r++) {
+        for (t_c = 0; t_c < diff->grid_width; t_c++) {
             if (game->board[t_r][t_c].type == MINE) {
                 continue;
             }
@@ -159,13 +170,13 @@ void start_ms_game(ms_game *game, uint8_t r, uint8_t c) {
 
     // Start the game!
     game->game_state = MS_IN_PLAY;
-
-    // TODO Timing.
 }
 
 
 
 void uncover_ms_cell(ms_game *game, uint8_t r, uint8_t c) {
+    const ms_difficulty *diff = DIFFS[game->diff_ind];
+
     game->board[r][c].visibility = EXPOSED;
     game->non_exposed_cells--;
 
@@ -204,7 +215,7 @@ void uncover_ms_cell(ms_game *game, uint8_t r, uint8_t c) {
             n_r_i = 0;
         } 
         
-        if (c_cd.r == game->diff->grid_height - 1) {
+        if (c_cd.r == diff->grid_height - 1) {
             n_r_e = c_cd.r;
         }
 
@@ -215,7 +226,7 @@ void uncover_ms_cell(ms_game *game, uint8_t r, uint8_t c) {
             s_n_c_i = 0;
         }
 
-        if (c_cd.c == game->diff->grid_width - 1) {
+        if (c_cd.c == diff->grid_width - 1) {
             n_c_e = c_cd.c;
         }
 
@@ -253,9 +264,11 @@ void uncover_ms_cell(ms_game *game, uint8_t r, uint8_t c) {
 }
 
 void del_ms_game(ms_game *game) {
+    const ms_difficulty *diff = DIFFS[game->diff_ind];
+
     // Free each row.
     uint8_t r;
-    for (r = 0; r < game->diff->grid_height; r++) {
+    for (r = 0; r < diff->grid_height; r++) {
         safe_free(MS_GAME_CHANNEL, game->board[r]);
     }
 

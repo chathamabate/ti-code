@@ -114,10 +114,6 @@ static const char *GM_MENU_LABELS[GM_MENU_LABELS_LEN] = {
 #define MENU_BTN_WIDTH 96 
 #define MENU_BTN_HEIGHT 32
 
-#define EASY_DIFF_IND 0
-#define MEDIUM_DIFF_IND 1
-#define HARD_DIFF_IND 2
-
 static const text_menu_template GM_MENU_TEMPLATE = {
     .button_height = MENU_BTN_HEIGHT,
     .button_width = MENU_BTN_WIDTH,
@@ -299,15 +295,14 @@ static void *exit_gamemode(void *glb_state, void *loc_state, const loc_life_cycl
     if (next_loc_lc == &HOMEPAGE) {
         return NULL;
     }
+
+    // Pass the toggle to the gameplay state.
+    uint8_t *diff_ind_ptr = safe_malloc(GAMEPLAY_CHANNEL, sizeof(uint8_t));
+    *diff_ind_ptr = toggle;
     
-    switch (toggle) {
-    case EASY_DIFF_IND:
-        return (void *)(&EASY);
-    case MEDIUM_DIFF_IND:
-        return (void *)(&MEDIUM);
-    default:
-        return (void *)(&HARD); 
-    }
+    // The toggle will be the difficulty index given
+    // the menu is set up correctly.
+    return (void *)diff_ind_ptr;    
 }
 
 const loc_life_cycle GAMEMODE = {

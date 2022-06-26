@@ -20,6 +20,15 @@ typedef struct {
 
 extern const ms_difficulty EASY, MEDIUM, HARD;
 
+// Integer IDs for difficulties.
+#define MS_EASY         0
+#define MS_MEDIUM       1
+#define MS_HARD         2
+
+#define MS_NUM_DIFFS    3
+
+extern const ms_difficulty *DIFFS[MS_NUM_DIFFS];
+
 // Visibilities.
 #define HIDDEN  0
 #define EXPOSED 1 
@@ -51,8 +60,8 @@ typedef struct {
 #define MS_TIMEOUT 999
 
 typedef struct {
-    // Difficulty of the game.
-    const ms_difficulty *diff;
+    // Difficulty index for the game.
+    uint8_t diff_ind;
     
     // gameboard with dimmensions found
     // in diff.
@@ -75,7 +84,7 @@ typedef struct {
 } ms_game;
 
 // Create a new minesweeper game.
-ms_game *new_ms_game(const ms_difficulty *diff);
+ms_game *new_ms_game(uint8_t d_i);
 
 // Set the game to waiting... remove all mines.
 void init_ms_game(ms_game *game);

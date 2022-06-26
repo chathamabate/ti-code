@@ -82,7 +82,7 @@ typedef struct {
 } ms_window;
 
 // Create the memory for the window.
-ms_window *new_ms_window(const ms_window_template *tmplt, const ms_difficulty *diff);
+ms_window *new_ms_window(const ms_window_template *tmplt, uint8_t d_i);
 
 // Set window up to be used.
 void init_ms_window(ms_window *window);

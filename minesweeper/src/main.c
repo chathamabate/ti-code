@@ -52,10 +52,8 @@ const glb_life_cycle GLOBAL_LC = {
 int main(void) {
     run_game(50, &GLOBAL_LC, &HOMEPAGE);
     
-    /*
     print_malloc_channels();
     while (!os_GetCSC());
-    */
 
     return 0;
 }

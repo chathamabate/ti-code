@@ -153,12 +153,17 @@ typedef struct {
 
 static void *enter_gameplay(void *glb_state, void *trans_state) {
     (void)glb_state;
-    const ms_difficulty *diff = (const ms_difficulty *)trans_state;
+
+    // Extract given difficulty index.
+    uint8_t *diff_ind_ptr = (uint8_t *)trans_state;
+    uint8_t diff_ind = *diff_ind_ptr;
+
+    safe_free(GAMEPLAY_CHANNEL, diff_ind_ptr);
 
     gameplay_state *gp_state = safe_malloc(GAMEPLAY_CHANNEL, sizeof(gameplay_state));
 
     gp_state->window = 
-        new_ms_window(&WINDOW_TMPLT, diff);
+        new_ms_window(&WINDOW_TMPLT, diff_ind);
 
     // Initialize the first game.
     init_ms_window(gp_state->window);
