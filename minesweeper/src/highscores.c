@@ -89,11 +89,10 @@ static void render_hard_scores(const slide_pane_template *tmplt, void *data) {
     render_score_list(tmplt, sb->scores[MS_HARD], MS_SCORES_LEN);
 }
 
-const char *SELECT_MSG = "Select Difficulty";
+static const char *SELECT_MSG = "Select Diff";
 
 static void render_select_diff(const slide_pane_template *tmplt, void *data) {
     (void)data;
-
     gfx_SetTextFGColor(1);
     gfx_SetTextScale(SC_TXT_W_SCALE, SC_TXT_H_SCALE);
     gfx_PrintStringXY(SELECT_MSG, 
@@ -103,7 +102,7 @@ static void render_select_diff(const slide_pane_template *tmplt, void *data) {
 }
 
 #define SCORE_RENDERERS_LEN 4
-const slide_renderer SCORE_RENDERERS[SCORE_RENDERERS_LEN] = {
+static const slide_renderer SCORE_RENDERERS[SCORE_RENDERERS_LEN] = {
     render_easy_scores,
     render_medium_scores,
     render_hard_scores,
@@ -112,7 +111,7 @@ const slide_renderer SCORE_RENDERERS[SCORE_RENDERERS_LEN] = {
 
 #define SELECT_DIFF_FG (SCORE_RENDERERS_LEN - 1)
 
-const slide_pane_template SCORES_TMPLT = {
+static const slide_pane_template SCORES_TMPLT = {
     .pane_width = align(7),
     .pane_height = align(6), 
     .x = align(10),
@@ -124,11 +123,11 @@ const slide_pane_template SCORES_TMPLT = {
 };
 
 #define NAV_MENU_LABELS_LEN 1
-const char *NAV_MENU_LABELS[NAV_MENU_LABELS_LEN] = {
+static const char *NAV_MENU_LABELS[NAV_MENU_LABELS_LEN] = {
     "Back"
 };
 
-const text_menu_template NAV_MENU_TMPLT = {
+static const text_menu_template NAV_MENU_TMPLT = {
     .button_height = align(2),
     .button_width = align(6),
     .label_height_scale = 1,

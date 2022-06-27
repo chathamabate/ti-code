@@ -20,6 +20,7 @@
 #include "minesweeper.h"
 #include "ms_window.h"
 #include "ms_mem_channels.h"
+#include "ms_scores.h"
 
 #include "gfx/tiles16.h"
 
@@ -274,10 +275,12 @@ static void render_gameplay(void *glb_state, void *loc_state) {
 
 static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
     (void)glb_state;
-    (void)loc_state;
     (void)next_loc_lc;
 
+    ms_scoreboard *sb = (ms_scoreboard *)glb_state;
     gameplay_state *gp_state = (gameplay_state *)loc_state;
+
+    // TODO enter score logging logic.
 
     del_ms_window(gp_state->window);
     del_basic_text_menu(gp_state->pause_menu);

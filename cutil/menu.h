@@ -154,11 +154,11 @@ typedef void (*slide_renderer)(const slide_pane_template *tmplt, void *data);
 #define slide_pane_center_text(tmplt, text) \
     slide_pane_center_x(tmplt, gfx_GetStringWidth(text))
 
-#define slide_pane_center_x(tmplt, width) \
-    ((tmplt)->x + ((tmplt)->pane_width - width) / 2)
+#define slide_pane_center_x(tmplt, w) \
+    ((tmplt)->x + ((tmplt)->pane_width - (w)) / 2)
 
-#define slide_pane_center_y(tmplt, height) \
-    ((tmplt)->y + ((tmplt)->pane_height - height) / 2)
+#define slide_pane_center_y(tmplt, h) \
+    ((tmplt)->y + ((tmplt)->pane_height - (h)) / 2)
 
 typedef struct {
     // Index into the style palette.
