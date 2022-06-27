@@ -19,8 +19,14 @@ extern const loc_life_cycle GAMEMODE;
 
 extern const loc_life_cycle GAMEPLAY;
 // Tranisition state into GAMEPLAY
-// should be a const difficulty * 
-// describing which difficulty to play.
+// should be a uint8_t *.
+// This should point to the difficulty index to play with.
+// The memory used by the pointer should be dynamic
+// and will be freed upon entering gameplay.
+
+extern const loc_life_cycle HIGHSCORES;
+// Homepage has no transition state... 
+// should just be null.
 
 
 

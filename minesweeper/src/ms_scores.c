@@ -12,6 +12,8 @@ ms_scoreboard *new_ms_scoreboard() {
             sb->scores[diff_i][score_i] = MS_SCORES_LEN;
         }
     }
+
+    return sb;
 }
 
 uint8_t insert_score(ms_scoreboard *sb, uint8_t diff_ind, uint16_t score) {

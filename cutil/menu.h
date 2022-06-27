@@ -151,8 +151,11 @@ typedef struct slide_pane_template_data {
 
 typedef void (*slide_renderer)(const slide_pane_template *tmplt, void *data);
 
-#define slide_pane_center_x(tmplt, text) \
-    ((tmplt)->x + ((tmplt)->pane_width - gfx_GetStringWidth(text)) / 2)
+#define slide_pane_center_text(tmplt, text) \
+    slide_pane_center_x(tmplt, gfx_GetStringWidth(text))
+
+#define slide_pane_center_x(tmplt, width) \
+    ((tmplt)->x + ((tmplt)->pane_width - width) / 2)
 
 #define slide_pane_center_y(tmplt, height) \
     ((tmplt)->y + ((tmplt)->pane_height - height) / 2)

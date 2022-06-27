@@ -17,6 +17,7 @@
 #include "gfx/tiles16.h"
 #include "gfx/borders.h"
 #include "ti/getcsc.h"
+#include "ms_scores.h"
 
 // Game states and menus could be improved from snake...
 // Archiving will probs be the same TBH...
@@ -33,11 +34,14 @@ static void *enter_game(void) {
     gfx_SetPalette(ms_palette, sizeof_ms_palette, 0);
     gfx_SetTransparentColor(0);
 
-    return NULL; // No Global state yet.
+    // Global state will just be the scoreboard.
+    // TODO load this from archive.
+    return new_ms_scoreboard();
 }
 
 static void exit_game(void *glb_state) {
-    (void)glb_state;
+    ms_scoreboard *sb = (ms_scoreboard *)glb_state;
+    del_ms_scoreboard(sb);
 
     gfx_End();
     unfocus_keys(); // Free Key channel memory.

@@ -2,6 +2,7 @@
 #define MS_SCORES_H
 
 #include <stdint.h>
+#include "ms_mem_channels.h"
 #include "minesweeper.h"
 
 // Scores per difficulty.
@@ -21,5 +22,7 @@ ms_scoreboard *new_ms_scoreboard();
 // Otherwise returns the index in the specific difficulty
 // of the new high score.
 uint8_t insert_score(ms_scoreboard *sb, uint8_t diff_ind, uint16_t score);
+
+#define del_ms_scoreboard(sb) safe_free(MS_SCORES_CHANNEL, sb)
 
 #endif

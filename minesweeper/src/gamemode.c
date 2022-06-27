@@ -39,7 +39,7 @@ static void render_difficulty_info(const slide_pane_template *tmplt,
     uint8_t y_p;
 
     gfx_SetTextScale(DIFF_W_SCALE, DIFF_H_SCALE);    
-    x_p = slide_pane_center_x(tmplt, diff_name); 
+    x_p = slide_pane_center_text(tmplt, diff_name); 
     y_p = slide_pane_center_y(tmplt, INFO_HEIGHT);
 
     // Print difficulty name.
@@ -54,14 +54,14 @@ static void render_difficulty_info(const slide_pane_template *tmplt,
     // Print grid width and height.
     sprintf(buff, "%d x %d", diff->grid_height, diff->grid_width);
 
-    x_p = slide_pane_center_x(tmplt, buff);
+    x_p = slide_pane_center_text(tmplt, buff);
     y_p += INFO_SPACER + DIFF_H_SCALE * 8;
     gfx_PrintStringXY(buff, x_p, y_p);
 
     // Print number of mines in the grid.
     sprintf(buff, "%d Mines", diff->mines);
 
-    x_p = slide_pane_center_x(tmplt, buff);
+    x_p = slide_pane_center_text(tmplt, buff);
     y_p += INFO_SPACER + INFO_H_SCALE * 8;
     gfx_PrintStringXY(buff, x_p, y_p);
 }
