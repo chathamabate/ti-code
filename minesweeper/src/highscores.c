@@ -1,7 +1,10 @@
+#include "cutil/misc.h"
 #include "graphx.h"
 #include "states.h"
 #include <cutil/keys.h>
 #include <cutil/menu.h>
+
+#include "ms_mem_channels.h"
 #include "minesweeper.h"
 #include "ms_styles.h"
 #include "ms_misc.h"
@@ -60,7 +63,12 @@ static void render_score_list(const slide_pane_template *tmplt,
         gfx_PrintUInt(s_i + 1, 1);
         gfx_PrintString(".");
         gfx_SetTextXY(x + (ROW_CHARS - 3) * SC_TXT_W_SCALE * 8, y);
-        gfx_PrintUInt(scores[s_i], 3);
+
+        if (scores[s_i] == MS_TIMEOUT + 1) {
+            gfx_PrintString("N/A");
+        } else {
+            gfx_PrintUInt(scores[s_i], 3);
+        }
     }   
 
     gfx_SetMonospaceFont(0);
@@ -81,12 +89,28 @@ static void render_hard_scores(const slide_pane_template *tmplt, void *data) {
     render_score_list(tmplt, sb->scores[MS_HARD], MS_SCORES_LEN);
 }
 
-#define SCORE_RENDERERS_LEN 3
+const char *SELECT_MSG = "Select Difficulty";
+
+static void render_select_diff(const slide_pane_template *tmplt, void *data) {
+    (void)data;
+
+    gfx_SetTextFGColor(1);
+    gfx_SetTextScale(SC_TXT_W_SCALE, SC_TXT_H_SCALE);
+    gfx_PrintStringXY(SELECT_MSG, 
+            slide_pane_center_text(tmplt, SELECT_MSG),
+            slide_pane_center_y(tmplt, 8 * SC_TXT_H_SCALE)
+    );
+}
+
+#define SCORE_RENDERERS_LEN 4
 const slide_renderer SCORE_RENDERERS[SCORE_RENDERERS_LEN] = {
     render_easy_scores,
     render_medium_scores,
-    render_hard_scores
+    render_hard_scores,
+    render_select_diff
 };
+
+#define SELECT_DIFF_FG (SCORE_RENDERERS_LEN - 1)
 
 const slide_pane_template SCORES_TMPLT = {
     .pane_width = align(7),
@@ -95,33 +119,158 @@ const slide_pane_template SCORES_TMPLT = {
     .y = align(2),
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
-    .
+    .slide_renderers = SCORE_RENDERERS,
+    .len = SCORE_RENDERERS_LEN 
 };
+
+#define NAV_MENU_LABELS_LEN 1
+const char *NAV_MENU_LABELS[NAV_MENU_LABELS_LEN] = {
+    "Back"
+};
+
+const text_menu_template NAV_MENU_TMPLT = {
+    .button_height = align(2),
+    .button_width = align(6),
+    .label_height_scale = 1,
+    .label_width_scale = 1,
+    .labels = NAV_MENU_LABELS,
+    .len = NAV_MENU_LABELS_LEN,
+    .format = MENU_HORIZONTAL,
+    .style_palette = PANE_STYLE_PALETTE,
+    .style_palette_len = PANE_STYLE_PALETTE_LEN,
+    .x = align(7),
+    .y = align(11)
+};
+
+#define DIFFS_MENU_ID   0
+#define NAV_MENU_ID     1
+
+typedef struct {
+    slide_pane *scores_pane;
+    basic_text_menu *diff_menu;
+    basic_text_menu *nav_menu; // NOTE this only has one button
+                               // maybe in the future we will add more.
+
+    uint8_t focused_menu;
+    uint8_t redraw;
+} highscores_state;
 
 static void *enter_highscores(void *glb_state, void *trans_state) {
     (void)glb_state;
     (void)trans_state;
+    
+    highscores_state *hss = 
+        safe_malloc(HIGHSCORES_CHANNEL, sizeof(highscores_state));
+
+    const render INIT_RENDER = {
+        .bg_style = LIGHT_BLUE,
+        .fg_style = MS_EASY
+    };
+
+    hss->scores_pane = new_slide_pane(&SCORES_TMPLT, INIT_RENDER);
+    hss->diff_menu = new_basic_text_menu(&DIFFS_TMPLT, &MS_MENU_SS);
+    hss->nav_menu = new_basic_text_menu(&NAV_MENU_TMPLT, &MS_MENU_SS);
+
+    // Start with difficulties focused.
+    focus_basic_text_menu(hss->diff_menu);
+    hss->focused_menu = DIFFS_MENU_ID;
+
+    // Draw initial background in both buffer and screen.
+    render_random_bg();
+    gfx_Blit(gfx_buffer);
+
+    hss->redraw = 1;
+
     set_focused_keys(FOCUSED_KEYS, FOCUSED_KEYS_LEN);
 
-    return NULL;
+    return hss;
 }
 
 static const loc_life_cycle *update_highscores(void *glb_state, void *loc_state) {
     (void)glb_state;
-    (void)loc_state;
 
-    return NULL;
+    highscores_state *hss = (highscores_state *)loc_state;
+
+    scan_focused_keys();
+
+    if (hss->focused_menu == NAV_MENU_ID) {
+        if (key_press(c_Enter)) {
+            return &HOMEPAGE;
+        }
+
+        if (key_press(c_Up) || key_press(c_8)) {
+            unfocus_basic_text_menu(hss->nav_menu); 
+
+            focus_basic_text_menu(hss->diff_menu);
+            hss->scores_pane->slide.actual.bg_style = LIGHT_BLUE;
+            hss->scores_pane->slide.actual.fg_style = hss->diff_menu->selection;
+            hss->focused_menu = DIFFS_MENU_ID;
+
+            hss->redraw = 1;
+
+            return &HIGHSCORES;
+        }
+
+        // NOTE since the nave menu only has one selection.
+        // it doesn't really need to be updated here.
+
+        return &HIGHSCORES;
+    }
+
+    // Here The difficulty menu must be in focus.
+
+    // Move from difficulties to nav bar.
+    if (hss->diff_menu->selection == DIFFS_LABELS_LEN - 1 && 
+            (key_press(c_Down) || key_press(c_5))) {
+        unfocus_basic_text_menu(hss->diff_menu);
+        hss->scores_pane->slide.actual.bg_style = BLACK;
+        hss->scores_pane->slide.actual.fg_style = SELECT_DIFF_FG;
+
+        focus_basic_text_menu(hss->nav_menu);
+        hss->focused_menu = NAV_MENU_ID;
+
+        hss->redraw = 1;
+
+        return &HIGHSCORES;
+    }
+
+    if (update_basic_text_menu(hss->diff_menu)) {
+        hss->scores_pane->slide.actual.fg_style = 
+            hss->diff_menu->selection;
+
+        hss->redraw = 1;
+    }
+
+    return &HIGHSCORES;
 }
 
 static void render_highscores(void *glb_state, void *loc_state) {
-    (void)glb_state;
-    (void)loc_state;
+    ms_scoreboard *sb = (ms_scoreboard *)glb_state;
+    highscores_state *hss = (highscores_state *)loc_state;
+
+    if (!hss->redraw) {
+        return;
+    }
+    
+    render_text_menu_nc(hss->diff_menu->super);
+    render_text_menu_nc(hss->nav_menu->super);
+    render_slide_pane_nc(hss->scores_pane, sb);
+
+    gfx_SwapDraw();
+    hss->redraw = 1;
 }
 
 static void *exit_highscores(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
     (void)glb_state;
-    (void)loc_state;
     (void)next_loc_lc;
+
+    highscores_state *hss = (highscores_state *)loc_state;
+
+    del_slide_pane(hss->scores_pane);
+    del_basic_text_menu(hss->diff_menu);
+    del_basic_text_menu(hss->nav_menu);
+
+    safe_free(HIGHSCORES_CHANNEL, hss);
 
     return NULL;
 }

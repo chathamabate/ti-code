@@ -95,7 +95,7 @@ static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
         case 0: // Play
             return &GAMEMODE;
         case 1: // Highscores
-            break;
+            return &HIGHSCORES;
         case 2: // Instructions
             break;
         case 3: // Exit

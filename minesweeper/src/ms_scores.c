@@ -9,7 +9,7 @@ ms_scoreboard *new_ms_scoreboard() {
     uint8_t diff_i, score_i;
     for (diff_i = 0; diff_i < MS_NUM_DIFFS; diff_i++) {
         for (score_i = 0; score_i < MS_SCORES_LEN; score_i++) {
-            sb->scores[diff_i][score_i] = MS_SCORES_LEN;
+            sb->scores[diff_i][score_i] = MS_TIMEOUT + 1;
         }
     }
 
