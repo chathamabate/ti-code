@@ -28,6 +28,13 @@ extern const loc_life_cycle HIGHSCORES;
 // Homepage has no transition state... 
 // should just be null.
 
+extern const loc_life_cycle VICTORY;
+
+typedef struct {
+    uint16_t score;     // Score from the game.
+    uint8_t diff_id;    // Difficulty index of the game played.
+} trans_victory;
+
 
 
 #endif

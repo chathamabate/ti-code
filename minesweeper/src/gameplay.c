@@ -50,7 +50,7 @@ static const ms_window_template WINDOW_TMPLT = {
 static const char *PAUSE_LABELS[PAUSE_LABELS_LEN] = {
     "Resume",
     "Restart",
-    "Exit"
+    "Main Menu"
 };
 
 #define BTN_WIDTH align(8) 

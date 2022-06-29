@@ -7,7 +7,7 @@
 typedef void (*malloc_fail_routine)(void);
 
 // MUST BE EVEN!
-#define MALLOC_CHANNELS 16
+#define MALLOC_CHANNELS 24
 
 // Standard Memory Channels.
 #define TEST_CHANNEL 0

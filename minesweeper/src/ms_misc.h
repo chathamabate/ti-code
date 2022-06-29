@@ -5,6 +5,7 @@
 #include <tice.h>
 
 #define align(c) (c * 16)
+#define align_horizontal(w) ((20 - (w)) / 2)
 
 #define render_random_bg() render_random_tile16_grid(6, 7, 1, 3)
 

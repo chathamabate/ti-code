@@ -11,14 +11,20 @@
 
 static uint8_t malloc_counts[MALLOC_CHANNELS];
 
+#define CHANNELS_PER_ROW 3
+
 void print_malloc_channels(void) {
     char buff[20];
     uint8_t c;
-    for (c = 0; c < MALLOC_CHANNELS; c += 2) {
-        sprintf(buff, "%d: %d  %d: %d", c, malloc_counts[c], c + 1, malloc_counts[c + 1]); 
-        
+    for (c = 0; c < MALLOC_CHANNELS; c++) {
+        sprintf(buff, "%d: %d", c, malloc_counts[c]);
         os_PutStrFull(buff);
-        os_NewLine();
+
+        if ((c + 1) % CHANNELS_PER_ROW == 0) {
+            os_NewLine();
+        } else {
+            os_PutStrFull("  ");
+        }
     } 
 }
 
