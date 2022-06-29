@@ -88,10 +88,6 @@ static void load_ms_window(ms_window *window) {
         .actual_vc.bg += 3;
 }
 
-// Number of frames to wait before switching the window skin
-// during an animation.
-#define MS_WINDOW_ANIMATION_DEL 5 
-
 // TODO / NOTE
 // To consider here... should the window have control over creating the game 
 // as well???

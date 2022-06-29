@@ -1,6 +1,7 @@
 #include "ms_styles.h"
 
 #include <cutil/menu.h>
+#include "cutil/cgraphx.h"
 #include "gfx/borders.h"
 
 const cgfx_pane_style PANE_STYLE_0 = {
@@ -21,12 +22,17 @@ const cgfx_pane_style PANE_STYLE_2 = {
     .text_fg = 0x01
 };
 
-#define PANE_STYLE_PALETTE_LEN 3
+const cgfx_pane_style PANE_STYLE_3 = {
+    .border_sprites = &borders_tiles[24],
+    .fill = 0x0C,
+    .text_fg = 0x01
+};
 
 const cgfx_pane_style *PANE_STYLE_PALETTE_DATA[PANE_STYLE_PALETTE_LEN] = {
     &PANE_STYLE_0,
     &PANE_STYLE_1,
-    &PANE_STYLE_2
+    &PANE_STYLE_2,
+    &PANE_STYLE_3
 };
 
 const selection_styling MS_MENU_SS = {

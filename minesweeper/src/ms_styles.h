@@ -12,8 +12,9 @@
 extern const cgfx_pane_style PANE_STYLE_0;
 extern const cgfx_pane_style PANE_STYLE_1;
 extern const cgfx_pane_style PANE_STYLE_2;  
+extern const cgfx_pane_style PANE_STYLE_3;
 
-#define PANE_STYLE_PALETTE_LEN 3
+#define PANE_STYLE_PALETTE_LEN 4
 
 extern const cgfx_pane_style *PANE_STYLE_PALETTE_DATA[PANE_STYLE_PALETTE_LEN];
 

@@ -11,6 +11,8 @@
 #include "ms_misc.h"
 #include "ms_styles.h"
 #include "ms_mem_channels.h"
+#include "ms_window.h"
+#include "sys/lcd.h"
 
 #define FOCUSED_KEYS_LEN 5
 static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
@@ -58,11 +60,11 @@ static const slide_renderer SCORE_RNDRRS[SCORE_RNDRRS_LEN] = {
 };
 
 // Only to be used when a highscore is achieved.
-const slide_pane_template SCORE_TMPLT = {
+static const slide_pane_template SCORE_TMPLT = {
     .pane_height = align(2),
     .pane_width = align(8),
     .x = align_horizontal(8),
-    .y = align(7),
+    .y = align(1),
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
     .slide_renderers = SCORE_RNDRRS,
@@ -76,10 +78,13 @@ typedef struct {
     uint8_t diff_ind;
     uint16_t score;
 
+    uint8_t animation_tick;
     uint8_t new_hs;
 
     uint8_t redraw;
 } victory_state;
+
+static const char *VICTORY_MSG = "Victory!";
 
 static void *enter_victory(void *glb_state, void *trans_state) {
     ms_scoreboard *sb = (ms_scoreboard *)glb_state;
@@ -103,17 +108,20 @@ static void *enter_victory(void *glb_state, void *trans_state) {
 
     // Figure out whether or not new highscore has come about.
     vs->new_hs = insert_score(sb, vs->diff_ind, vs->score) != MS_SCORES_LEN;
-
-    if (vs->new_hs) {
-        vs->score_pane->slide.actual.bg_style = GOLD;
-    }
+    vs->animation_tick = 0;
 
     // Background Render....
 
     render_random_bg();
 
     // Fill this with some victory LOGO...
-    cgfx_pane_nc(&PANE_STYLE_0, align(3), align(1), align(14), align(5));
+    cgfx_pane_nc(&PANE_STYLE_0, align(5), align(4), align(10), align(4));
+
+    // (4, 1) 12 x 4
+    gfx_SetTextScale(2, 4);
+    gfx_SetTextFGColor(1);
+    gfx_PrintStringXY(VICTORY_MSG, (LCD_WIDTH - gfx_GetStringWidth(VICTORY_MSG)) / 2, align(5));
+
     gfx_Blit(gfx_buffer);
 
     vs->redraw = 1;
@@ -122,6 +130,8 @@ static void *enter_victory(void *glb_state, void *trans_state) {
 
     return vs;
 }
+
+#define NEW_HS_ANIMATION_DELAY 10
 
 static const loc_life_cycle *update_victory(void *glb_state, void *loc_state) {
     (void)glb_state;
@@ -132,6 +142,15 @@ static const loc_life_cycle *update_victory(void *glb_state, void *loc_state) {
 
     if (key_press(c_Enter)) {
         return vs->nav->selection == 0 ? &GAMEPLAY : &HOMEPAGE;
+    }
+
+    if (++vs->animation_tick % NEW_HS_ANIMATION_DELAY == 0) {
+        vs->score_pane->slide.actual.bg_style = 
+            vs->score_pane->slide.actual.bg_style == LIGHT_BLUE 
+            ? GOLD : LIGHT_BLUE;
+
+        vs->animation_tick = 0;
+        vs->redraw = 1;
     }
 
     vs->redraw |= update_basic_text_menu(vs->nav);

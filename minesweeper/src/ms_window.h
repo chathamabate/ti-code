@@ -32,6 +32,9 @@ typedef struct {
 // 9 is mine.
 #define FG_NO_RENDER 10
 
+// Animation delay amount for a vicotry/defeat sequence.
+#define MS_WINDOW_ANIMATION_DEL 5 
+
 #define ms_visual_cell_equ(v_cell_1, v_cell_2) \
     ((v_cell_1).bg == (v_cell_2).bg && (v_cell_1).fg == (v_cell_2).fg) 
 
