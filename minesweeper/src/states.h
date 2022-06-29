@@ -35,6 +35,9 @@ typedef struct {
     uint8_t diff_id;    // Difficulty index of the game played.
 } trans_victory;
 
+extern const loc_life_cycle DEFEAT;
+// Transition state should be a uint8_t *.
+// This should be the difficulty index of the game lost.
 
 
 #endif
