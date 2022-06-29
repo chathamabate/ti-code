@@ -137,7 +137,7 @@ static void render_score_render(score_render *sr) {
 #define TIME_EL_NO_RENDER (MS_TIMEOUT + 1) 
 
 // Number of ticks of end animation to run.
-#define END_ANIMATION_LEN 20
+#define END_ANIMATION_LEN 40
 
 typedef struct {
     ms_window *window;
@@ -201,10 +201,9 @@ static const loc_life_cycle *update_gameplay(void *glb_state, void *loc_state) {
         gp_state->redraw |= update_score_render(&(gp_state->sr), gp_state->window->game);
         gp_state->redraw |= update_ms_window(gp_state->window);
 
-        // TODO put in Defeat and Victory screens.
-        // For now just return to homepage.
         if (gp_state->window->animation_tick > END_ANIMATION_LEN) {
-            return &HOMEPAGE; 
+            return gp_state->window->game->game_state == MS_WIN 
+                ? &VICTORY : &HOMEPAGE; // TODO Defeat page.
         }
 
         // Check if the update triggered a pause.
@@ -277,14 +276,23 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
     (void)glb_state;
     (void)next_loc_lc;
 
-    ms_scoreboard *sb = (ms_scoreboard *)glb_state;
     gameplay_state *gp_state = (gameplay_state *)loc_state;
 
-    // TODO enter score logging logic.
+    uint8_t diff_id = gp_state->window->game->diff_ind;
+    uint16_t score = gp_state->window->game->time_elapsed;
 
     del_ms_window(gp_state->window);
     del_basic_text_menu(gp_state->pause_menu);
     safe_free(GAMEPLAY_CHANNEL, gp_state);
+
+    if (next_loc_lc == &VICTORY) {
+        trans_victory *tv = safe_malloc(VICTORY_CHANNEL, sizeof(trans_victory));
+
+        tv->diff_id = diff_id;
+        tv->score = score;
+
+        return tv;
+    }
 
     return NULL;
 }

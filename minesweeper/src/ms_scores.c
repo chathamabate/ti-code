@@ -27,9 +27,13 @@ uint8_t insert_score(ms_scoreboard *sb, uint8_t diff_ind, uint16_t score) {
         // Shift scores down from s_i.
         uint8_t s_t_i;
         for (s_t_i = s_i + 1; s_t_i < MS_SCORES_LEN; s_t_i++) {
+            // NOTE  THIS IS AN ERROR;
             sb->scores[diff_ind][s_t_i] = 
                 sb->scores[diff_ind][s_t_i - 1];
         }
+
+        // Insert Highscore itself.
+        sb->scores[diff_ind][s_i] = score;
     }
 
     return s_i;
