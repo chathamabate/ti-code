@@ -1,8 +1,10 @@
+#include "cutil/cgraphx.h"
 #include "cutil/misc.h"
 #include "graphx.h"
 #include "states.h"
 #include <cutil/keys.h>
 #include <cutil/menu.h>
+#include <string.h>
 
 #include "ms_mem_channels.h"
 #include "minesweeper.h"
@@ -34,7 +36,7 @@ static const text_menu_template DIFFS_TMPLT = {
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
     .x = align(3),
-    .y = align(2)
+    .y = align(5)
 };
 
 #define SC_TXT_W_SCALE      1
@@ -57,6 +59,8 @@ static void render_score_list(const slide_pane_template *tmplt,
     gfx_SetMonospaceFont(SC_TXT_W_SCALE * 8);
     gfx_SetTextScale(SC_TXT_W_SCALE, SC_TXT_H_SCALE);
 
+    // Score can never be more than 5 characters.
+    char score_buff[6];
     uint8_t s_i;
     for (s_i = 0; s_i < scores_len; s_i++, y += ROW_HEIGHT) {
         gfx_SetTextXY(x, y);
@@ -67,7 +71,9 @@ static void render_score_list(const slide_pane_template *tmplt,
         if (scores[s_i] == MS_TIMEOUT + 1) {
             gfx_PrintString("N/A");
         } else {
-            gfx_PrintUInt(scores[s_i], 3);
+            sprintf(score_buff, "%d", scores[s_i]);
+            shift_right(score_buff, ' ', 6, strlen(score_buff) + 1);
+            gfx_PrintString(score_buff);
         }
     }   
 
@@ -115,7 +121,7 @@ static const slide_pane_template SCORES_TMPLT = {
     .pane_width = align(7),
     .pane_height = align(6), 
     .x = align(10),
-    .y = align(2),
+    .y = align(5),
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
     .slide_renderers = SCORE_RENDERERS,
@@ -138,7 +144,19 @@ static const text_menu_template NAV_MENU_TMPLT = {
     .style_palette = PANE_STYLE_PALETTE,
     .style_palette_len = PANE_STYLE_PALETTE_LEN,
     .x = align(7),
-    .y = align(11)
+    .y = align(12)
+};
+
+static const text_pane_template TITLE_TMPLT = {
+    .x = align(6),
+    .y = align(1),
+    .w = align(8),
+    .h = align(3),
+    .style = &PANE_STYLE_0,
+    .text = "Highscores",
+    .text_color = 1,
+    .text_h_sc = 2,
+    .text_w_sc = 1
 };
 
 #define DIFFS_MENU_ID   0
@@ -176,6 +194,9 @@ static void *enter_highscores(void *glb_state, void *trans_state) {
 
     // Draw initial background in both buffer and screen.
     render_random_bg();
+
+    cgfx_text_pane_nc(&TITLE_TMPLT);
+
     gfx_Blit(gfx_buffer);
 
     hss->redraw = 1;

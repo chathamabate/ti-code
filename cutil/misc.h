@@ -36,4 +36,8 @@ void safe_free(uint8_t channel, void *ptr);
 
 // Set the malloc fail routine.
 void set_malloc_fail_routine(malloc_fail_routine mfr);
+
+// Shift Items from the left side of a buffer to the right.
+void shift_right(char *buff, char fill_char, uint16_t buff_len, uint16_t data_len);
+
 #endif

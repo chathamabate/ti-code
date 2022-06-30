@@ -1,4 +1,5 @@
 #include "cgraphx.h"
+#include "graphx.h"
 #include <tice.h>
 
 static uint8_t border_size = 4;
@@ -24,4 +25,16 @@ void cgfx_pane_nc(const cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t 
 
     gfx_SetColor(style->fill);
     gfx_FillRectangle(x + border_size, y + border_size, width - (2 * border_size), height - (2 * border_size));
+}
+
+void cgfx_text_pane_nc(const text_pane_template *tmplt) {
+    cgfx_pane_nc(tmplt->style, tmplt->x, tmplt->y, tmplt->w, tmplt->h);
+
+    gfx_SetTextScale(tmplt->text_w_sc, tmplt->text_h_sc);
+    gfx_SetTextFGColor(tmplt->text_color);
+    gfx_PrintStringXY(
+            tmplt->text, 
+            tmplt->x + (tmplt->w - gfx_GetStringWidth(tmplt->text)) / 2,
+            tmplt->y + (tmplt->h - 8 * tmplt->text_h_sc) / 2
+    );
 }

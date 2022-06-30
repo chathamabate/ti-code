@@ -3,6 +3,7 @@
 #include "ti/screen.h"
 
 #include <stdlib.h>
+#include <stdint.h>
 
 #include <graphx.h>
 #include <tice.h>
@@ -76,4 +77,19 @@ void safe_free(uint8_t channel, void *ptr) {
 
 void set_malloc_fail_routine(malloc_fail_routine mfr) {
     mf_routine = mfr;
+}
+
+void shift_right(char *buff, char fill_char, uint16_t buff_len, uint16_t data_len) {
+    if (buff_len == data_len) {
+        return; 
+    }
+
+    int24_t di, bi;
+    for (di = data_len - 1, bi = buff_len - 1; di >= 0; di--, bi--) {
+        buff[bi] = buff[di];
+    }
+
+    for (; bi >= 0; bi--) {
+        buff[bi] = fill_char;
+    }
 }

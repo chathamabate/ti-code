@@ -49,4 +49,24 @@ void cgfx_set_pane_border_size(uint8_t b_size);
 // width and height both most be greater than or equal to 2 * border size.
 void cgfx_pane_nc(const cgfx_pane_style *style, uint16_t x, uint8_t y, uint16_t width, uint8_t height);
 
+// NOTE this is a late addition to this project.
+// Could be integrate more into other libraries.
+// This is in this file since it pertains solely to rendering.
+typedef struct {
+    const cgfx_pane_style *style;
+
+    uint16_t x;
+    uint8_t y;
+    uint16_t w;
+    uint8_t h;
+
+    uint8_t text_w_sc;
+    uint8_t text_h_sc;
+    uint8_t text_color;
+
+    const char *text;
+} text_pane_template;
+
+void cgfx_text_pane_nc(const text_pane_template *tmplt);
+
 #endif

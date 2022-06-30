@@ -203,7 +203,7 @@ static const loc_life_cycle *update_gameplay(void *glb_state, void *loc_state) {
 
         if (gp_state->window->animation_tick > END_ANIMATION_LEN) {
             return gp_state->window->game->game_state == MS_WIN 
-                ? &VICTORY : &HOMEPAGE; // TODO Defeat page.
+                ? &VICTORY : &DEFEAT;
         }
 
         // Check if the update triggered a pause.
@@ -278,7 +278,7 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
 
     gameplay_state *gp_state = (gameplay_state *)loc_state;
 
-    uint8_t diff_id = gp_state->window->game->diff_ind;
+    uint8_t diff_ind = gp_state->window->game->diff_ind;
     uint16_t score = gp_state->window->game->time_elapsed;
 
     del_ms_window(gp_state->window);
@@ -288,10 +288,16 @@ static void *exit_gameplay(void *glb_state, void *loc_state, const loc_life_cycl
     if (next_loc_lc == &VICTORY) {
         trans_victory *tv = safe_malloc(VICTORY_CHANNEL, sizeof(trans_victory));
 
-        tv->diff_id = diff_id;
+        tv->diff_ind = diff_ind;
         tv->score = score;
 
         return tv;
+    }
+
+    if (next_loc_lc == &DEFEAT) {
+        uint8_t *diff_ptr = safe_malloc(DEFEAT_CHANNEL, sizeof(uint8_t));
+        *diff_ptr = diff_ind;
+        return diff_ptr;       
     }
 
     return NULL;

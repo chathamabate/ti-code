@@ -44,10 +44,10 @@ static void render_text_menu_button_nc(text_menu *menu, uint8_t i) {
 
     cgfx_pane_nc(pane_style, x_p, y_p, template->button_width, template->button_height);
 
-    uint16_t label_width = gfx_GetStringWidth(template->labels[i]);
-
     gfx_SetTextScale(template->label_width_scale, template->label_height_scale);
     gfx_SetTextFGColor(pane_style->text_fg);
+
+    uint16_t label_width = gfx_GetStringWidth(template->labels[i]);
 
     gfx_PrintStringXY(
         template->labels[i], 

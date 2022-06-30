@@ -5,6 +5,7 @@
 
 #include "states.h"
 
+#include <string.h>
 #include <tice.h>
 #include <graphx.h>
 #include <keypadc.h>
@@ -18,6 +19,7 @@
 #include "gfx/borders.h"
 #include "ti/getcsc.h"
 #include "ms_scores.h"
+#include "ti/screen.h"
 
 // Game states and menus could be improved from snake...
 // Archiving will probs be the same TBH...

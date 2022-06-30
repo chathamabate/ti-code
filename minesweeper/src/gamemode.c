@@ -203,7 +203,7 @@ static void *enter_gamemode(void *glb_state, void *trans_state) {
     (gm_state)->diff_pane->slide.actual.bg_style = \
         (gm_state)->gm_menu->selection == (gm_state)->gm_menu->toggle \
            ? GOLD : LIGHT_BLUE; \
-    (gm_state)->diff_pane->slide.actual.fg_style = (gm_state)->gm_menu->selection;
+    (gm_state)->diff_pane->slide.actual.fg_style = (gm_state)->gm_menu->selection
 
 static const loc_life_cycle *update_gamemode(void *glb_state, void *loc_state) {
     (void)glb_state;

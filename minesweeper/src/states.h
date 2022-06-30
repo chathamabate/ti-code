@@ -32,7 +32,7 @@ extern const loc_life_cycle VICTORY;
 
 typedef struct {
     uint16_t score;     // Score from the game.
-    uint8_t diff_id;    // Difficulty index of the game played.
+    uint8_t diff_ind;   // Difficulty index of the game played.
 } trans_victory;
 
 extern const loc_life_cycle DEFEAT;

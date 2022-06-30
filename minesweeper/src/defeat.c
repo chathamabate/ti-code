@@ -1,5 +1,7 @@
 
+#include "cutil/cgraphx.h"
 #include "cutil/misc.h"
+#include "graphx.h"
 #include "states.h"
 
 #include <cutil/menu.h>
@@ -35,13 +37,25 @@ static const text_menu_template NAV_TMPLT = {
     .style_palette_len = PANE_STYLE_PALETTE_LEN
 };
 
+static const text_pane_template TITLE_TMPLT = {
+    .x = align(5),
+    .y = align(4),
+    .w = align(10),
+    .h = align(4),
+
+    .text_w_sc = 2,
+    .text_h_sc = 4,
+    .style = &PANE_STYLE_3,
+    .text_color = 1,
+
+    .text = "Defeat!"
+};
+
 typedef struct {
     basic_text_menu *nav;
     uint8_t diff_ind;
     uint8_t redraw;
 } defeat_state;
-
-static const char *DEFEAT_MSG = "Defeat!";
 
 static void *enter_defeat(void *glb_state, void *trans_state) {
     (void)glb_state;
@@ -53,14 +67,12 @@ static void *enter_defeat(void *glb_state, void *trans_state) {
     safe_free(DEFEAT_CHANNEL, diff_ptr);
 
     ds->nav = new_basic_text_menu(&NAV_TMPLT, &MS_MENU_SS);
+    focus_basic_text_menu(ds->nav);
 
     render_random_bg();
 
     // Taken from victory.c
-    cgfx_pane_nc(&PANE_STYLE_3, align(5), align(4), align(10), align(4));
-    gfx_SetTextScale(2, 4);
-    gfx_SetTextFGColor(1);
-    gfx_PrintStringXY(DEFEAT_MSG, (LCD_WIDTH - gfx_GetStringWidth(DEFEAT_MSG)) / 2, align(5));
+    cgfx_text_pane_nc(&TITLE_TMPLT);
 
     gfx_Blit(gfx_buffer);
 
@@ -79,17 +91,28 @@ static const loc_life_cycle *update_defeat(void *glb_state, void *loc_state) {
     scan_focused_keys();
 
     if (key_press(c_Enter)) {
-        return &HOMEPAGE;
+        return ds->nav->selection == 0 
+            ? &GAMEPLAY : &HOMEPAGE;
     }
 
-    ds->redraw = update_basic_text_menu(ds->nav);
+    ds->redraw |= update_basic_text_menu(ds->nav);
 
     return &DEFEAT;
 }
 
 static void render_defeat(void *glb_state, void *loc_state) {
     (void)glb_state;
-    (void)loc_state;
+
+    defeat_state *ds = (defeat_state *)loc_state;
+
+    if (!ds->redraw) {
+        return;
+    }
+
+    render_text_menu_nc(ds->nav->super);
+    gfx_SwapDraw();
+
+    ds->redraw = 0;
 }
 
 static void *exit_defeat(void *glb_state, void *loc_state, const loc_life_cycle *next_loc_lc) {
@@ -98,10 +121,20 @@ static void *exit_defeat(void *glb_state, void *loc_state, const loc_life_cycle 
 
     defeat_state *ds = (defeat_state *)loc_state;
 
+    uint8_t diff_ind = ds->diff_ind;
+
     del_basic_text_menu(ds->nav);
     safe_free(DEFEAT_CHANNEL, ds);
 
-    return NULL;
+    if (next_loc_lc == &HOMEPAGE) {
+        return NULL;
+    }
+
+    // Otherwise replay.
+    uint8_t *diff_ptr = safe_malloc(GAMEPLAY_CHANNEL, sizeof(uint8_t));
+    *diff_ptr = diff_ind;
+
+    return diff_ptr;
 }
 
 const loc_life_cycle DEFEAT = {

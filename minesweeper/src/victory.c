@@ -71,6 +71,20 @@ static const slide_pane_template SCORE_TMPLT = {
     .len = SCORE_RNDRRS_LEN
 };
 
+static const text_pane_template TITLE_TMPLT = {
+    .x = align(5),
+    .y = align(4),
+    .w = align(10),
+    .h = align(4),
+
+    .text_w_sc = 2,
+    .text_h_sc = 4,
+    .style = &PANE_STYLE_0,
+    .text_color = 1,
+
+    .text = "Victory!"
+};
+
 typedef struct {
     basic_text_menu *nav;
     slide_pane *score_pane;
@@ -84,8 +98,6 @@ typedef struct {
     uint8_t redraw;
 } victory_state;
 
-static const char *VICTORY_MSG = "Victory!";
-
 static void *enter_victory(void *glb_state, void *trans_state) {
     ms_scoreboard *sb = (ms_scoreboard *)glb_state;
     trans_victory *tv = (trans_victory *)trans_state;
@@ -93,7 +105,7 @@ static void *enter_victory(void *glb_state, void *trans_state) {
     victory_state *vs = safe_malloc(VICTORY_CHANNEL, sizeof(victory_state));
 
     vs->score = tv->score;
-    vs->diff_ind = tv->diff_id;
+    vs->diff_ind = tv->diff_ind;
     safe_free(VICTORY_CHANNEL, tv);
 
     vs->nav = new_basic_text_menu(&NAV_TMPLT, &MS_MENU_SS);
@@ -113,15 +125,7 @@ static void *enter_victory(void *glb_state, void *trans_state) {
     // Background Render....
 
     render_random_bg();
-
-    // Fill this with some victory LOGO...
-    cgfx_pane_nc(&PANE_STYLE_0, align(5), align(4), align(10), align(4));
-
-    // (4, 1) 12 x 4
-    gfx_SetTextScale(2, 4);
-    gfx_SetTextFGColor(1);
-    gfx_PrintStringXY(VICTORY_MSG, (LCD_WIDTH - gfx_GetStringWidth(VICTORY_MSG)) / 2, align(5));
-
+    cgfx_text_pane_nc(&TITLE_TMPLT);
     gfx_Blit(gfx_buffer);
 
     vs->redraw = 1;
