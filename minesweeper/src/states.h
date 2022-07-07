@@ -39,5 +39,7 @@ extern const loc_life_cycle DEFEAT;
 // Transition state should be a uint8_t *.
 // This should be the difficulty index of the game lost.
 
+extern const loc_life_cycle INSTRUCTIONS;
+// No transition state... just NULL.
 
 #endif

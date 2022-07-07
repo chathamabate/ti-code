@@ -5,11 +5,11 @@
 extern "C" {
 #endif
 
-#define logo_width 200
-#define logo_height 64
-#define logo_size 6201
-#define logo ((gfx_rletsprite_t*)logo_data)
-extern unsigned char logo_data[6201];
+#define logo_width 91
+#define logo_height 16
+#define logo_size 1458
+#define logo ((gfx_sprite_t*)logo_data)
+extern unsigned char logo_data[1458];
 
 #ifdef __cplusplus
 }

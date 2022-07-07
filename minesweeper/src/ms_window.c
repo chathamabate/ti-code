@@ -310,7 +310,7 @@ uint8_t update_ms_window(ms_window *window) {
 
     // Uncover logic.
 
-    if (key_press(c_9)) {
+    if (key_press(c_9) || key_press(c_Enter)) {
         if (window->game->board[game_c_r][game_c_c].visibility != HIDDEN) {
             return 0; // Only can uncover hidden cells.
         }

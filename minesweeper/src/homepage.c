@@ -12,6 +12,7 @@
 #include "ms_misc.h"
 #include "ms_mem_channels.h"
 #include "gfx/logo.h"
+#include "sys/lcd.h"
 
 #define FOCUSED_KEYS_LEN 5
 
@@ -54,6 +55,9 @@ typedef struct {
     uint8_t redraw;
 } homepage_state;
 
+#define LOGO_W_SCALE 2
+#define LOGO_H_SCALE 2 
+
 static void *enter_homepage(void *glb_state, void *trans_state) {
     (void)glb_state;
 
@@ -72,8 +76,18 @@ static void *enter_homepage(void *glb_state, void *trans_state) {
 
     // Perform background Render.
     render_random_bg();
-    cgfx_pane_nc(&PANE_STYLE_0, (320 - 224) / 2, 16, 224, 80);
-    gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16 + (80 - 64) / 2);
+    cgfx_pane_nc(&PANE_STYLE_0, align(3), align(2), align(14), align(4));
+
+    gfx_ScaledTransparentSprite_NoClip(
+            logo, 
+            (LCD_WIDTH - (LOGO_W_SCALE * logo_width)) / 2,
+            (align(8) - (LOGO_H_SCALE * logo_height)) / 2,
+            LOGO_W_SCALE,
+            LOGO_H_SCALE
+    );
+
+
+    // gfx_RLETSprite_NoClip(logo, (LCD_WIDTH - logo_width) / 2, 16 + (80 - 64) / 2);
     gfx_BlitBuffer(); // Copy background to the screen.
     
     // Signal a menu redraw.
@@ -97,7 +111,7 @@ static const loc_life_cycle *update_homepage(void *glb_state, void *loc_state) {
         case 1: // Highscores
             return &HIGHSCORES;
         case 2: // Instructions
-            break;
+            return &INSTRUCTIONS;
         case 3: // Exit
             return NULL;
         }
