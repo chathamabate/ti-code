@@ -57,10 +57,10 @@ typedef struct {
 
 #define CNTRLS_PANE_MSGS_LEN 4
 static const char *CNTRLS_PANE_MSGS[CNTRLS_PANE_MSGS_LEN] = {
-    "Navigate the grid using arrow keys",
-    "or 8, 4, 5, and 6.",
+    "Move using arrows or 8, 4, 5, and 6.",
     "Press 7 to flag a cell.",
-    "Press 9 or Enter to uncover a cell."
+    "Press 9 or Enter to uncover a cell.",
+    "Press Clear to pause."
 };
 
 static const i_pane CNTRLS_PANE = {

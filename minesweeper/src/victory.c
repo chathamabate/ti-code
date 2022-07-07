@@ -148,7 +148,7 @@ static const loc_life_cycle *update_victory(void *glb_state, void *loc_state) {
         return vs->nav->selection == 0 ? &GAMEPLAY : &HOMEPAGE;
     }
 
-    if (++vs->animation_tick % NEW_HS_ANIMATION_DELAY == 0) {
+    if (vs->new_hs && ++vs->animation_tick % NEW_HS_ANIMATION_DELAY == 0) {
         vs->score_pane->slide.actual.bg_style = 
             vs->score_pane->slide.actual.bg_style == LIGHT_BLUE 
             ? GOLD : LIGHT_BLUE;
