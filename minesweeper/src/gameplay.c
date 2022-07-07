@@ -32,7 +32,7 @@ static const c_key_t FOCUSED_KEYS[FOCUSED_KEYS_LEN] = {
     c_7, c_9
 };
 
-static const ms_window_template WINDOW_TMPLT = {
+static const ms_window_template EASY_WINDOW_TMPLT = {
     .x = 0,
     .y = align(3),
 
@@ -44,6 +44,20 @@ static const ms_window_template WINDOW_TMPLT = {
 
     .s_r_offset = 2,
     .s_c_offset = 6 
+};
+
+static const ms_window_template DEF_WINDOW_TMPLT = {
+    .x = 0,
+    .y = align(3),
+
+    .w_width = 20,
+    .w_height = 12,
+
+    .s_width = 16,
+    .s_height = 8,
+
+    .s_r_offset = 2,
+    .s_c_offset = 2 
 };
 
 #define PAUSE_LABELS_LEN 3
@@ -163,8 +177,10 @@ static void *enter_gameplay(void *glb_state, void *trans_state) {
 
     gameplay_state *gp_state = safe_malloc(GAMEPLAY_CHANNEL, sizeof(gameplay_state));
 
-    gp_state->window = 
-        new_ms_window(&WINDOW_TMPLT, diff_ind);
+    gp_state->window = new_ms_window(
+            diff_ind == MS_EASY ? &EASY_WINDOW_TMPLT : &DEF_WINDOW_TMPLT, 
+            diff_ind
+    );
 
     // Initialize the first game.
     init_ms_window(gp_state->window);

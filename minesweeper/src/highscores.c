@@ -66,10 +66,10 @@ static void render_score_list(const slide_pane_template *tmplt,
         gfx_SetTextXY(x, y);
         gfx_PrintUInt(s_i + 1, 1);
         gfx_PrintString(".");
-        gfx_SetTextXY(x + (ROW_CHARS - 3) * SC_TXT_W_SCALE * 8, y);
+        gfx_SetTextXY(x + (ROW_CHARS - 5) * SC_TXT_W_SCALE * 8, y);
 
         if (scores[s_i] == MS_TIMEOUT + 1) {
-            gfx_PrintString("N/A");
+            gfx_PrintString("  N/A");
         } else {
             sprintf(score_buff, "%d", scores[s_i]);
             shift_right(score_buff, ' ', 6, strlen(score_buff) + 1);

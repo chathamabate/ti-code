@@ -61,14 +61,14 @@ static void load_ms_window(ms_window *window) {
 
             // Flagged -> HIDDEN.
             if (board[r][c].visibility == FLAGGED) {
-                render[a_r][a_c].actual_vc.bg = BG_HIDDEN(BLACK);
+                render[a_r][a_c].actual_vc.bg = BG_HIDDEN(LIGHT_BLUE);
                 render[a_r][a_c].actual_vc.fg = 0; // X is 0.
             } else if (board[r][c].visibility == HIDDEN) {
-                render[a_r][a_c].actual_vc.bg = BG_HIDDEN(BLACK);
+                render[a_r][a_c].actual_vc.bg = BG_HIDDEN(LIGHT_BLUE);
                 render[a_r][a_c].actual_vc.fg = FG_NO_RENDER;
             } else {
                 // EXPOSED CASE.
-                render[a_r][a_c].actual_vc.bg = BG_EXPOSED(BLACK);
+                render[a_r][a_c].actual_vc.bg = BG_EXPOSED(LIGHT_BLUE);
                 render[a_r][a_c].actual_vc.fg = 
                     board[r][c].type == 0 
                     ? FG_NO_RENDER : board[r][c].type;
@@ -76,12 +76,14 @@ static void load_ms_window(ms_window *window) {
         }
     }
 
+    /* NOTE Old method.
     uint8_t s_r, s_c;
     for (s_r = tmplt->s_r_offset; s_r < tmplt->s_r_offset + tmplt->s_height; s_r++) {
         for (s_c = tmplt->s_c_offset; s_c < tmplt->s_c_offset + tmplt->s_width; s_c++) {
             render[s_r][s_c].actual_vc.bg -= 6; // Black to Light Blue.
         }
     }
+    */
 
     // From light blue to gold.
     render[tmplt->s_r_offset + window->c_r][tmplt->s_c_offset + window->c_c]
