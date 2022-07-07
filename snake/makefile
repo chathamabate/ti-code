@@ -2,11 +2,11 @@
 # Makefile Options
 # ----------------------------
 
-NAME = DEMO
+NAME = SNAKE
 ICON = icon.png
-DESCRIPTION = "CE C Toolchain Demo"
-COMPRESSED = NO
-ARCHIVED = NO
+DESCRIPTION = "Snake Game"
+COMPRESSED := YES
+ARCHIVED = NO 
 
 CFLAGS = -Wall -Wextra -Oz
 CXXFLAGS = -Wall -Wextra -Oz

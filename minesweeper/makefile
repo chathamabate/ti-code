@@ -5,7 +5,7 @@
 NAME = DEMO
 ICON = icon.png
 DESCRIPTION = "CE C Toolchain Demo"
-COMPRESSED = NO
+COMPRESSED := YES
 ARCHIVED = NO
 
 CFLAGS = -Wall -Wextra -Oz -I.. 
@@ -13,9 +13,6 @@ CXXFLAGS = -Wall -Wextra -Oz -I..
 
 # This Actually Works!!!
 HAS_PRINTF := NO
-
-# Big time space saver.
-COMPRESSED := YES
 
 # # Add it sources boy....
 EXTRA_CSOURCES = $(wildcard ../cutil/*.c)

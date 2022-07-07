@@ -9,8 +9,8 @@
     sb_error_msg = msg; \
     return 0;
 
-#define SB_FN "Snake"
-#define TEMP_SB_FN "SnakeT"
+static const char *SB_FN = "SnkD";
+static const char *TEMP_SB_FN = "SnkDT";
 
 char *sb_error_msg = "N/A";
 
