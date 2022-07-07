@@ -2,9 +2,9 @@
 # Makefile Options
 # ----------------------------
 
-NAME = DEMO
+NAME = MS
 ICON = icon.png
-DESCRIPTION = "CE C Toolchain Demo"
+DESCRIPTION = "Minesweeper!"
 COMPRESSED := YES
 ARCHIVED = NO
 

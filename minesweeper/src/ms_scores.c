@@ -1,6 +1,7 @@
 
 #include "ms_scores.h"
 #include "cutil/misc.h"
+#include "fileioc.h"
 #include "ms_mem_channels.h"
 
 ms_scoreboard *new_ms_scoreboard() {
@@ -38,3 +39,67 @@ uint8_t insert_score(ms_scoreboard *sb, uint8_t diff_ind, uint16_t score) {
     return s_i;
 }
 
+// Where the data is stored.
+static const char *MS_SB = "MSSB";
+const char *sb_err_msg;
+
+ms_scoreboard *load_ms_scoreboard() {
+    uint8_t handle = ti_Open(MS_SB, "r");  
+
+    if (handle == 0) {
+        // NOTE case where scoreboard does not
+        // exist yet... create a new one.
+
+        return new_ms_scoreboard();
+    }
+    
+    ms_scoreboard *sb = safe_malloc(MS_SCORES_CHANNEL, sizeof(ms_scoreboard)); 
+
+    uint8_t error_exit = 0;
+
+    if (ti_Read(sb, sizeof(ms_scoreboard), 1, handle) != 1) {
+        sb_err_msg = "load: could not read data";
+        error_exit = 1;
+    }
+
+    if (ti_Close(handle) == 0) {
+        sb_err_msg = "load: could not close data";
+        error_exit = 1;
+    }
+    
+    if (error_exit) {
+        safe_free(MS_SCORES_CHANNEL, sb);
+        return NULL;
+    }
+
+    return sb;
+}
+
+uint8_t store_ms_scorebaord(ms_scoreboard *sb) {
+    uint8_t handle = ti_Open(MS_SB, "w");
+
+    // Some sort of open error here...
+    if (handle == 0) {
+        sb_err_msg = "store: could not open data";
+        return 0;
+    }
+
+    if (ti_Write(sb, sizeof(ms_scoreboard), 1, handle) != 1) {
+        sb_err_msg = "store: could not write data";
+        ti_Close(handle);
+        return 0;
+    }
+    
+    if (ti_SetArchiveStatus(1, handle) == 0) {
+        sb_err_msg = "store: could not archive data";
+        ti_Close(handle);
+        return 0;
+    }
+
+    if (ti_Close(handle) == 0) {
+        sb_err_msg = "store: could not close data";
+        return 0;
+    }
+
+    return 1;
+}
