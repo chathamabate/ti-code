@@ -86,7 +86,8 @@ typedef struct {
 } basic_text_menu;
 
 // Create a new basic text menu.
-basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, const selection_styling *ss);
+basic_text_menu *new_basic_text_menu(const text_menu_template *tmplt, 
+        const selection_styling *ss);
 
 // Focus and unfocus a basic text menu.
 void focus_basic_text_menu(basic_text_menu *bt_menu);
@@ -108,7 +109,8 @@ typedef struct {
 } toggle_text_menu;
 
 // create a new toggle menu.
-toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, const selection_styling *ss);
+toggle_text_menu *new_toggle_text_menu(const text_menu_template *tmplt, 
+        const selection_styling *ss);
 
 // Focus and unfocus a toggle text menu.
 void focus_toggle_text_menu(toggle_text_menu *tt_menu);
@@ -192,7 +194,8 @@ typedef struct {
 } slide_pane;
 
 // Dynamically create slide pane.
-slide_pane *new_slide_pane(const slide_pane_template *tmp, render init_render);
+slide_pane *new_slide_pane(const slide_pane_template *tmp, 
+        render init_render);
 
 // Render the slide pane.
 // Rotate its rendering states.
