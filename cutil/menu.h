@@ -5,6 +5,10 @@
 #include <cutil/cgraphx.h>
 #include <cutil/misc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define MENU_VERTICAL   0
 #define MENU_HORIZONTAL 1
 
@@ -203,5 +207,9 @@ void render_slide_pane_nc(slide_pane *s_pane, void *data);
 
 // s_pane has no large dynamic parts!
 #define del_slide_pane(s_pane) safe_free(MENU_CHANNEL, s_pane)
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

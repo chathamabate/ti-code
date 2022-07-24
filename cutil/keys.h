@@ -4,6 +4,10 @@
 #include <keypadc.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Keypad driver which handles key repetition.
 
 // custum key type.
@@ -134,5 +138,9 @@ extern uint8_t repeat_delay;
 
 // Convert a c_key_t to a kb_lkey_t.
 #define to_kb_lkey_t(c_key) (c_key_map[c_key])
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

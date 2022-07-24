@@ -4,6 +4,10 @@
 #include <stdio.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef void (*malloc_fail_routine)(void);
 
 // MUST BE EVEN!
@@ -40,6 +44,8 @@ void set_malloc_fail_routine(malloc_fail_routine mfr);
 // Shift Items from the left side of a buffer to the right.
 void shift_right(char *buff, char fill_char, uint16_t buff_len, uint16_t data_len);
 
-
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -3,6 +3,10 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // A local enter function is called when a new life cycle is being entered.
 // A life cycles should have one constant transition state format.
 typedef void *(*loc_enter_func)(void *glb_state, void *trans_state);
@@ -98,5 +102,9 @@ const loc_life_cycle SCENE = {
 };
 
 */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

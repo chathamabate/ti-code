@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <cutil/misc.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
     uint8_t *data;
 
@@ -34,5 +38,9 @@ void *c_stack_push(c_stack *s);
 #define del_c_stack(s) \
     safe_free(DATA_CHANNEL, (s)->data); \
     safe_free(DATA_CHANNEL, s);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif

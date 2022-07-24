@@ -3,6 +3,10 @@
 
 #include <graphx.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 // Library for helpful graphics functions!
 
 // Reusable Menu Code.
@@ -68,5 +72,9 @@ typedef struct {
 } text_pane_template;
 
 void cgfx_text_pane_nc(const text_pane_template *tmplt);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif
