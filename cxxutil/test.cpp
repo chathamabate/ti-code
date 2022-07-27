@@ -66,3 +66,14 @@ int Rectangle::area() {
 int Rectangle::perimeter() {
     return 2*this->width + 2*this->length;
 }
+
+template <typename T> 
+C<T>::C(T d) {
+    this->data = d;
+}
+
+// From here out this works though...
+// Must occur in namespace I guess??
+template class cxxutil::C<int>;
+
+

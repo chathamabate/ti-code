@@ -1,6 +1,7 @@
 #ifndef TEST_HPP
 #define TEST_HPP
 
+#include <stdint.h>
 
 namespace cxxutil {
     class Student {
@@ -29,10 +30,10 @@ namespace cxxutil {
             int side;
         public:
             Square(int s);   
-            ~Square();
+            virtual ~Square() override;
 
-            int area();
-            int perimeter();
+            virtual int area() override;
+            virtual int perimeter() override;
     };
 
     class Rectangle : public Shape {
@@ -41,12 +42,19 @@ namespace cxxutil {
             int  width;
         public:
             Rectangle(int l, int w);   
-            ~Rectangle();
+            virtual ~Rectangle() override;
 
-            int area();
-            int perimeter();
+            virtual int area() override;
+            virtual int perimeter() override;
     };
 
+    template <typename T>
+    class C {
+        private:
+            T data;
+        public:
+            C(T d);
+    };
 }
 
 #endif

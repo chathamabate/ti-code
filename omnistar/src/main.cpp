@@ -10,10 +10,58 @@
 #include <cxxutil/game.h>
 
 using namespace cxxutil;
+/*
+
+class G : public Game<int> {
+    public:
+    G() : Game() {
+         
+    }
+
+    ~G() override {
+        // Do nothing.
+    }
+
+    private:
+    StatusInfo initGlobalState() override {
+        return {
+            .status = Status::CONTINUE,
+            .code = 0
+        };
+    }
+
+    StatusInfo initTransState() override {
+        return {
+            .status = Status::CONTINUE,
+            .code = 0
+        };
+    }
+};
+*/
+class GS : public GameState<int> {
+    public:
+        GS(Game<int> *g) : GameState<int>(g) { }
+
+    protected:
+        Request enter() override {
+            return {};
+        }
+
+        Request update() override {
+            return {};
+        }
+
+        void render() override {
+        }
+
+        Request exit(uint8_t exit_code) override {
+            return {};
+        }
+};
+
+
 
 int main(void) {
-
-    Shape *a = new Square(5);
 
     // Lambdas Work!!!!
     // auto f = [] (int a, int b) {return a + b;};
