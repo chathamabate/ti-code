@@ -3,6 +3,12 @@
 
 #include <stdint.h>
 
+// Macro for very specific use in Game.
+#define __RequestTypeCheck(req) \
+    if ((req).type != RequestType::CONTINUE) { \
+        return req; \
+    }
+
 namespace cxxutil {
 
     // In these class templates, T will be the type
@@ -59,12 +65,10 @@ namespace cxxutil {
     };
 
     template<typename T>
-    class Game {
+    class Game : SingleRun {
         private:
             T *globalState;
-
-            TransitionState<T> *transState;
-            GameState<T> *gameState;
+            TransitionState<T> *firstTransState;
 
             // Used to generate and store the first
             // global state. 
@@ -80,24 +84,47 @@ namespace cxxutil {
             // Said transition will be used to generate first GameState.
             virtual Request initTransState() = 0;
 
-        public:
-            Game() {
-                globalState = nullptr;
-                transState = nullptr;
-                gameState = nullptr;
+            virtual Request run() override {
+                Request req;
+    
+                req = this->initGlobalState();
+                __RequestTypeCheck(req);
+
+                req = this->initTransState();
+                __RequestTypeCheck(req);
+
+                // Fill in at somepoint.
+
+                while (req.type == RequestType::CONTINUE) {
+                }
             }
 
-            virtual ~Game() {
-                if (gameState) {
-                    delete gameState;
+        protected:
+            void setGlobalState(T *gls) {
+                this->globalState = gls;
+            }
+
+            void setTransState(TransitionState<T> *ts) {
+                this->transState = ts;
+            }
+
+        public:
+            Game() {
+                this->globalState = nullptr;
+                this->transState = nullptr;
+            }
+
+            // This shouldn't need to be virtual
+            // as everything of importance should be
+            // stored in the Global state to be accessible
+            // by child game states.
+            ~Game() {
+                if (this->firstTransState) {
+                    delete this->firstTransState;
                 }
 
-                if (transState) {
-                    delete transState;
-                }
-
-                if (globalState) {
-                    delete globalState;
+                if (this->globalState) {
+                    delete this->globalState;
                 }
             }
 
@@ -105,13 +132,6 @@ namespace cxxutil {
             // states.
             T *getGlobalState() {
                 return this->globalState;
-            }
-
-            // Run the game and return how it exited.
-            Request run() {
-                Request si;
-                return si;
-                
             }
     };
 
@@ -160,9 +180,14 @@ namespace cxxutil {
             // update, this will not be called.
             //
             // It should construct the transition state to prepare
-            // for the next game state. The new trans state should
+            // for the next game state. NOTE The new trans state should
             // be stored in nextTrans. 
             virtual Request exit(uint8_t exit_code) = 0;
+
+        protected:
+            void setNextTrans(TransitionState<T> *t) {
+                this->nextTrans = t;
+            }
 
         public:
             GameState(Game<T> *g) {
@@ -171,6 +196,10 @@ namespace cxxutil {
             }
 
             virtual ~GameState() { }
+
+            TransitionState<T> *getNextTrans() {
+                return this->nextTrans;
+            }
     };
 
     template<typename T>
@@ -180,7 +209,13 @@ namespace cxxutil {
             GameState<T> *nextGS;
 
         // NOTE, run() should be implemented as
-        // creating the next GameState.
+        // creating the next GameState and storing it
+        // in nextGS.
+        
+        protected:
+            void setNextGS(GameState<T> *ngs) {
+                this->nextGS = ngs;
+            }
 
         public:
             TransitionState(Game<T> g) {

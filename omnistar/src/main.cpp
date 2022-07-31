@@ -60,7 +60,6 @@ class GS : public GameState<int> {
 };
 
 
-
 int main(void) {
 
     // Lambdas Work!!!!
