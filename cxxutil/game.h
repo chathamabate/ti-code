@@ -90,13 +90,45 @@ namespace cxxutil {
                 req = this->initGlobalState();
                 __RequestTypeCheck(req);
 
+                // This should store the first transition
+                // state in firstTransState.
                 req = this->initTransState();
                 __RequestTypeCheck(req);
 
                 // Fill in at somepoint.
+                TransitionState<T> *ts = firstTransState;
+                firstTransState = nullptr;
+               
+                GameState<T> *gs = nullptr;
 
                 while (req.type == RequestType::CONTINUE) {
+                    // Here we have a valid trans state in ts. 
+                    // Generate next game state.
+                    req = ts->getEndRequest();
+
+                    // This will always run regardless of end result.
+                    // This is to ensure the transition state is 
+                    // deleted.
+                    gs = ts->getNextGS();
+                    ts = nullptr;
+                    delete ts;
+
+                    if (req.type != RequestType::CONTINUE) {
+                        break;
+                    }
+
+                    // Throw out last trans state.
+
+                    // Execute game state!
+                    req = gs->getEndRequest();
+
+                    ts = gs->getNextTrans();
+                    gs = nullptr;
+                    delete gs;
                 }
+
+                // Do we need to check for fail here?
+                return req;
             }
 
         protected:
@@ -182,9 +214,17 @@ namespace cxxutil {
             // It should construct the transition state to prepare
             // for the next game state. NOTE The new trans state should
             // be stored in nextTrans. 
+            //
+            // In the case the game is being exited, make sure not
+            // to create some transition state... this will not 
+            // be freed if so.
             virtual Request exit(uint8_t exit_code) = 0;
 
         protected:
+            T *getGlobalState() {
+                return game->getGlobalState();
+            }
+
             void setNextTrans(TransitionState<T> *t) {
                 this->nextTrans = t;
             }
@@ -211,14 +251,21 @@ namespace cxxutil {
         // NOTE, run() should be implemented as
         // creating the next GameState and storing it
         // in nextGS.
+        //
+        // If the game must be exited, make sure nextGS
+        // is not initialized as it will not be freed.
         
         protected:
+            T *getGlobalState() {
+                return game->getGlobalState();
+            }
+
             void setNextGS(GameState<T> *ngs) {
                 this->nextGS = ngs;
             }
 
         public:
-            TransitionState(Game<T> g) {
+            TransitionState(Game<T> *g) {
                 this->game = g;
                 this->finished = false;
                 this->nextGS = nullptr;

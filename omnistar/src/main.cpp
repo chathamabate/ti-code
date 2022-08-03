@@ -5,11 +5,109 @@
 #include <stdlib.h>
 #include <tice.h>
 #include <stdio.h>
+#include <graphx.h>
 
 #include <cxxutil/test.h>
 #include <cxxutil/game.h>
 
 using namespace cxxutil;
+
+class SimpleGlobalState {
+    private:
+        uint8_t counter;
+    public:
+        SimpleGlobalState() { }
+
+        void incCounter() {
+            counter++;
+        }
+
+        uint8_t getCounter() {
+            return counter;
+        }
+};
+
+class FirstTrans : public TransitionState<SimpleGlobalState> {
+    private:   
+        virtual  Request run() override {
+            this->setNextGS();
+        }
+
+    public:
+        FirstTrans(Game<SimpleGlobalState> *g) : TransitionState(g) { }
+};
+
+class SimpleGame : public Game<SimpleGlobalState> {
+    private:
+        virtual Request initGlobalState() override {
+            this->setGlobalState(new SimpleGlobalState());
+        }
+
+        virtual Request initTransState() override {
+            this->setTransState(new FirstTrans(this));
+        }
+
+    public:
+        SimpleGame() {
+
+        }
+};
+
+class TransState1 : public TransitionState<SimpleGlobalState> {
+    private:
+        virtual  Request run() override {
+        }
+
+    public:
+        TransState1(Game<SimpleGlobalState> *g) : TransitionState(g) { }
+
+};
+
+class GameState1 : public GameState<SimpleGlobalState> {
+    private:
+        virtual Request enter() override {
+            return { .type = RequestType::CONTINUE, .code = 0 }  
+        }
+
+        virtual Request update() override {
+
+        }
+
+        virtual void render() override {
+            gfx_FillScreen(0);
+        }
+
+        virtual Request exit(uint8_t exit_code) override {
+
+        }
+        
+    public:
+        GameState1(Game<SimpleGlobalState> *g) : GameState(g) { }
+};
+
+class TransState2 : public TransitionState<SimpleGlobalState> {
+
+};
+
+class GameState2 : public GameState<SimpleGlobalState> {
+    private:
+        virtual Request enter() override {
+
+        }
+
+        virtual Request update() override {
+
+        }
+
+        virtual void render() override {
+
+        }
+
+        virtual Request exit(uint8_t exit_code) override {
+
+        }
+};
+
 /*
 
 class G : public Game<int> {
