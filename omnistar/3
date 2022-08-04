@@ -170,8 +170,7 @@ namespace cxxutil {
     template<typename T>
     class GameState : public SingleRun {
         private:
-            uint16_t del; // Game loop delay.
-
+            uint16_t del;
             T *globalState;
             TransitionState<T> *nextTrans;
 
@@ -234,8 +233,7 @@ namespace cxxutil {
             }
 
         public:
-            GameState(uint16_t d, T *glbst) {
-                this->del = d;
+            GameState(T *glbst) {
                 this->globalState = glbst;
                 this->nextTrans = nullptr;
             }

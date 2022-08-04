@@ -1,4 +1,5 @@
 
+#include "keypadc.h"
 #include "ti/getcsc.h"
 #include "ti/screen.h"
 #include <cstdint>
@@ -7,16 +8,19 @@
 #include <stdio.h>
 #include <graphx.h>
 
+#include <cutil/keys.h>
 #include <cxxutil/test.h>
 #include <cxxutil/game.h>
 
 using namespace cxxutil;
 
-class SimpleGlobalState {
+class FrameCounter {
     private:
         uint8_t counter;
     public:
-        SimpleGlobalState() { }
+        FrameCounter() {
+            this->counter = 0;
+        }
 
         void incCounter() {
             counter++;
@@ -27,136 +31,97 @@ class SimpleGlobalState {
         }
 };
 
-class FirstTrans : public TransitionState<SimpleGlobalState> {
-    private:   
-        virtual  Request run() override {
-            this->setNextGS();
-        }
+#define GS_DELAY 100
 
-    public:
-        FirstTrans(Game<SimpleGlobalState> *g) : TransitionState(g) { }
+#define CS_KEYS_LEN 3
+const c_key_t CS_KEYS[CS_KEYS_LEN] = {
+    c_8, c_5, c_Enter
 };
 
-class SimpleGame : public Game<SimpleGlobalState> {
+const Request C_REQ = {.type = RequestType::CONTINUE, .code = 0};
+
+class ColorSelector : public GameState<FrameCounter> {
     private:
-        virtual Request initGlobalState() override {
-            this->setGlobalState(new SimpleGlobalState());
-        }
+        uint8_t bg_color;
 
-        virtual Request initTransState() override {
-            this->setTransState(new FirstTrans(this));
-        }
-
-    public:
-        SimpleGame() {
-
-        }
-};
-
-class TransState1 : public TransitionState<SimpleGlobalState> {
-    private:
-        virtual  Request run() override {
-        }
-
-    public:
-        TransState1(Game<SimpleGlobalState> *g) : TransitionState(g) { }
-
-};
-
-class GameState1 : public GameState<SimpleGlobalState> {
-    private:
         virtual Request enter() override {
-            return { .type = RequestType::CONTINUE, .code = 0 }  
+            set_focused_keys(CS_KEYS, CS_KEYS_LEN);
+            gfx_SetTextScale(2, 4);
+            return C_REQ;
         }
 
         virtual Request update() override {
+            scan_focused_keys();
 
+            // Exit to frame display state.
+            if (key_press(c_Enter)) {
+                return { .type = RequestType::EXIT, .code = 0 };
+            }
+
+            if (key_press(c_8)) {
+                this->bg_color++;
+            } else if (key_press(c_5)) {
+                this->bg_color--;
+            }
+
+            return C_REQ;
         }
 
         virtual void render() override {
-            gfx_FillScreen(0);
+            gfx_FillScreen(this->bg_color);
+
+            char buff[4];
+            sprintf(buff, "%d", this->getGlobalState()->getCounter());
+            gfx_PrintStringXY(buff, (LCD_WIDTH - gfx_GetStringWidth(buff)) / 2, 50);
+
+            gfx_SwapDraw();
         }
 
         virtual Request exit(uint8_t exit_code) override {
-
+            // Set up transition state!!!!
         }
-        
-    public:
-        GameState1(Game<SimpleGlobalState> *g) : GameState(g) { }
+   public:
+        ColorSelector(FrameCounter *glbst, uint8_t bg) : GameState(GS_DELAY, glbst) {
+            this->bg_color = bg;
+        }
 };
 
-class TransState2 : public TransitionState<SimpleGlobalState> {
-
+#define CNT_KEYS_LEN 2
+const c_key_t CNT_KEYS[CNT_KEYS_LEN] = {
+    c_Enter, c_Clear
 };
 
-class GameState2 : public GameState<SimpleGlobalState> {
+class CounterState : public GameState<FrameCounter> {
     private:
         virtual Request enter() override {
-
+            set_focused_keys(CNT_KEYS, CNT_KEYS_LEN);
+            gfx_SetTextScale(2, 4);
+            return C_REQ;
         }
 
         virtual Request update() override {
+            scan_focused_keys();
 
+
+            return C_REQ;
         }
 
         virtual void render() override {
+            char buff[4];
+            sprintf(buff, "%d", this->getGlobalState()->getCounter());
+            gfx_PrintStringXY(buff, (LCD_WIDTH - gfx_GetStringWidth(buff)) / 2, 50);
 
+            gfx_SwapDraw();
         }
 
         virtual Request exit(uint8_t exit_code) override {
-
+            // Set up transition state!!!!
+        }
+   public:
+        ColorSelector(Game<FrameCounter> *g, uint8_t bg) : GameState(g) {
+            this->bg_color = bg;
         }
 };
-
-/*
-
-class G : public Game<int> {
-    public:
-    G() : Game() {
-         
-    }
-
-    ~G() override {
-        // Do nothing.
-    }
-
-    private:
-    StatusInfo initGlobalState() override {
-        return {
-            .status = Status::CONTINUE,
-            .code = 0
-        };
-    }
-
-    StatusInfo initTransState() override {
-        return {
-            .status = Status::CONTINUE,
-            .code = 0
-        };
-    }
-};
-*/
-class GS : public GameState<int> {
-    public:
-        GS(Game<int> *g) : GameState<int>(g) { }
-
-    protected:
-        Request enter() override {
-            return {};
-        }
-
-        Request update() override {
-            return {};
-        }
-
-        void render() override {
-        }
-
-        Request exit(uint8_t exit_code) override {
-            return {};
-        }
-};
-
 
 int main(void) {
 
