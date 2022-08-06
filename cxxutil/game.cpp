@@ -2,6 +2,20 @@
 
 using namespace cxxutil;
 
+const Request C_REQ = {
+    .type = RequestType::CONTINUE,
+    .code = 0
+};
+
+const Request EX_REQ = {
+    .type = RequestType::EXIT,
+    .code = 0
+};
+
+const Request F_REQ = {
+    .type = RequestType::FAIL,
+    .code = 0
+};
 
 SingleRun::SingleRun() {
     this->finished = false;

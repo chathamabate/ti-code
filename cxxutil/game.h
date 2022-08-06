@@ -47,6 +47,9 @@ namespace cxxutil {
         uint8_t code;  
     } Request;
 
+    // Classic Continue, Exit, and Fail Requests
+    extern const Request C_REQ, EX_REQ, F_REQ;
+
     // This is an abstract class which represents
     // some functionality which can only run once.
     class SingleRun {
@@ -250,7 +253,7 @@ namespace cxxutil {
     template<typename T>
     class TransitionState : public SingleRun {
         private:
-            Game<T> *game;
+            T *globalState;
             GameState<T> *nextGS;
 
         // NOTE, run() should be implemented as
@@ -262,7 +265,7 @@ namespace cxxutil {
         
         protected:
             T *getGlobalState() {
-                return game->getGlobalState();
+                return this->globalState;
             }
 
             void setNextGS(GameState<T> *ngs) {
@@ -270,8 +273,8 @@ namespace cxxutil {
             }
 
         public:
-            TransitionState(Game<T> *g) {
-                this->game = g;
+            TransitionState(T *g) {
+                this->globalState = g;
                 this->finished = false;
                 this->nextGS = nullptr;
             }
