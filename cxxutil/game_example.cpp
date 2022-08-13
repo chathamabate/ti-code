@@ -1,10 +1,25 @@
 #include "game_example.h"
 #include "cutil/keys.h"
 #include "cxxutil/game.h"
+#include <cstdint>
 #include <graphx.h> 
 #include <stdio.h>
 
 using namespace cxxutil;
+
+// Global State Code!
+
+MoveCounter::MoveCounter() {
+    this->counter = 0;
+}
+
+uint8_t MoveCounter::getCounter() {
+    return this->counter;
+}
+
+void MoveCounter::setCounter(uint8_t c) {
+    this->counter = c;
+}
 
 Request IntoStartScreen::run() {
     this->setNextGS(new StartScreen(this->getGlobalState())); 
@@ -49,6 +64,10 @@ Request StartScreen::update() {
 }
 
 void StartScreen::render() {
+    if (!this->redraw) {
+        return;
+    }
+
     gfx_FillScreen(6);
     gfx_PrintStringXY("Press CLEAR to exit!", 16, 16);
     gfx_PrintStringXY("Press ENTER to play!", 16, 48);
@@ -58,6 +77,7 @@ void StartScreen::render() {
     gfx_PrintStringXY(buff, 16, 80);
 
     gfx_SwapDraw();
+    this->redraw = false;
 }
 
 Request StartScreen::exit(uint8_t exit_code) {
@@ -77,5 +97,38 @@ Request StartScreen::exit(uint8_t exit_code) {
     return F_REQ;
 }
 
+constexpr uint16_t SS_DEL = 100;
+StartScreen::StartScreen(MoveCounter *mc) : GameState(SS_DEL, mc) {
+    this->redraw = true;
+}
+
+// Play Screen code.
+
+constexpr uint8_t PS_KEYS_LEN = 19;
+const c_key_t PS_KEYS[PS_KEYS_LEN] = {
+    c_8, c_4, c_5, c_6, c_Clear
+};
+
+Request PlayScreen::enter() {
+    set_focused_keys(PS_KEYS, PS_KEYS_LEN);
+    return C_REQ;
+}
+
+Request PlayScreen::update() {
+
+}
+
+void PlayScreen::render() {
+
+}
+
+Request PlayScreen::exit(uint8_t exit_code) {
+
+}
+
+const uint16_t PS_DEL = 100;
+PlayScreen::PlayScreen(MoveCounter *mc) : GameState(PS_DEL, mc) {
+    this->redraw = true;
+}
 
     

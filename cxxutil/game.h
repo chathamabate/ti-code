@@ -73,12 +73,12 @@ namespace cxxutil {
             TransitionState<T> *firstTransState;
 
             // Used to generate and store the first
-            // global state. 
+            // global state. Dynamic data should only be
+            // left over if the Request returned in a continue.
             virtual Request initGlobalState() = 0;
 
             // NOTE, the global state will be deleted
-            // in the game's destructor... So make
-            // sure your global state implements
+            // So make sure your global state implements
             // a destructor.
             
             // NOTE, this will be called after initGlobalState.
@@ -90,12 +90,22 @@ namespace cxxutil {
                 Request req;
     
                 req = this->initGlobalState();
-                __RequestTypeCheck(req);
+                if (req.type != RequestType::CONTINUE) {
+                    return req;
+                }
 
                 // This should store the first transition
                 // state in firstTransState.
                 req = this->initTransState();
-                __RequestTypeCheck(req);
+                if (req.type != RequestType::CONTINUE) {
+                    // NOTE, on exit case, the global state
+                    // will be disposed of?
+                    // Do we want this tho???? Don't know for sure...
+                    delete this->globalState;
+                    this->globalState = nullptr;
+
+                    return req;
+                }
 
                 // Fill in at somepoint.
                 TransitionState<T> *ts = firstTransState;
@@ -112,8 +122,9 @@ namespace cxxutil {
                     // This is to ensure the transition state is 
                     // deleted.
                     gs = ts->getNextGS();
-                    ts = nullptr;
+
                     delete ts;
+                    ts = nullptr;
 
                     if (req.type != RequestType::CONTINUE) {
                         break;
@@ -125,8 +136,9 @@ namespace cxxutil {
                     req = gs->getEndRequest();
 
                     ts = gs->getNextTrans();
-                    gs = nullptr;
+
                     delete gs;
+                    gs = nullptr;
                 }
 
                 // Do we need to check for fail here?
@@ -160,12 +172,6 @@ namespace cxxutil {
                 if (this->globalState) {
                     delete this->globalState;
                 }
-            }
-
-            // Global state must be accessible for game states and transition
-            // states.
-            T *getGlobalState() {
-                return this->globalState;
             }
     };
 

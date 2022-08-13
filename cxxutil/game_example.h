@@ -4,8 +4,6 @@
 #include <stdint.h>
 #include <cxxutil/game.h>
 
-
-
 // Here is some example game code!
 // The Game is that you can move a cell around the screen.
 // There will be a menu state and a gameplay state?
@@ -30,6 +28,7 @@ class IntoStartScreen : public cxxutil::TransitionState<MoveCounter> {
 
 class StartScreen : public cxxutil::GameState<MoveCounter> {
     private:
+        bool redraw;
         cxxutil::Request enter() override;
         cxxutil::Request update() override;
         void render() override;
@@ -47,6 +46,9 @@ class IntoPlayScreen : public cxxutil::TransitionState<MoveCounter> {
 
 class PlayScreen : public cxxutil::GameState<MoveCounter> {
     private:
+        bool redraw;
+        uint8_t pos_x, pos_y;
+
         cxxutil::Request enter() override;
         cxxutil::Request update() override;
         void render() override;
