@@ -15,10 +15,23 @@
 
 using namespace cxxutil;
 
-int main(void) {
-    os_ClrHome();
+class X : public SafeObject {
+    public:
+    int arr[20];
+    X() : SafeObject(4) {
 
-    delay(3000);
+    }
+};
+
+int main(void) {
+    // MemoryTracker::getInstance()
+    //    ->setMemoryExitRoutine(BasicMemoryExitRoutine::getInstance());
+
+    X *ptr;
+
+    while (true) {
+        ptr = new X();
+    }
 
     // Exceptions are disabled!
     return 0;

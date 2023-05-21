@@ -50,7 +50,10 @@ namespace cxxutil {
         static MemoryTracker *getInstance();
 
         void setMemoryExitRoutine(MemoryExitRoutine *mer);
+
+        // This will always exit!
         void runMemoryExitRoutine(MemoryExitCode mec);
+
         void incrMemChnl(uint8_t chnl);
         void decrMemChnl(uint8_t chnl);
 
@@ -63,7 +66,9 @@ namespace cxxutil {
     class MemoryExitRoutine {
     public: 
         static const char *getExitCodeName(MemoryExitCode mec);
-        virtual void exit(MemoryTracker *mt, MemoryExitCode mec) = 0;
+
+        // NOTE: Dynamic Memory should never be used in this call!
+        virtual void run(MemoryTracker *mt, MemoryExitCode mec) = 0;
     };
 
     class SafeObject {
@@ -84,7 +89,7 @@ namespace cxxutil {
 
         static BasicMemoryExitRoutine *singleton;
     public:
-        static BasicMemoryExitRoutine *getInstance();
-        virtual void exit(MemoryTracker *mt, MemoryExitCode mec) override;
+        static MemoryExitRoutine *getInstance();
+        virtual void run(MemoryTracker *mt, MemoryExitCode mec) override;
     };
 }

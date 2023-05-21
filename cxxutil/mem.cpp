@@ -38,16 +38,15 @@ void MemoryTracker::setMemoryExitRoutine(MemoryExitRoutine *mer) {
 
 void MemoryTracker::runMemoryExitRoutine(MemoryExitCode mec) {
     if (this->mer) {
-        this->mer->exit(this, mec);
+        this->mer->run(this, mec);
     }
 
-    BasicMemoryExitRoutine::getInstance()->exit(this, mec);
+    exit(1);
 }
 
 void MemoryTracker::incrMemChnl(uint8_t chnl) {
     if (chnl >= this->numMemChnls) {
         this->runMemoryExitRoutine(MemoryExitCode::BAD_CHANNEL);
-        return;
     } 
 
     this->memChnls[chnl]++;
@@ -60,12 +59,10 @@ void MemoryTracker::incrMemChnl(uint8_t chnl) {
 void MemoryTracker::decrMemChnl(uint8_t chnl) {
     if (chnl >= this->numMemChnls) {
         this->runMemoryExitRoutine(MemoryExitCode::BAD_CHANNEL);
-        return;
     } 
 
     if (this->memChnls[chnl] == 0) {
         this->runMemoryExitRoutine(MemoryExitCode::UNDERFLOW);
-        return;
     }
 
     this->memChnls[chnl]--;
@@ -137,7 +134,7 @@ void *SafeObject::operator new(size_t size) {
 }
 
 BasicMemoryExitRoutine *BasicMemoryExitRoutine::singleton = nullptr;
-BasicMemoryExitRoutine *BasicMemoryExitRoutine::getInstance() {
+MemoryExitRoutine *BasicMemoryExitRoutine::getInstance() {
     if (!singleton) {
         singleton = new BasicMemoryExitRoutine();
     }
@@ -148,7 +145,7 @@ BasicMemoryExitRoutine *BasicMemoryExitRoutine::getInstance() {
 BasicMemoryExitRoutine::BasicMemoryExitRoutine() : 
     SafeObject(CXX_EXIT_ROUTINE_CHNL), MemoryExitRoutine() { }
 
-void BasicMemoryExitRoutine::exit(MemoryTracker *mt, MemoryExitCode mec) {
+void BasicMemoryExitRoutine::run(MemoryTracker *mt, MemoryExitCode mec) {
     os_ClrHome();
 
     os_PutStrFull(MemoryExitRoutine::getExitCodeName(mec));
@@ -157,8 +154,6 @@ void BasicMemoryExitRoutine::exit(MemoryTracker *mt, MemoryExitCode mec) {
     mt->printMemChnls();
 
     delay(3000);
-
-    ::exit(1);
 }
 
 
