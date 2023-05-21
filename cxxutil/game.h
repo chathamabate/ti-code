@@ -1,7 +1,7 @@
-#ifndef GAME_HPP
-#define GAME_HPP
+#pragma once
 
 #include <stdint.h>
+#include <sys/timers.h>
 
 // Macro for very specific use in Game.
 #define __RequestTypeCheck(req) \
@@ -99,8 +99,7 @@ namespace cxxutil {
                 req = this->initTransState();
                 if (req.type != RequestType::CONTINUE) {
                     // NOTE, on exit case, the global state
-                    // will be disposed of?
-                    // Do we want this tho???? Don't know for sure...
+                    // will be disposed of.
                     delete this->globalState;
                     this->globalState = nullptr;
 
@@ -108,12 +107,12 @@ namespace cxxutil {
                 }
 
                 // Fill in at somepoint.
-                TransitionState<T> *ts = firstTransState;
-                firstTransState = nullptr;
+                TransitionState<T> *ts = this->firstTransState;
+                this->firstTransState = nullptr;
                
                 GameState<T> *gs = nullptr;
 
-                while (req.type == RequestType::CONTINUE) {
+                while (true) {
                     // Here we have a valid trans state in ts. 
                     // Generate next game state.
                     req = ts->getEndRequest();
@@ -139,9 +138,15 @@ namespace cxxutil {
 
                     delete gs;
                     gs = nullptr;
-                }
 
-                // Do we need to check for fail here?
+                    if (req.type != RequestType::CONTINUE) {
+                        break;
+                    }
+                }
+                
+                delete this->globalState;
+                this->globalState = nullptr;
+
                 return req;
             }
 
@@ -292,5 +297,3 @@ namespace cxxutil {
             }
     };
 }
-
-#endif

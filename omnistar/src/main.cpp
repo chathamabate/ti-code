@@ -6,33 +6,20 @@
 #include <stdlib.h>
 #include <tice.h>
 #include <stdio.h>
+#include <new>
 #include <graphx.h>
 
 #include <cutil/keys.h>
-#include <cxxutil/test.h>
 #include <cxxutil/game.h>
+#include <cxxutil/mem.h>
 
 using namespace cxxutil;
 
 int main(void) {
+    os_ClrHome();
 
-    // Lambdas Work!!!!
-    // auto f = [] (int a, int b) {return a + b;};
-    
-    // One or two more fields per shape not a big deal...
-    Shape *shapes[] = {
-        new Rectangle(3, 5),
-        new Square(2)
-    };
-    
-    os_ClrHomeFull();
+    delay(3000);
 
-    for (int i = 0; i < 2; i++) {
-        delete shapes[i];
-        os_NewLine();
-    }
-
-    while (!os_GetCSC());
-
+    // Exceptions are disabled!
     return 0;
 }
