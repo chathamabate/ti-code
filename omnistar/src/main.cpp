@@ -15,23 +15,47 @@
 
 using namespace cxxutil;
 
-class X : public SafeObject {
-    public:
-    int arr[20];
-    X() : SafeObject(4) {
-
-    }
-};
-
 int main(void) {
-    // MemoryTracker::getInstance()
-    //    ->setMemoryExitRoutine(BasicMemoryExitRoutine::getInstance());
+    MemoryTracker::getInstance()
+        ->setMemoryExitRoutine(BasicMemoryExitRoutine::getInstance());
+    os_ClrHome();
 
-    X *ptr;
+    SafeArray<int> *arr1, *arr2;
 
-    while (true) {
-        ptr = new X();
+    arr1 = new SafeArray<int>(5, 100);
+    arr2 = new SafeArray<int>(6, 100);
+
+    uint16_t i;
+
+    os_PutStrFull("Setting Arr 1"); os_NewLine();
+    for (i = 0; i < arr1->getLen(); i++) {
+        arr1->set(i, i);
     }
+
+    os_PutStrFull("Setting Arr 2"); os_NewLine();
+    for (i = 0; i < arr2->getLen(); i++) {
+        arr2->set(i, i);
+    }
+
+    os_PutStrFull("Checking Arr 1"); os_NewLine();
+    for (i = 0; i < arr1->getLen(); i++) {
+        if (arr1->get(i) != i) {
+            os_PutStrFull("Mistake 1");
+            os_NewLine();
+        }
+    }
+
+    os_PutStrFull("Checking Arr 2"); os_NewLine();
+    for (i = 0; i < arr2->getLen(); i++) {
+        if (arr2->get(i) != i) {
+            os_PutStrFull("Mistake 2");
+            os_NewLine();
+        }
+    }
+
+    MemoryTracker::getInstance()->printMemChnls();
+
+    delay(3000);
 
     // Exceptions are disabled!
     return 0;

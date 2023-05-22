@@ -80,7 +80,6 @@ typedef uint8_t c_key_t;
 /* Keyboard group 5 - 83 Premium CE key names */
 #define c_Frac     c_Tan
 
-
 /* Keyboard group 6 */
 #define c_Enter   38 
 #define c_Add     39 

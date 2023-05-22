@@ -1,5 +1,6 @@
 #pragma once
 
+#include <new>
 #include <stdint.h>
 
 // NOTE this is a redefinition of cutil/misc.h
@@ -81,6 +82,45 @@ namespace cxxutil {
         SafeObject(uint8_t ch);
         ~SafeObject();
         void *operator new(size_t size);
+    };
+
+    template <typename T> 
+    class SafeArray : public SafeObject {
+    private:
+        uint16_t len;
+        T *arr;
+    public:
+        SafeArray(uint8_t chnl, uint16_t len) : SafeObject(chnl) {
+            this->len = len;
+
+            T *arr = new (std::nothrow) T[len];
+
+#ifdef CXX_MEM_CHECKS
+            if (!arr) {
+                MemoryTracker::getInstance()
+                    ->runMemoryExitRoutine(MemoryExitCode::OUT_OF_MEMORY);
+            } 
+#endif
+
+            this->arr = arr;
+        }
+
+        ~SafeArray() {
+            delete this->arr;
+        }
+
+        inline uint16_t getLen() {
+            return this->len;
+        }
+
+        // NOTE: No bounds checking for speed!
+        inline T get(uint16_t i) {
+            return this->arr[i];
+        }
+
+        inline void set(uint16_t i, T ele) {
+            this->arr[i] = ele;
+        }
     };
 
     class BasicMemoryExitRoutine : SafeObject, MemoryExitRoutine {
