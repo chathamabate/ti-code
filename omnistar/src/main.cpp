@@ -22,8 +22,8 @@ int main(void) {
 
     SafeArray<int> *arr1, *arr2;
 
-    arr1 = new SafeArray<int>(5, 100);
-    arr2 = new SafeArray<int>(6, 100);
+    arr1 = new SafeArray<int>(5, 20000);
+    arr2 = new SafeArray<int>(6, 30000);
 
     uint16_t i;
 
