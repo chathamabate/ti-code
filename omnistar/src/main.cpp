@@ -10,52 +10,23 @@
 #include <graphx.h>
 
 #include <cutil/keys.h>
+
 #include <cxxutil/game.h>
 #include <cxxutil/mem.h>
+#include <cxxutil/input.h>
 
 using namespace cxxutil;
 
 int main(void) {
+
+#ifdef CXX_MEM_CHECKS
+    // Memory Tracker initialization code!
+    MemoryTracker::initMemoryTracker();
     MemoryTracker::getInstance()
         ->setMemoryExitRoutine(BasicMemoryExitRoutine::getInstance());
-    os_ClrHome();
+#endif
 
-    SafeArray<int> *arr1, *arr2;
-
-    arr1 = new SafeArray<int>(5, 20000);
-    arr2 = new SafeArray<int>(6, 30000);
-
-    uint16_t i;
-
-    os_PutStrFull("Setting Arr 1"); os_NewLine();
-    for (i = 0; i < arr1->getLen(); i++) {
-        arr1->set(i, i);
-    }
-
-    os_PutStrFull("Setting Arr 2"); os_NewLine();
-    for (i = 0; i < arr2->getLen(); i++) {
-        arr2->set(i, i);
-    }
-
-    os_PutStrFull("Checking Arr 1"); os_NewLine();
-    for (i = 0; i < arr1->getLen(); i++) {
-        if (arr1->get(i) != i) {
-            os_PutStrFull("Mistake 1");
-            os_NewLine();
-        }
-    }
-
-    os_PutStrFull("Checking Arr 2"); os_NewLine();
-    for (i = 0; i < arr2->getLen(); i++) {
-        if (arr2->get(i) != i) {
-            os_PutStrFull("Mistake 2");
-            os_NewLine();
-        }
-    }
-
-    MemoryTracker::getInstance()->printMemChnls();
-
-    delay(3000);
+    MemoryTracker::getInstance()->runMemoryExitRoutine(MemoryExitCode::OUT_OF_MEMORY);
 
     // Exceptions are disabled!
     return 0;

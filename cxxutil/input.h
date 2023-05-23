@@ -90,18 +90,53 @@
 
 #define CXX_KEY_NumKeys CXX_KEY_Up + 1
 
+#define CXX_KEY_UNFOCUSED CXX_KEY_NumKeys
+
 namespace cxxutil {
     typedef uint8_t cxx_key_t;
+    typedef struct {
+        cxx_key_t key;
+        uint8_t count;
+    } cxx_key_count_t;
 
     class KeyManager : SafeObject {
     private:
+        static kb_lkey_t cxxKeyMap[CXX_KEY_NumKeys];
+
         static KeyManager *singleton;
+
+        // Maps cxx_key_t's to their index in the keyCounts array.
+        // (If they are focused)
+        //
+        // If they are not focused, keyMap[key] will be equal to 
+        // CXX_KEY_UNFOCUSED.
+        uint8_t keyMap[CXX_KEY_NumKeys];
+        SafeArray<cxx_key_count_t> *keyCounts;
+        uint8_t repeatDelay;
+
         KeyManager();
-    
+        ~KeyManager();
+
     public:
         static KeyManager *getInstance();
 
-        // Need some sort of key focusing here...
+        void setRepeatDelay(uint8_t repeatDelay);
+        void setFocusedKeys(cxx_key_t *keys, uint8_t len);
+        void scanFocusedKeys();
+        void unfocusAll();
+
+        // NOTE: in below functions behavoir is undefined if
+        // key is not focused!
+
+        inline bool isKeyPressed(cxx_key_t key) {
+            const uint8_t count = this->keyCounts->get(this->keyMap[key]).count;
+
+            return count == 1 || count == this->repeatDelay;
+        }
+
+        inline bool isKeyDown(cxx_key_t key) {
+            return this->keyCounts->get(this->keyMap[key]).count >= 1;
+        }
     };
 }
 

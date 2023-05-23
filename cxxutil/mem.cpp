@@ -6,15 +6,24 @@
 #include <stdio.h>
 
 #include <tice.h>
+#include <keypadc.h>
 
 using namespace cxxutil;
 
 MemoryTracker *MemoryTracker::singleton = nullptr;
+void MemoryTracker::initMemoryTracker() {
+    if (!singleton) {
+        singleton = new MemoryTracker(CXX_NUM_MEM_CHNLS);
+    }
+}
+
 MemoryTracker *MemoryTracker::getInstance() {
     // NOTE: This should be the only place 
     // were we dynamically create a non-safe object.
+
     if (!singleton) {
-        singleton = new MemoryTracker(24);
+        // See below notes on why we do not create the singleton here.
+        exit(1);
     }
 
     return singleton;
@@ -37,6 +46,10 @@ void MemoryTracker::setMemoryExitRoutine(MemoryExitRoutine *mer) {
 }
 
 void MemoryTracker::runMemoryExitRoutine(MemoryExitCode mec) {
+    // NOTE: this is called during an out of memory situation.
+    // Because of this, the memory tracker instance must have been created
+    // prior to this being called!
+
     if (this->mer) {
         this->mer->run(this, mec);
     }
@@ -153,7 +166,10 @@ void BasicMemoryExitRoutine::run(MemoryTracker *mt, MemoryExitCode mec) {
 
     mt->printMemChnls();
 
-    delay(3000);
+    while (!kb_IsDown(kb_KeyClear)) {
+        delay(50);
+        kb_Scan();
+    }
 }
 
 

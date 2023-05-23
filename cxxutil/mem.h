@@ -12,10 +12,12 @@
 // to take place. (Leads to bulkier and slower binary)
 #define CXX_MEM_CHECKS
 
-#define CXX_NUM_MEM_CHNLS 32
+#define CXX_NUM_MEM_CHNLS 24
 
 #define CXX_TEST_CHNL           0
 #define CXX_EXIT_ROUTINE_CHNL   1
+#define CXX_KEY_CHNL            2
+
 #define CXX_FREE_CHNL_START     8
 
 namespace cxxutil {
@@ -48,6 +50,7 @@ namespace cxxutil {
 
         MemoryTracker(uint8_t chnls);
     public:
+        static void initMemoryTracker();
         static MemoryTracker *getInstance();
 
         void setMemoryExitRoutine(MemoryExitRoutine *mer);
@@ -93,6 +96,11 @@ namespace cxxutil {
         SafeArray(uint8_t chnl, uint16_t len) : SafeObject(chnl) {
             this->len = len;
 
+            if (len == 0) {
+                this->arr = nullptr;
+                return;
+            }
+
             T *arr = new (std::nothrow) T[len];
 
 #ifdef CXX_MEM_CHECKS
@@ -105,8 +113,17 @@ namespace cxxutil {
             this->arr = arr;
         }
 
+        SafeArray(uint8_t chnl, T *arr, uint16_t len) : SafeArray(chnl, len) {
+            uint16_t i;
+            for (i = 0; i < len; i++) {
+                this->arr[i] = arr[i];
+            }
+        }
+
         ~SafeArray() {
-            delete this->arr;
+            if (this->arr) {
+                delete this->arr;
+            }
         }
 
         inline uint16_t getLen() {
@@ -116,6 +133,10 @@ namespace cxxutil {
         // NOTE: No bounds checking for speed!
         inline T get(uint16_t i) {
             return this->arr[i];
+        }
+
+        inline T *getPtr(uint16_t i) {
+            return &(this->arr[i]);
         }
 
         inline void set(uint16_t i, T ele) {
