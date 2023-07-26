@@ -70,6 +70,22 @@ public:
 
         this->memChnls[memChnl]--;
     }
+
+    void printMemChnls() {
+        constexpr uint8_t ROW_WIDTH = 4;
+        char buff[20];  // 20 characters should be more than enough.
+
+        for (int8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
+            bool rowEnd = (i + 1) % ROW_WIDTH == 0;
+
+            sprintf(buff, rowEnd ? "%u: %u" : "%u: %u ", i, this->memChnls[i]);
+            os_PutStrFull(buff);
+
+            if (rowEnd) {
+                os_NewLine();
+            }
+        }
+    }
 };
 
 const char *cxxutil::translateMEC(MemoryExitCode mec) {
@@ -94,6 +110,8 @@ public:
         os_PutStrFull(translateMEC(mec));
         os_NewLine();
 
+        mt->printMemChnls();
+
         while (!kb_IsDown(kb_KeyClear)) {
             delay(50);
             kb_Scan();
@@ -117,6 +135,5 @@ void cxxutil::decrMemChnl(uint8_t memChnl) {
 void cxxutil::setMER(const MemoryExitRoutine *mer) {
     MT.setMER(mer);
 }
-
 
 #endif

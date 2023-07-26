@@ -16,15 +16,13 @@
 using namespace cxxutil;
 
 int main(void) {
-    // os_ClrHome();
-    os_PutStrFull("Starting Main!");
-    os_NewLine();
 
+    incrMemChnl(1);
+    incrMemChnl(1);
+    decrMemChnl(1);
 
-    while (!kb_IsDown(kb_KeyClear)) {
-        delay(50);
-        kb_Scan();
-    }
+    decrMemChnl(200);
+
 
     return 0;
 }
