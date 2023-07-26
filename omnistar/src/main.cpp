@@ -15,14 +15,20 @@
 
 using namespace cxxutil;
 
+class MyObject : public SafeObject {
+public:
+    int x[10];
+    MyObject() : SafeObject(3) {
+        this->x[0] = 10;
+    }
+};
+
 int main(void) {
+    SafeArray<MyObject> *arr = new SafeArray<MyObject>(1, 10);
 
-    incrMemChnl(1);
-    incrMemChnl(1);
-    decrMemChnl(1);
-
-    decrMemChnl(200);
-
+#ifdef CXX_MEM_CHECKS
+    checkMemLeaks();
+#endif
 
     return 0;
 }

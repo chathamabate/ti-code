@@ -10,6 +10,23 @@
 
 using namespace cxxutil;
 
+const char *cxxutil::translateMEC(MemoryExitCode mec) {
+    switch (mec) {
+    case MemoryExitCode::BAD_CHANNEL:
+        return "Bad Channel";
+    case MemoryExitCode::OUT_OF_MEMORY:
+        return "Out of Memory";
+    case MemoryExitCode::OVERFLOW:
+        return "Overflow";
+    case MemoryExitCode::UNDERFLOW:
+        return "Underflow";
+    case MemoryExitCode::MEMORY_LEAK:
+        return "Memory Leak";
+    default:
+        return "Unknown Code";
+    }
+}
+
 #ifdef CXX_MEM_CHECKS
 
 class MemoryTracker;
@@ -23,15 +40,6 @@ class MemoryTracker {
 private:
     uint24_t memChnls[CXX_NUM_MEM_CHNLS];
     const MemoryExitRoutine *mer;
-
-    // This function always exits.
-    void runMER(MemoryExitCode mec) {
-        if (this->mer) {
-            this->mer->run(this, mec);
-        }
-
-        exit(0);
-    }
 
     inline void checkChnl(uint8_t memChnl) {
         if (memChnl >= CXX_NUM_MEM_CHNLS) {
@@ -49,6 +57,23 @@ public:
 
     void setMER(const MemoryExitRoutine *pmer) {
         this->mer = pmer;
+    }
+
+    // This function always exits.
+    void runMER(MemoryExitCode mec) {
+        if (this->mer) {
+            this->mer->run(this, mec);
+        }
+
+        exit(0);
+    }
+
+    void checkMemLeaks() {
+        for (uint8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
+            if (this->memChnls[i] > 0) {
+                this->runMER(MemoryExitCode::MEMORY_LEAK);
+            }
+        }
     }
 
     void incr(uint8_t memChnl) {
@@ -88,21 +113,6 @@ public:
     }
 };
 
-const char *cxxutil::translateMEC(MemoryExitCode mec) {
-    switch (mec) {
-    case MemoryExitCode::BAD_CHANNEL:
-        return "Bad Channel";
-    case MemoryExitCode::OUT_OF_MEMORY:
-        return "Out of Memory";
-    case MemoryExitCode::OVERFLOW:
-        return "Overflow";
-    case MemoryExitCode::UNDERFLOW:
-        return "Underflow";
-    default:
-        return "Unknown Code";
-    }
-}
-
 class BasicMemoryExitRoutine : public MemoryExitRoutine {
 public:
     virtual void run(MemoryTracker *mt, MemoryExitCode mec) const override {
@@ -136,4 +146,44 @@ void cxxutil::setMER(const MemoryExitRoutine *mer) {
     MT.setMER(mer);
 }
 
+void cxxutil::runMER(MemoryExitCode mec) {
+    MT.runMER(mec);
+}
+
+void cxxutil::checkMemLeaks() {
+    MT.checkMemLeaks();
+}
+
 #endif
+
+
+SafeObject::SafeObject(uint8_t chnl) {
+#ifdef CXX_MEM_CHECKS
+    this->chnl = chnl;
+
+    // NOTE, it is assumed all safe objects are created
+    // in dynamic memory. Calling the constructor will
+    // always increment the memory tracker.
+    MT.incr(chnl);  
+#else
+    (void)chnl;
+#endif
+}
+
+SafeObject::~SafeObject() {
+#ifdef CXX_MEM_CHECKS
+    MT.decr(this->chnl);
+#endif
+}
+
+void *SafeObject::operator new(size_t size) {
+    void *p = malloc(size);
+
+#ifdef CXX_MEM_CHECKS
+    if (!p) {
+        MT.runMER(MemoryExitCode::OUT_OF_MEMORY);
+    }
+#endif
+
+    return p;
+}
