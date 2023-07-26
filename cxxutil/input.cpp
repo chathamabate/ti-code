@@ -1,8 +1,10 @@
 #include <cxxutil/input.h>
 
+
 using namespace cxxutil;
 
-kb_lkey_t KeyManager::cxxKeyMap[CXX_KEY_NumKeys] = {
+// kb_lkey_t KeyManager::cxxKeyMap[CXX_KEY_NumKeys] = {
+int CHANGE_ME[CXX_KEY_NumKeys] = {
     /* Keyboard group 1 */
     kb_KeyGraph,     
     kb_KeyTrace,     
@@ -66,6 +68,8 @@ kb_lkey_t KeyManager::cxxKeyMap[CXX_KEY_NumKeys] = {
     kb_KeyRight,    
     kb_KeyUp
 };
+
+/*
 
 KeyManager *KeyManager::singleton = nullptr;
 KeyManager *KeyManager::getInstance() {
@@ -146,3 +150,4 @@ void KeyManager::unfocusAll() {
 
 
 
+*/

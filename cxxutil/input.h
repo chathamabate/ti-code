@@ -92,6 +92,7 @@
 
 #define CXX_KEY_UNFOCUSED CXX_KEY_NumKeys
 
+/*
 namespace cxxutil {
     typedef uint8_t cxx_key_t;
     typedef struct {
@@ -140,4 +141,4 @@ namespace cxxutil {
     };
 }
 
-
+*/

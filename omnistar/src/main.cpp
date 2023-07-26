@@ -10,24 +10,21 @@
 #include <graphx.h>
 
 #include <cutil/keys.h>
-
-#include <cxxutil/game.h>
 #include <cxxutil/mem.h>
 #include <cxxutil/input.h>
 
 using namespace cxxutil;
 
 int main(void) {
+    // os_ClrHome();
+    os_PutStrFull("Starting Main!");
+    os_NewLine();
 
-#ifdef CXX_MEM_CHECKS
-    // Memory Tracker initialization code!
-    MemoryTracker::initMemoryTracker();
-    MemoryTracker::getInstance()
-        ->setMemoryExitRoutine(BasicMemoryExitRoutine::getInstance());
-#endif
 
-    MemoryTracker::getInstance()->runMemoryExitRoutine(MemoryExitCode::OUT_OF_MEMORY);
+    while (!kb_IsDown(kb_KeyClear)) {
+        delay(50);
+        kb_Scan();
+    }
 
-    // Exceptions are disabled!
     return 0;
 }

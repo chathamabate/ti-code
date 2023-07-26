@@ -10,169 +10,113 @@
 
 using namespace cxxutil;
 
-MemoryTracker *MemoryTracker::singleton = nullptr;
-void MemoryTracker::initMemoryTracker() {
-    if (!singleton) {
-        singleton = new MemoryTracker(CXX_NUM_MEM_CHNLS);
-    }
-}
+#ifdef CXX_MEM_CHECKS
 
-MemoryTracker *MemoryTracker::getInstance() {
-    // NOTE: This should be the only place 
-    // were we dynamically create a non-safe object.
+class MemoryTracker;
 
-    if (!singleton) {
-        // See below notes on why we do not create the singleton here.
-        exit(1);
-    }
+class cxxutil::MemoryExitRoutine {
+public:
+    virtual void run(MemoryTracker *mt, MemoryExitCode mec) const = 0;
+}; 
 
-    return singleton;
-}
+class MemoryTracker {
+private:
+    uint24_t memChnls[CXX_NUM_MEM_CHNLS];
+    const MemoryExitRoutine *mer;
 
-MemoryTracker::MemoryTracker(uint8_t chnls) {
-    this->numMemChnls = chnls;
-    this->memChnls = new uint24_t[chnls];
+    // This function always exits.
+    void runMER(MemoryExitCode mec) {
+        if (this->mer) {
+            this->mer->run(this, mec);
+        }
 
-    uint8_t i;
-    for (i = 0; i < chnls; i++) {
-        this->memChnls[i] = 0;
+        exit(0);
     }
 
-    this->mer = nullptr;
-}
-
-void MemoryTracker::setMemoryExitRoutine(MemoryExitRoutine *mer) {
-    this->mer = mer;
-}
-
-void MemoryTracker::runMemoryExitRoutine(MemoryExitCode mec) {
-    // NOTE: this is called during an out of memory situation.
-    // Because of this, the memory tracker instance must have been created
-    // prior to this being called!
-
-    if (this->mer) {
-        this->mer->run(this, mec);
-    }
-
-    exit(1);
-}
-
-void MemoryTracker::incrMemChnl(uint8_t chnl) {
-    if (chnl >= this->numMemChnls) {
-        this->runMemoryExitRoutine(MemoryExitCode::BAD_CHANNEL);
-    } 
-
-    this->memChnls[chnl]++;
-
-    if (this->memChnls[chnl] == 0) {
-        this->runMemoryExitRoutine(MemoryExitCode::OVERFLOW);
-    }
-}
-
-void MemoryTracker::decrMemChnl(uint8_t chnl) {
-    if (chnl >= this->numMemChnls) {
-        this->runMemoryExitRoutine(MemoryExitCode::BAD_CHANNEL);
-    } 
-
-    if (this->memChnls[chnl] == 0) {
-        this->runMemoryExitRoutine(MemoryExitCode::UNDERFLOW);
-    }
-
-    this->memChnls[chnl]--;
-}
-
-uint24_t *MemoryTracker::getMemChnls() {
-    return this->memChnls;
-}
-
-uint8_t MemoryTracker::getNumChnls() {
-    return this->numMemChnls;
-}
-
-void MemoryTracker::printMemChnls() {
-    char buff[20];
-
-    uint8_t i;
-    for (i = 0; i < this->numMemChnls; i++) {
-        sprintf(buff, "%u: %u", i, this->memChnls[i]);
-        os_PutStrFull(buff);
-
-        if ((i + 1) % 3 == 0) {
-            os_NewLine();
-        } else {
-            os_PutStrFull("  ");
+    inline void checkChnl(uint8_t memChnl) {
+        if (memChnl >= CXX_NUM_MEM_CHNLS) {
+            this->runMER(MemoryExitCode::BAD_CHANNEL);
         }
     }
-}
 
-const char *MemoryExitRoutine::getExitCodeName(MemoryExitCode mec) {
+public:
+    MemoryTracker(const MemoryExitRoutine *pmer) : mer(pmer) {
+        // Don't think this is needed, but whatevs.
+        for (int8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
+            this->memChnls[i] = 0;
+        }
+    }
+
+    void setMER(const MemoryExitRoutine *pmer) {
+        this->mer = pmer;
+    }
+
+    void incr(uint8_t memChnl) {
+        this->checkChnl(memChnl);
+
+        this->memChnls[memChnl]++;
+
+        if (this->memChnls[memChnl] == 0){
+            this->runMER(MemoryExitCode::OVERFLOW);
+        }
+    }
+
+    void decr(uint8_t memChnl) {
+        this->checkChnl(memChnl);
+
+        if (this->memChnls[memChnl] == 0) {
+            this->runMER(MemoryExitCode::UNDERFLOW);
+        }
+
+        this->memChnls[memChnl]--;
+    }
+};
+
+const char *cxxutil::translateMEC(MemoryExitCode mec) {
     switch (mec) {
     case MemoryExitCode::BAD_CHANNEL:
         return "Bad Channel";
+    case MemoryExitCode::OUT_OF_MEMORY:
+        return "Out of Memory";
     case MemoryExitCode::OVERFLOW:
         return "Overflow";
     case MemoryExitCode::UNDERFLOW:
         return "Underflow";
-    case MemoryExitCode::OUT_OF_MEMORY:
-        return "Out of Memory";  
+    default:
+        return "Unknown Code";
     }
 }
 
-SafeObject::SafeObject(uint8_t chnl) {
-#ifdef CXX_MEM_CHECKS
-    this->chnl = chnl;
-    MemoryTracker::getInstance()->incrMemChnl(chnl);
-#else
-    (void)chnl;
+class BasicMemoryExitRoutine : public MemoryExitRoutine {
+public:
+    virtual void run(MemoryTracker *mt, MemoryExitCode mec) const override {
+        os_ClrHome();
+        os_PutStrFull(translateMEC(mec));
+        os_NewLine();
+
+        while (!kb_IsDown(kb_KeyClear)) {
+            delay(50);
+            kb_Scan();
+        }
+    }
+};
+
+static const BasicMemoryExitRoutine BASIC_MER_VAL;
+const MemoryExitRoutine * const cxxutil::BASIC_MER = &BASIC_MER_VAL;
+
+static MemoryTracker MT(cxxutil::BASIC_MER);
+
+void cxxutil::incrMemChnl(uint8_t memChnl) {
+    MT.incr(memChnl);
+}
+
+void cxxutil::decrMemChnl(uint8_t memChnl) {
+    MT.decr(memChnl);
+}
+
+void cxxutil::setMER(const MemoryExitRoutine *mer) {
+    MT.setMER(mer);
+}
+
+
 #endif
-}
-
-SafeObject::~SafeObject() {
-#ifdef CXX_MEM_CHECKS
-    MemoryTracker::getInstance()->decrMemChnl(this->chnl); 
-#endif
-}
-
-void *SafeObject::operator new(size_t size) {
-    void *p = malloc(size);
-
-#ifdef CXX_MEM_CHECKS
-    if (!p) {
-        MemoryTracker::getInstance()
-            ->runMemoryExitRoutine(MemoryExitCode::OUT_OF_MEMORY);
-    }
-#endif
-
-    return p;
-}
-
-BasicMemoryExitRoutine *BasicMemoryExitRoutine::singleton = nullptr;
-MemoryExitRoutine *BasicMemoryExitRoutine::getInstance() {
-    if (!singleton) {
-        singleton = new BasicMemoryExitRoutine();
-    }
-
-    return singleton;
-}
-
-BasicMemoryExitRoutine::BasicMemoryExitRoutine() : 
-    SafeObject(CXX_EXIT_ROUTINE_CHNL), MemoryExitRoutine() { }
-
-void BasicMemoryExitRoutine::run(MemoryTracker *mt, MemoryExitCode mec) {
-    os_ClrHome();
-
-    os_PutStrFull(MemoryExitRoutine::getExitCodeName(mec));
-    os_NewLine();
-
-    mt->printMemChnls();
-
-    while (!kb_IsDown(kb_KeyClear)) {
-        delay(50);
-        kb_Scan();
-    }
-}
-
-
-
-
-

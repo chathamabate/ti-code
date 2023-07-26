@@ -12,145 +12,37 @@
 // to take place. (Leads to bulkier and slower binary)
 #define CXX_MEM_CHECKS
 
-#define CXX_NUM_MEM_CHNLS 24
+#ifdef CXX_MEM_CHECKS
+constexpr int8_t CXX_NUM_MEM_CHNLS      = 24;
 
-#define CXX_TEST_CHNL           0
-#define CXX_EXIT_ROUTINE_CHNL   1
-#define CXX_KEY_CHNL            2
+constexpr int8_t CXX_TEST_CHNL          = 0;
+constexpr int8_t CXX_KEY_CHNL           = 1;
 
-#define CXX_FREE_CHNL_START     8
+constexpr int8_t CXX_FREE_CHNL_START    = 8;
+#endif
 
 namespace cxxutil {
-    class MemoryTracker;
+    #ifdef CXX_MEM_CHECKS
+
+    enum MemoryExitCode : uint8_t {
+        OUT_OF_MEMORY = 0,
+        OVERFLOW,
+        UNDERFLOW,
+        BAD_CHANNEL,
+    };
+
+    const char *translateMEC(MemoryExitCode mec);
+    
     class MemoryExitRoutine;
 
-    enum class MemoryExitCode {
-        
-        // A Bad channel index was given.
-        BAD_CHANNEL = 0,
+    extern const MemoryExitRoutine * const BASIC_MER;
 
-        // One channel has exceeded UINT24_T_MAX.
-        OVERFLOW,
+    void setMER(const MemoryExitRoutine *mer);
 
-        // The user tried to decrement an empty channel.
-        UNDERFLOW,
+    // Memory tracker class will be hidden.
+    void incrMemChnl(uint8_t memChnl);
+    void decrMemChnl(uint8_t memChnl);
 
-        // The calculator is out of memory.
-        OUT_OF_MEMORY,
-    };
-
-    class MemoryTracker {
-    private:
-        uint24_t *memChnls;
-        uint8_t numMemChnls;
-
-        MemoryExitRoutine *mer;
-
-        static MemoryTracker *singleton;
-
-        MemoryTracker(uint8_t chnls);
-    public:
-        static void initMemoryTracker();
-        static MemoryTracker *getInstance();
-
-        void setMemoryExitRoutine(MemoryExitRoutine *mer);
-
-        // This will always exit!
-        void runMemoryExitRoutine(MemoryExitCode mec);
-
-        void incrMemChnl(uint8_t chnl);
-        void decrMemChnl(uint8_t chnl);
-
-        uint24_t *getMemChnls();
-        uint8_t getNumChnls();
-
-        void printMemChnls();
-    };
-
-    class MemoryExitRoutine {
-    public: 
-        static const char *getExitCodeName(MemoryExitCode mec);
-
-        // NOTE: Dynamic Memory should never be used in this call!
-        virtual void run(MemoryTracker *mt, MemoryExitCode mec) = 0;
-    };
-
-    class SafeObject {
-#ifdef CXX_MEM_CHECKS
-    private:
-        uint8_t chnl;
-#endif
-
-    public:
-        SafeObject(uint8_t ch);
-        ~SafeObject();
-        void *operator new(size_t size);
-    };
-
-    template <typename T> 
-    class SafeArray : public SafeObject {
-    private:
-        uint16_t len;
-        T *arr;
-    public:
-        SafeArray(uint8_t chnl, uint16_t len) : SafeObject(chnl) {
-            this->len = len;
-
-            if (len == 0) {
-                this->arr = nullptr;
-                return;
-            }
-
-            T *arr = new (std::nothrow) T[len];
-
-#ifdef CXX_MEM_CHECKS
-            if (!arr) {
-                MemoryTracker::getInstance()
-                    ->runMemoryExitRoutine(MemoryExitCode::OUT_OF_MEMORY);
-            } 
-#endif
-
-            this->arr = arr;
-        }
-
-        SafeArray(uint8_t chnl, T *arr, uint16_t len) : SafeArray(chnl, len) {
-            uint16_t i;
-            for (i = 0; i < len; i++) {
-                this->arr[i] = arr[i];
-            }
-        }
-
-        ~SafeArray() {
-            if (this->arr) {
-                delete this->arr;
-            }
-        }
-
-        inline uint16_t getLen() {
-            return this->len;
-        }
-
-        // NOTE: No bounds checking for speed!
-        inline T get(uint16_t i) {
-            return this->arr[i];
-        }
-
-        inline T *getPtr(uint16_t i) {
-            return &(this->arr[i]);
-        }
-
-        inline void set(uint16_t i, T ele) {
-            this->arr[i] = ele;
-        }
-    };
-
-    class BasicMemoryExitRoutine : SafeObject, MemoryExitRoutine {
-    private:
-        BasicMemoryExitRoutine();
-
-        static BasicMemoryExitRoutine *singleton;
-    public:
-        static MemoryExitRoutine *getInstance();
-        virtual void run(MemoryTracker *mt, MemoryExitCode mec) override;
-    };
+    #endif
 }
+
