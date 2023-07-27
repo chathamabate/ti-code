@@ -156,6 +156,7 @@ void cxxutil::checkMemLeaks() {
 
 #endif
 
+SafeObject::SafeObject() : SafeObject(CXX_DEF_CHNL) { }
 
 SafeObject::SafeObject(uint8_t chnl) {
 #ifdef CXX_MEM_CHECKS

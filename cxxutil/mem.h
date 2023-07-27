@@ -17,8 +17,13 @@ namespace cxxutil {
     constexpr uint8_t CXX_NUM_MEM_CHNLS      = 24;
 
     constexpr uint8_t CXX_TEST_CHNL          = 0;
+
+    // This is the defualt channel.
+    // If a memory channel isn't given, this will be
+    // used.
     constexpr uint8_t CXX_DEF_CHNL           = 1;
-    constexpr uint8_t CXX_KEY_CHNL           = 2;
+
+    // Room for cxxutil specific dynamic memory channels.
 
     constexpr uint8_t CXX_FREE_CHNL_START    = 8;
 
@@ -61,9 +66,21 @@ namespace cxxutil {
 #endif
 
     public:
+        SafeObject();
         SafeObject(uint8_t chnl);
+
         ~SafeObject();
         void *operator new(size_t size);
+
+#ifdef CXX_MEM_CHECKS
+        inline uint8_t getChnl() {
+            return this->chnl;
+        }
+#else
+        constexpr uint8_t getChnl() {
+            return 0;
+        }
+#endif
     };
 
     template <typename T> 
@@ -72,6 +89,8 @@ namespace cxxutil {
         uint16_t len;
         T *arr;
     public:
+        SafeArray(uint16_t len) : SafeArray(CXX_DEF_CHNL, len) { }
+
         SafeArray(uint8_t chnl, uint16_t len) : SafeObject(chnl) {
             this->len = len;
 
@@ -97,6 +116,15 @@ namespace cxxutil {
         // NOTE: No bounds checking for speed!
         inline T get(uint16_t i) {
             return this->arr[i];
+        }
+
+        inline T *getPtr(uint16_t i) {
+            return &(this->arr[i]);
+        }
+
+        // This kinda dangerous, so be careful!!!
+        inline T *getArr() {
+            return this->arr;
         }
 
         inline void set(uint16_t i, T ele) {

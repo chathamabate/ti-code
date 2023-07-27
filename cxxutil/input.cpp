@@ -1,9 +1,8 @@
 #include <cxxutil/input.h>
 
-
 using namespace cxxutil;
 
-const kb_lkey_t CXX_KEY_MAP[CXX_KEY_NumKeys] = {
+const kb_lkey_t cxxutil::CXX_KEY_MAP[CXX_KEY_NumKeys] = {
     /* Keyboard group 1 */
     kb_KeyGraph,     
     kb_KeyTrace,     
@@ -68,24 +67,15 @@ const kb_lkey_t CXX_KEY_MAP[CXX_KEY_NumKeys] = {
     kb_KeyUp
 };
 
-/*
+KeyManager::KeyManager() : KeyManager(CXX_DEF_CHNL) { }
 
-KeyManager *KeyManager::singleton = nullptr;
-KeyManager *KeyManager::getInstance() {
-    if (!singleton) {
-        singleton = new KeyManager();
-    }
-
-    return singleton;
-}
-
-KeyManager::KeyManager() : SafeObject(CXX_KEY_CHNL) {
+KeyManager::KeyManager(uint8_t memChnl) : SafeObject(memChnl) {
     for (uint8_t i = 0; i < CXX_KEY_NumKeys; i++) {
         this->keyMap[i] = CXX_KEY_UNFOCUSED;
     }
 
     this->repeatDelay = 1;
-    this->keyCounts = new SafeArray<cxx_key_count_t>(CXX_KEY_CHNL, 0);
+    this->keyCounts = new SafeArray<cxx_key_count_t>(memChnl, 0);
 }
 
 KeyManager::~KeyManager() {
@@ -96,13 +86,13 @@ KeyManager::~KeyManager() {
 void KeyManager::setRepeatDelay(uint8_t repeatDelay) {
     // NOTE: All focused keys will have there counts set back to 0.
     for (uint8_t i = 0; i < this->keyCounts->getLen(); i++) {
-        this->keyCounts->getPtr(i)->count = 0;
+        this->keyCounts->getPtr(i)->cnt = 0;
     }
 
     this->repeatDelay = repeatDelay;
 }
 
-void KeyManager::setFocusedKeys(cxx_key_t *keys, uint8_t len) {
+void KeyManager::setFocusedKeys(const cxx_key_t *keys, uint8_t len) {
     // NOTE: Once again, all key counts will be set to 0.
     // This is different than the C library's behavoir.
 
@@ -112,12 +102,12 @@ void KeyManager::setFocusedKeys(cxx_key_t *keys, uint8_t len) {
     }
 
     delete this->keyCounts;
-    this->keyCounts = new SafeArray<cxx_key_count_t>(CXX_KEY_CHNL, len);
+    this->keyCounts = new SafeArray<cxx_key_count_t>(this->getChnl(), len);
 
     // Focus given keys.
     for (uint8_t i = 0; i < len; i++) {
         this->keyMap[keys[i]] = i;
-        this->keyCounts->set(i, {.key = keys[i], .count = 0}); 
+        this->keyCounts->set(i, {.key = keys[i], .cnt = 0}); 
     }
 }
 
@@ -125,12 +115,12 @@ void KeyManager::scanFocusedKeys() {
     kb_Scan();
 
     for (uint8_t i = 0; i < this->keyCounts->getLen(); i++) {
-        if (kb_IsDown(cxxKeyMap[this->keyCounts->get(i).key])) {
-            if (this->keyCounts->get(i).count < this->repeatDelay) {
-                this->keyCounts->getPtr(i)->count++;
+        if (kb_IsDown(CXX_KEY_MAP[this->keyCounts->get(i).key])) {
+            if (this->keyCounts->get(i).cnt < this->repeatDelay) {
+                this->keyCounts->getPtr(i)->cnt++;
             }
         } else {
-            this->keyCounts->getPtr(i)->count = 0;
+            this->keyCounts->getPtr(i)->cnt = 0;
         }
     }
 }
@@ -143,10 +133,5 @@ void KeyManager::unfocusAll() {
 
     // Change key counts with new empty array.
     delete this->keyCounts;
-    this->keyCounts = new SafeArray<cxx_key_count_t>(CXX_KEY_CHNL, 0);
+    this->keyCounts = new SafeArray<cxx_key_count_t>(this->getChnl(), 0);
 }
-
-
-
-
-*/

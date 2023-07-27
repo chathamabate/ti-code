@@ -103,42 +103,28 @@ namespace cxxutil {
         uint8_t cnt; // count.
     } cxx_key_count_t;
 
-    class KeyManager : SafeObject {
-
-    };
-}
-
-/*
-namespace cxxutil {
-    typedef uint8_t cxx_key_t;
-    typedef struct {
-        cxx_key_t key;
-        uint8_t count;
-    } cxx_key_count_t;
-
-    class KeyManager : SafeObject {
+    // Key manager will not be initializable by the user.
+    // Can be multiple alive at once.... if that is what the user wants.
+    class KeyManager : public SafeObject {
     private:
-        static kb_lkey_t cxxKeyMap[CXX_KEY_NumKeys];
-
-        static KeyManager *singleton;
-
         // Maps cxx_key_t's to their index in the keyCounts array.
         // (If they are focused)
         //
         // If they are not focused, keyMap[key] will be equal to 
         // CXX_KEY_UNFOCUSED.
         uint8_t keyMap[CXX_KEY_NumKeys];
+        
         SafeArray<cxx_key_count_t> *keyCounts;
         uint8_t repeatDelay;
 
+    public:
         KeyManager();
+        KeyManager(uint8_t memChnl);
+
         ~KeyManager();
 
-    public:
-        static KeyManager *getInstance();
-
         void setRepeatDelay(uint8_t repeatDelay);
-        void setFocusedKeys(cxx_key_t *keys, uint8_t len);
+        void setFocusedKeys(const cxx_key_t *keys, uint8_t len);
         void scanFocusedKeys();
         void unfocusAll();
 
@@ -146,15 +132,13 @@ namespace cxxutil {
         // key is not focused!
 
         inline bool isKeyPressed(cxx_key_t key) {
-            const uint8_t count = this->keyCounts->get(this->keyMap[key]).count;
+            const uint8_t count = this->keyCounts->get(this->keyMap[key]).cnt;
 
             return count == 1 || count == this->repeatDelay;
         }
 
         inline bool isKeyDown(cxx_key_t key) {
-            return this->keyCounts->get(this->keyMap[key]).count >= 1;
+            return this->keyCounts->get(this->keyMap[key]).cnt >= 1;
         }
     };
 }
-
-*/
