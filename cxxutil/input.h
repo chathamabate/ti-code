@@ -4,93 +4,109 @@
 #include <keypadc.h>
 #include <cxxutil/mem.h>
 
-/* Keyboard group 1 */
-#define CXX_KEY_Graph    0
-#define CXX_KEY_Trace    1
-#define CXX_KEY_Zoom     2
-#define CXX_KEY_Window   3
-#define CXX_KEY_Yequ     4
-#define CXX_KEY_2nd      5
-#define CXX_KEY_Mode     6
-#define CXX_KEY_Del      7
+namespace cxxutil {
 
-/* Keyboard group 1 - 83 Premium CE key names */
-#define CXX_KEY_Fenetre  CXX_KEY_Window
-#define CXX_KEY_Fx       CXX_KEY_Yequ
-#define CXX_KEY_Suppr    CXX_KEY_Del
+    typedef uint8_t cxx_key_t;
+    
+    /* Keyboard group 1 */
+    constexpr cxx_key_t CXX_KEY_Graph    = 0;
+    constexpr cxx_key_t CXX_KEY_Trace    = 1;
+    constexpr cxx_key_t CXX_KEY_Zoom     = 2;
+    constexpr cxx_key_t CXX_KEY_Window   = 3;
+    constexpr cxx_key_t CXX_KEY_Yequ     = 4;
+    constexpr cxx_key_t CXX_KEY_2nd      = 5;
+    constexpr cxx_key_t CXX_KEY_Mode     = 6;
+    constexpr cxx_key_t CXX_KEY_Del      = 7;
 
-/* Keyboard group 2 */
-#define CXX_KEY_Sto     8 
-#define CXX_KEY_Ln      9 
-#define CXX_KEY_Log     10 
-#define CXX_KEY_Square  11 
-#define CXX_KEY_Recip   12 
-#define CXX_KEY_Math    13 
-#define CXX_KEY_Alpha   14 
+    /* Keyboard group 1 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_Fenetre  = CXX_KEY_Window;
+    constexpr cxx_key_t CXX_KEY_Fx       = CXX_KEY_Yequ;
+    constexpr cxx_key_t CXX_KEY_Suppr    = CXX_KEY_Del;
 
-/* Keyboard group 2 - 83 Premium CE key names */
-#define CXX_KEY_TglExact CXX_KEY_Recip
+    /* Keyboard group 2 */
+    constexpr cxx_key_t CXX_KEY_Sto     = 8; 
+    constexpr cxx_key_t CXX_KEY_Ln      = 9; 
+    constexpr cxx_key_t CXX_KEY_Log     = 10; 
+    constexpr cxx_key_t CXX_KEY_Square  = 11; 
+    constexpr cxx_key_t CXX_KEY_Recip   = 12; 
+    constexpr cxx_key_t CXX_KEY_Math    = 13; 
+    constexpr cxx_key_t CXX_KEY_Alpha   = 14; 
 
-/* Keyboard group 3 */
-#define CXX_KEY_0        15 
-#define CXX_KEY_1        16 
-#define CXX_KEY_4        17 
-#define CXX_KEY_7        18 
-#define CXX_KEY_Comma    19 
-#define CXX_KEY_Sin      20 
-#define CXX_KEY_Apps     21 
-#define CXX_KEY_GraphVar 22 
+    /* Keyboard group 2 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_TglExact = CXX_KEY_Recip;
 
-/* Keyboard group 3 - 83 Premium CE key names */
-#define CXX_KEY_Trig     CXX_KEY_Sin
-#define CXX_KEY_Matrice  CXX_KEY_Apps
+    /* Keyboard group 3 */
+    constexpr cxx_key_t CXX_KEY_0        = 15; 
+    constexpr cxx_key_t CXX_KEY_1        = 16; 
+    constexpr cxx_key_t CXX_KEY_4        = 17; 
+    constexpr cxx_key_t CXX_KEY_7        = 18; 
+    constexpr cxx_key_t CXX_KEY_Comma    = 19; 
+    constexpr cxx_key_t CXX_KEY_Sin      = 20; 
+    constexpr cxx_key_t CXX_KEY_Apps     = 21; 
+    constexpr cxx_key_t CXX_KEY_GraphVar = 22;
 
-/* Keyboard group 4 */
-#define CXX_KEY_DecPnt  23 
-#define CXX_KEY_2       24 
-#define CXX_KEY_5       25 
-#define CXX_KEY_8       26 
-#define CXX_KEY_LParen  27 
-#define CXX_KEY_Cos     28 
-#define CXX_KEY_Prgm    29 
-#define CXX_KEY_Stat    30 
+    /* Keyboard group 3 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_Trig     = CXX_KEY_Sin;
+    constexpr cxx_key_t CXX_KEY_Matrice  = CXX_KEY_Apps;
 
-/* Keyboard group 4 - 83 Premium CE key names */
-#define CXX_KEY_Resol    CXX_KEY_Cos
+    /* Keyboard group 4 */
+    constexpr cxx_key_t CXX_KEY_DecPnt  = 23;
+    constexpr cxx_key_t CXX_KEY_2       = 24;
+    constexpr cxx_key_t CXX_KEY_5       = 25;
+    constexpr cxx_key_t CXX_KEY_8       = 26;
+    constexpr cxx_key_t CXX_KEY_LParen  = 27;
+    constexpr cxx_key_t CXX_KEY_Cos     = 28;
+    constexpr cxx_key_t CXX_KEY_Prgm    = 29;
+    constexpr cxx_key_t CXX_KEY_Stat    = 30;
 
-/* Keyboard group 5 */
-#define CXX_KEY_Chs     31 
-#define CXX_KEY_3       32 
-#define CXX_KEY_6       33 
-#define CXX_KEY_9       34 
-#define CXX_KEY_RParen  35 
-#define CXX_KEY_Tan     36 
-#define CXX_KEY_Vars    37 
+    /* Keyboard group 4 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_Resol    = CXX_KEY_Cos;
 
-/* Keyboard group 5 - 83 Premium CE key names */
-#define CXX_KEY_Frac     CXX_KEY_Tan
+    /* Keyboard group 5 */
+    constexpr cxx_key_t CXX_KEY_Chs     = 31;
+    constexpr cxx_key_t CXX_KEY_3       = 32;
+    constexpr cxx_key_t CXX_KEY_6       = 33;
+    constexpr cxx_key_t CXX_KEY_9       = 34;
+    constexpr cxx_key_t CXX_KEY_RParen  = 35;
+    constexpr cxx_key_t CXX_KEY_Tan     = 36;
+    constexpr cxx_key_t CXX_KEY_Vars    = 37;
 
-/* Keyboard group 6 */
-#define CXX_KEY_Enter   38 
-#define CXX_KEY_Add     39 
-#define CXX_KEY_Sub     40 
-#define CXX_KEY_Mul     41 
-#define CXX_KEY_Div     42 
-#define CXX_KEY_Power   43 
-#define CXX_KEY_Clear   44 
+    /* Keyboard group 5 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_Frac     = CXX_KEY_Tan;
 
-/* Keyboard group 5 - 83 Premium CE key names */
-#define CXX_KEY_Annul    CXX_KEY_Clear
+    /* Keyboard group 6 */
+    constexpr cxx_key_t CXX_KEY_Enter   = 38;
+    constexpr cxx_key_t CXX_KEY_Add     = 39;
+    constexpr cxx_key_t CXX_KEY_Sub     = 40;
+    constexpr cxx_key_t CXX_KEY_Mul     = 41;
+    constexpr cxx_key_t CXX_KEY_Div     = 42;
+    constexpr cxx_key_t CXX_KEY_Power   = 43;
+    constexpr cxx_key_t CXX_KEY_Clear   = 44;
 
-/* Keyboard group 7 */
-#define CXX_KEY_Down    45 
-#define CXX_KEY_Left    46 
-#define CXX_KEY_Right   47 
-#define CXX_KEY_Up      48 
+    /* Keyboard group 5 - 83 Premium CE key names */
+    constexpr cxx_key_t CXX_KEY_Annul    = CXX_KEY_Clear;
 
-#define CXX_KEY_NumKeys CXX_KEY_Up + 1
+    /* Keyboard group 7 */
+    constexpr cxx_key_t CXX_KEY_Down    = 45;
+    constexpr cxx_key_t CXX_KEY_Left    = 46;
+    constexpr cxx_key_t CXX_KEY_Right   = 47;
+    constexpr cxx_key_t CXX_KEY_Up      = 48;
 
-#define CXX_KEY_UNFOCUSED CXX_KEY_NumKeys
+    constexpr cxx_key_t CXX_KEY_NumKeys = CXX_KEY_Up + 1;
+
+    constexpr cxx_key_t CXX_KEY_UNFOCUSED = CXX_KEY_NumKeys;
+
+    extern const kb_lkey_t CXX_KEY_MAP[CXX_KEY_NumKeys];
+
+    typedef struct {
+        cxx_key_t key;
+        uint8_t cnt; // count.
+    } cxx_key_count_t;
+
+    class KeyManager : SafeObject {
+
+    };
+}
 
 /*
 namespace cxxutil {

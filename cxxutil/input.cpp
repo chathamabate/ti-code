@@ -3,8 +3,7 @@
 
 using namespace cxxutil;
 
-// kb_lkey_t KeyManager::cxxKeyMap[CXX_KEY_NumKeys] = {
-int CHANGE_ME[CXX_KEY_NumKeys] = {
+const kb_lkey_t CXX_KEY_MAP[CXX_KEY_NumKeys] = {
     /* Keyboard group 1 */
     kb_KeyGraph,     
     kb_KeyTrace,     

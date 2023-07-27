@@ -12,15 +12,15 @@
 // to take place. (Leads to bulkier and slower binary)
 #define CXX_MEM_CHECKS
 
-constexpr int8_t CXX_NUM_MEM_CHNLS      = 24;
-
-constexpr int8_t CXX_TEST_CHNL          = 0;
-constexpr int8_t CXX_DEF_CHNL           = 1;
-constexpr int8_t CXX_KEY_CHNL           = 2;
-
-constexpr int8_t CXX_FREE_CHNL_START    = 8;
-
 namespace cxxutil {
+    // Memory channel compile time constants.
+    constexpr uint8_t CXX_NUM_MEM_CHNLS      = 24;
+
+    constexpr uint8_t CXX_TEST_CHNL          = 0;
+    constexpr uint8_t CXX_DEF_CHNL           = 1;
+    constexpr uint8_t CXX_KEY_CHNL           = 2;
+
+    constexpr uint8_t CXX_FREE_CHNL_START    = 8;
 
     enum MemoryExitCode : uint8_t {
         OUT_OF_MEMORY = 0,
