@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <keypadc.h>
-#include <cxxutil/mem.h>
+#include <cxxutil/core/mem.h>
 
 namespace cxxutil {
 

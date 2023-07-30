@@ -1,6 +1,6 @@
 
 #include "ti/screen.h"
-#include <cxxutil/mem.h>
+#include <cxxutil/core/mem.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -26,6 +26,7 @@ const char *cxxutil::translateMEC(MemoryExitCode mec) {
         return "Unknown Code";
     }
 }
+
 
 #ifdef CXX_MEM_CHECKS
 
@@ -131,8 +132,7 @@ public:
 
 static const BasicMemoryExitRoutine BASIC_MER_VAL;
 const MemoryExitRoutine * const cxxutil::BASIC_MER = &BASIC_MER_VAL;
-
-static MemoryTracker MT(cxxutil::BASIC_MER);
+static MemoryTracker MT(BASIC_MER);
 
 void cxxutil::incrMemChnl(uint8_t memChnl) {
     MT.incr(memChnl);

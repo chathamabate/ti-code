@@ -10,8 +10,8 @@
 #include <graphx.h>
 
 #include <cutil/keys.h>
-#include <cxxutil/mem.h>
-#include <cxxutil/input.h>
+#include <cxxutil/core/mem.h>
+#include <cxxutil/core/input.h>
 
 using namespace cxxutil;
 
@@ -33,39 +33,11 @@ public:
     }
 };
 
-int main(void) {
-    KeyManager *km = new KeyManager(CXX_TEST_CHNL);
-
-    km->setRepeatDelay(10);
-    km->setFocusedKeys(KEYS, KEYS_LEN);
-
-    os_ClrHome();
-
-    while (1) {
-        delay(50);
-        km->scanFocusedKeys();
-
-        if (km->isKeyPressed(CXX_KEY_0)) {
-            os_PutStrFull("0 Pressed.");
-            os_NewLine();
-        }
-
-        if (km->isKeyPressed(CXX_KEY_1)) {
-            os_PutStrFull("Disabling");
-            os_NewLine();
-
-            km->setFocusedKeys(KEYS, 1);
-        }
-
-        if (km->isKeyPressed(CXX_KEY_Clear)) {
-            break;
-        }
-    }
-
-    delete km;
+int main(void) {    
+    
 
 #ifdef CXX_MEM_CHECKS
-    checkMemLeaks();
+    cxxutil::checkMemLeaks();
 #endif
 
     return 0;

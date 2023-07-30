@@ -1,4 +1,4 @@
-#include <cxxutil/input.h>
+#include <cxxutil/core/input.h>
 
 using namespace cxxutil;
 

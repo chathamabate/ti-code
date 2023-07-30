@@ -10,9 +10,13 @@
 
 // This should be defined if the user wants memory checking
 // to take place. (Leads to bulkier and slower binary)
-#define CXX_MEM_CHECKS
+// 
+// As of now every part of mem.cpp/mem.h which references a memory
+// channel or exit routine will be ommitted when this is not defined.
+// #define CXX_MEM_CHECKS
 
 namespace cxxutil {
+
     // Memory channel compile time constants.
     constexpr uint8_t CXX_NUM_MEM_CHNLS      = 24;
 
@@ -36,9 +40,9 @@ namespace cxxutil {
     };
 
     const char *translateMEC(MemoryExitCode mec);
-
-#ifdef CXX_MEM_CHECKS
     
+#ifdef CXX_MEM_CHECKS
+
     class MemoryExitRoutine;
 
     extern const MemoryExitRoutine * const BASIC_MER;
