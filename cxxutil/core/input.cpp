@@ -1,8 +1,8 @@
 #include <cxxutil/core/input.h>
 
-using namespace cxxutil;
+using namespace cxxutil::core;
 
-const kb_lkey_t cxxutil::CXX_KEY_MAP[CXX_KEY_NumKeys] = {
+const kb_lkey_t cxxutil::core::CXX_KEY_MAP[CXX_KEY_NumKeys] = {
     /* Keyboard group 1 */
     kb_KeyGraph,     
     kb_KeyTrace,     

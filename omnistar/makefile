@@ -15,10 +15,12 @@ CXXFLAGS = -Wall -Wextra -Oz -I..
 # This Actually Works!!!
 HAS_PRINTF := NO
 
-# # Add it sources boy....
+# Add it sources boy....
 EXTRA_C_SOURCES = $(wildcard ../cutil/*.c)
 
-CXX_UTIL_MODS 		= core
+# NOTE: If you wish to use a module from cxxutil, make sure to add it here.
+CXX_UTIL_MODS 		= core unit
+
 CXX_UTIL_SOURCES 	= $(foreach mod,$(CXX_UTIL_MODS),$(wildcard ../cxxutil/$(mod)/*.cpp)) 
 CXX_UTIL_HEADERS	= $(foreach mod,$(CXX_UTIL_MODS),$(wildcard ../cxxutil/$(mod)/*.h)) 
 

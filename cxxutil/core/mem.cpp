@@ -8,9 +8,9 @@
 #include <tice.h>
 #include <keypadc.h>
 
-using namespace cxxutil;
+using namespace cxxutil::core;
 
-const char *cxxutil::translateMEC(MemoryExitCode mec) {
+const char *cxxutil::core::translateMEC(MemoryExitCode mec) {
     switch (mec) {
     case MemoryExitCode::BAD_CHANNEL:
         return "Bad Channel";
@@ -29,7 +29,7 @@ const char *cxxutil::translateMEC(MemoryExitCode mec) {
 
 class MemoryTracker;
 
-class cxxutil::MemoryExitRoutine {
+class cxxutil::core::MemoryExitRoutine {
 public:
     virtual void run(MemoryTracker *mt, MemoryExitCode mec) const = 0;
 }; 
@@ -130,50 +130,50 @@ public:
 #ifdef CXX_MEM_CHECKS
 
 static const BasicMemoryExitRoutine BASIC_MER_VAL;
-const MemoryExitRoutine * const cxxutil::BASIC_MER = &BASIC_MER_VAL;
+const MemoryExitRoutine * const cxxutil::core::BASIC_MER = &BASIC_MER_VAL;
 static MemoryTracker MT(BASIC_MER);
 
-void cxxutil::incrMemChnl(uint8_t memChnl) {
+void cxxutil::core::incrMemChnl(uint8_t memChnl) {
     MT.incr(memChnl);
 }
 
-void cxxutil::decrMemChnl(uint8_t memChnl) {
+void cxxutil::core::decrMemChnl(uint8_t memChnl) {
     MT.decr(memChnl);
 }
 
-void cxxutil::setMER(const MemoryExitRoutine *mer) {
+void cxxutil::core::setMER(const MemoryExitRoutine *mer) {
     MT.setMER(mer);
 }
 
-void cxxutil::runMER(MemoryExitCode mec) {
+void cxxutil::core::runMER(MemoryExitCode mec) {
     MT.runMER(mec);
 }
 
-void cxxutil::checkMemLeaks() {
+void cxxutil::core::checkMemLeaks() {
     MT.checkMemLeaks();
 }
 
 #else
-const MemoryExitRoutine * const cxxutil::BASIC_MER = NULL;
+const MemoryExitRoutine * const cxxutil::core::BASIC_MER = nullptr;
 
-void cxxutil::incrMemChnl(uint8_t memChnl) {
+void cxxutil::core::incrMemChnl(uint8_t memChnl) {
     (void)memChnl;
 }
 
-void cxxutil::decrMemChnl(uint8_t memChnl) {
+void cxxutil::core::decrMemChnl(uint8_t memChnl) {
     (void)memChnl;
 }
 
-void cxxutil::setMER(const MemoryExitRoutine *mer) {
+void cxxutil::core::setMER(const MemoryExitRoutine *mer) {
     (void)mer;
 }
 
-void cxxutil::runMER(MemoryExitCode mec) {
+void cxxutil::core::runMER(MemoryExitCode mec) {
     (void)mec;
 }
 
-void cxxutil::checkMemLeaks() {
-    
+void cxxutil::core::checkMemLeaks() {
+
 }
 #endif
 

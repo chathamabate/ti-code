@@ -14,6 +14,7 @@
 #define CXX_MEM_CHECKS
 
 namespace cxxutil {
+namespace core {
 
     // Memory channel compile time constants.
     constexpr uint8_t CXX_NUM_MEM_CHNLS      = 24;
@@ -133,5 +134,6 @@ namespace cxxutil {
             this->arr[i] = ele;
         }
     };
+}
 }
 

@@ -5,6 +5,7 @@
 #include <cxxutil/core/mem.h>
 
 namespace cxxutil {
+namespace core {
 
     typedef uint8_t cxx_key_t;
     
@@ -141,4 +142,5 @@ namespace cxxutil {
             return this->keyCounts->get(this->keyMap[key]).cnt >= 1;
         }
     };
+}
 }

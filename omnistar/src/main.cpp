@@ -16,16 +16,16 @@
 using namespace cxxutil;
 
 constexpr uint8_t KEYS_LEN = 5;
-const cxx_key_t KEYS[KEYS_LEN] = {
-    CXX_KEY_Clear,
+const core::cxx_key_t KEYS[KEYS_LEN] = {
+    core::CXX_KEY_Clear,
 
-    CXX_KEY_7,
-    CXX_KEY_4,
-    CXX_KEY_1,
-    CXX_KEY_0,
+    core::CXX_KEY_7,
+    core::CXX_KEY_4,
+    core::CXX_KEY_1,
+    core::CXX_KEY_0,
 };
 
-class MyObject : public SafeObject {
+class MyObject : public core::SafeObject {
 public:
     int x[10];
     MyObject() : SafeObject(3) {
@@ -34,10 +34,9 @@ public:
 };
 
 int main(void) {    
-    new MyObject();
 
-    
-    checkMemLeaks();
+
+    core::checkMemLeaks();
 
     return 0;
 }
