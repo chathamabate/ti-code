@@ -27,9 +27,6 @@ const char *cxxutil::translateMEC(MemoryExitCode mec) {
     }
 }
 
-
-#ifdef CXX_MEM_CHECKS
-
 class MemoryTracker;
 
 class cxxutil::MemoryExitRoutine {
@@ -130,6 +127,8 @@ public:
     }
 };
 
+#ifdef CXX_MEM_CHECKS
+
 static const BasicMemoryExitRoutine BASIC_MER_VAL;
 const MemoryExitRoutine * const cxxutil::BASIC_MER = &BASIC_MER_VAL;
 static MemoryTracker MT(BASIC_MER);
@@ -154,6 +153,28 @@ void cxxutil::checkMemLeaks() {
     MT.checkMemLeaks();
 }
 
+#else
+const MemoryExitRoutine * const cxxutil::BASIC_MER = NULL;
+
+void cxxutil::incrMemChnl(uint8_t memChnl) {
+    (void)memChnl;
+}
+
+void cxxutil::decrMemChnl(uint8_t memChnl) {
+    (void)memChnl;
+}
+
+void cxxutil::setMER(const MemoryExitRoutine *mer) {
+    (void)mer;
+}
+
+void cxxutil::runMER(MemoryExitCode mec) {
+    (void)mec;
+}
+
+void cxxutil::checkMemLeaks() {
+    
+}
 #endif
 
 SafeObject::SafeObject() : SafeObject(CXX_DEF_CHNL) { }

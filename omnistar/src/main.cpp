@@ -34,11 +34,10 @@ public:
 };
 
 int main(void) {    
-    
+    new MyObject();
 
-#ifdef CXX_MEM_CHECKS
-    cxxutil::checkMemLeaks();
-#endif
+    
+    checkMemLeaks();
 
     return 0;
 }

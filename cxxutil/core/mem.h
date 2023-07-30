@@ -11,9 +11,7 @@
 // This should be defined if the user wants memory checking
 // to take place. (Leads to bulkier and slower binary)
 // 
-// As of now every part of mem.cpp/mem.h which references a memory
-// channel or exit routine will be ommitted when this is not defined.
-// #define CXX_MEM_CHECKS
+#define CXX_MEM_CHECKS
 
 namespace cxxutil {
 
@@ -40,12 +38,13 @@ namespace cxxutil {
     };
 
     const char *translateMEC(MemoryExitCode mec);
-    
-#ifdef CXX_MEM_CHECKS
 
     class MemoryExitRoutine;
 
     extern const MemoryExitRoutine * const BASIC_MER;
+
+    // NOTE: The below functions can all be called even if memory checks
+    // isn't turned on. In this case, they will do nothing!
 
     void setMER(const MemoryExitRoutine *mer);
 
@@ -57,7 +56,6 @@ namespace cxxutil {
 
     // Will exit with error if there are memory leaks!
     void checkMemLeaks();
-#endif
 
     // All Classes which are used to make objects in dynamic memory should
     // extend SafeObject. This class will automatically increment and decrement
