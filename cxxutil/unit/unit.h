@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cxxutil/core/mem.h>
+#include <cxxutil/core/data.h>
 
 namespace cxxutil {
 namespace unit {
@@ -34,18 +35,19 @@ namespace unit {
         }
     };
 
-    class TestLogger : public core::SafeObject {
-    // A simple list is needed!
-    public:
-        void info(char *msg);
-        void warn(char *msg);
-        void fatal(char *msg);   
-    };
-
     class TestContext :  public core::SafeObject {
+    private:
+         core::CoreList<TestLogLine *> logs;
     public:
         TestContext();
         ~TestContext();
+
+        // These do not stop the test!
+        void info(char *msg);
+        void warn(char *msg);
+
+        // Fatal will stop the test!
+        void fatal(char *msg);   
 
         void lbl_assert_true(const char *label, bool p);
 
