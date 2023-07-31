@@ -9,13 +9,15 @@ namespace unit {
     // NOTE: All objects made dynamically from the below types
     // will reside in the testing memory channel.
 
-    enum class TestLogLevel {
-        INFO, WARN, FATAL
-    };
+    typedef uint8_t log_level_t;
+
+    constexpr log_level_t INFO = 0;
+    constexpr log_level_t WARN = 1;
+    constexpr log_level_t FATAL = 2;
 
     class TestLogLine : public core::SafeObject {
     private:
-        TestLogLevel level;
+        log_level_t level;
 
         // The message of a TestLogLine will always be a unique
         // copy which resides in dynamic memory. For this reason,
@@ -23,10 +25,10 @@ namespace unit {
         core::SafeArray<char> *msg;  
     
     public:
-        TestLogLine(TestLogLevel l, const char *m);
+        TestLogLine(log_level_t l, const char *m);
         ~TestLogLine();
 
-        inline TestLogLevel getLevel() {
+        inline log_level_t getLevel() {
             return this->level;
         }
 
@@ -35,19 +37,31 @@ namespace unit {
         }
     };
 
-    class TestContext :  public core::SafeObject {
-    private:
-         core::CoreList<TestLogLine *> logs;
-    public:
-        TestContext();
-        ~TestContext();
+    // When a test completes, this is what will
+    // be returned.
+    class TestRun : public core::SafeObject {
+        friend const TestRun *runUnitTest(const unit_test_t *ut);
 
-        // These do not stop the test!
+    private:
+        bool memLeak;   // Whether or not there was a memory leak.
+
+        core::CoreList<TestLogLine *> *logs;
+
+        // This is the highest level ever reported to
+        // the logs.
+        log_level_t maxLevel;
+
+        TestRun();
+
+        void stopTest();
+
         void info(char *msg);
         void warn(char *msg);
-
-        // Fatal will stop the test!
         void fatal(char *msg);   
+
+        inline void reportMemLeak() {
+            this->memLeak = true;
+        }
 
         void lbl_assert_true(const char *label, bool p);
 
@@ -84,7 +98,28 @@ namespace unit {
         inline void assert_eq_str(const char *expected, const char *actual) {
             this->lbl_assert_eq_str(nullptr, expected, actual);
         }
+
+    public:
+        ~TestRun();
+
+        inline bool getMemLeak() {
+            return this->memLeak;
+        }
+
+        inline const core::CoreList<TestLogLine *> *getLogs() {
+            return this->logs;
+        }
+
+        inline log_level_t getMaxLevel() {
+            return this->maxLevel;
+        }
     };
 
+    typedef struct {
+        const char *name;
+        void (*test)(TestRun *t);
+    } unit_test_t;
+
+    const TestRun *runUnitTest(const unit_test_t *ut);
 }
 }
