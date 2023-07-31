@@ -3,6 +3,10 @@
 #include <new>
 #include <stdint.h>
 
+#include <keypadc.h>
+#include <tice.h>
+
+
 // NOTE this is a redefinition of cutil/misc.h
 // 
 // Here we are using C++ new and delete keywords in tandom with a 
@@ -15,6 +19,14 @@
 
 namespace cxxutil {
 namespace core {
+
+    // Simple misc macro like function which wait for the user to hit clear.
+    inline void waitClear() {
+        while (!kb_IsDown(kb_KeyClear)) {
+            delay(50);
+            kb_Scan();
+        }
+    }
 
     // Memory channel compile time constants.
     constexpr uint8_t CXX_NUM_MEM_CHNLS      = 24;

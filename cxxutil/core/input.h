@@ -103,7 +103,7 @@ namespace core {
         cxx_key_t key;
         uint8_t cnt; // count.
     } cxx_key_count_t;
-
+    
     // Key manager will not be initializable by the user.
     // Can be multiple alive at once.... if that is what the user wants.
     class KeyManager : public SafeObject {

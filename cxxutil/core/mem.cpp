@@ -120,10 +120,7 @@ public:
 
         mt->printMemChnls();
 
-        while (!kb_IsDown(kb_KeyClear)) {
-            delay(50);
-            kb_Scan();
-        }
+        waitClear();
     }
 };
 
