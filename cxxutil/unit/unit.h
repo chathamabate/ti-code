@@ -1,10 +1,24 @@
 #pragma once
 
+#include <setjmp.h>
+
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 
 namespace cxxutil {
 namespace unit {
+
+    class TestLogLine;
+    class TestRun;
+    class TestContext;
+
+    // I don't think unit test should be created dynamically.
+    // I designed this structure so that the user would create
+    // static constant test structures only.
+    typedef struct {
+        const char *name;
+        void (* const test)(TestContext *tc);
+    } unit_test_t;
 
     // NOTE: All objects made dynamically from the below types
     // will reside in the testing memory channel.
@@ -40,6 +54,7 @@ namespace unit {
     // When a test completes, this is what will
     // be returned.
     class TestRun : public core::SafeObject {
+        friend class TestContext;        
         friend const TestRun *runUnitTest(const unit_test_t *ut);
 
     private:
@@ -53,52 +68,6 @@ namespace unit {
 
         TestRun();
 
-        void stopTest();
-
-        void info(char *msg);
-        void warn(char *msg);
-        void fatal(char *msg);   
-
-        inline void reportMemLeak() {
-            this->memLeak = true;
-        }
-
-        void lbl_assert_true(const char *label, bool p);
-
-        inline void assert_true(bool p) {
-            this->lbl_assert_true(nullptr, p);
-        }
-
-        void lbl_assert_false(const char *label, bool p);
-
-        inline void assert_false(bool p) {
-            this->lbl_assert_false(nullptr, p);
-        }
-
-        void lbl_assert_eq_char(const char *label, char expected, char actual);
-
-        inline void assert_eq_char(char expected, char actual) {
-            this->lbl_assert_eq_char(nullptr, expected, actual);
-        }
-
-        void lbl_assert_eq_int(const char *label, int expected, int actual);
-
-        inline void assert_eq_int(int expected, int actual) {
-            this->lbl_assert_eq_int(nullptr, expected, actual);
-        }
-
-        void lbl_assert_eq_uint(const char *label, unsigned int expected, unsigned int actual);
-
-        inline void assert_eq_uint(unsigned int expected, unsigned int actual) {
-            this->lbl_assert_eq_uint(nullptr, expected, actual);
-        }
-
-        void lbl_assert_eq_str(const char *label, const char *expected, const char *actual);
-
-        inline void assert_eq_str(const char *expected, const char *actual) {
-            this->lbl_assert_eq_str(nullptr, expected, actual);
-        }
-
     public:
         ~TestRun();
 
@@ -110,15 +79,61 @@ namespace unit {
             return this->logs;
         }
 
-        inline log_level_t getMaxLevel() {
+        inline log_level_t getMaxLevel() {            
             return this->maxLevel;
         }
     };
 
-    typedef struct {
-        const char *name;
-        void (*test)(TestRun *t);
-    } unit_test_t;
+    class TestContext : public core::SafeObject {
+        friend const TestRun *runUnitTest(const unit_test_t *ut);
+    private:
+        TestRun *testRun;
+
+        // Environment used to exit the test early if needed.
+        jmp_buf exitEnv;
+
+        TestContext(TestRun *tr);
+        ~TestContext();
+
+    public:
+        void stopTest();
+
+        void info(char *msg);
+        void warn(char *msg);
+        void fatal(char *msg);   
+
+        void reportMemLeak();
+
+        void lblAssertTrue(const char *label, bool p);
+        inline void assertTrue(bool p) {
+            this->lblAssertTrue(nullptr, p);
+        }
+
+        void lblAssertFalse(const char *label, bool p);
+        inline void assertFalse(bool p) {
+            this->lblAssertFalse(nullptr, p);
+        }
+
+        void lblAssertEqChar(const char *label, char expected, char actual);
+        inline void assertEqChar(char expected, char actual) {
+            this->lblAssertEqChar(nullptr, expected, actual);
+        }
+
+        void lblAssertEqInt(const char *label, int expected, int actual);
+        inline void assertEqInt(int expected, int actual) {
+            this->lblAssertEqInt(nullptr, expected, actual);
+        }
+
+        void lblAssertEqUInt(const char *label, unsigned int expected, unsigned int actual);
+        inline void assertEqUInt(unsigned int expected, unsigned int actual) {
+            this->lblAssertEqUInt(nullptr, expected, actual);
+        }
+
+        void lblAssertEqStr(const char *label, const char *expected, const char *actual);
+        inline void assertEqStr(const char *expected, const char *actual) {
+            this->lblAssertEqStr(nullptr, expected, actual);
+        }
+    };
 
     const TestRun *runUnitTest(const unit_test_t *ut);
 }
