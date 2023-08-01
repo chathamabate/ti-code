@@ -102,7 +102,7 @@ namespace unit {
 
         // The buffers used to log messages will never
         // be greater than this length.
-        static constexpr uint16_t TC_MSG_BUF_SIZE = 100;
+        static constexpr size_t TC_MSG_BUF_SIZE = 100;
 
         inline void info(const char *msg) {
             this->log(INFO, msg);
@@ -118,10 +118,9 @@ namespace unit {
             this->stopTest();
         }
 
-        inline void reportMemLeak() {
-            this->testRun->memLeak = true;
-        }
-
+        // NOTE: A failed assertion will log a fatal message
+        // and stop the test!
+        
         void lblAssertTrue(const char *label, bool p);
         inline void assertTrue(bool p) {
             this->lblAssertTrue(nullptr, p);
@@ -147,10 +146,17 @@ namespace unit {
             this->lblAssertEqUInt(nullptr, expected, actual);
         }
 
+        void lblAssertEqPtr(const char *label, const void *expected, const void *actual);
+        inline void assertEqPtr(const void *expected, const void *actual) {
+            this->lblAssertEqPtr(nullptr, expected, actual);
+        }
+
         void lblAssertEqStr(const char *label, const char *expected, const char *actual);
         inline void assertEqStr(const char *expected, const char *actual) {
             this->lblAssertEqStr(nullptr, expected, actual);
         }
+
+
     };
 
     const TestRun *runUnitTest(const unit_test_t *ut);

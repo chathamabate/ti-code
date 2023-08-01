@@ -1,3 +1,4 @@
+#include <cstddef>
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 #include <cxxutil/unit/unit.h>
@@ -73,13 +74,82 @@ void TestContext::log(log_level_t level, const char *msg) {
     }
 }
 
-void lblAssertTrue(const char *label, bool p) {
+static size_t catLabel(char *buf, size_t bufLen, size_t bufSize, const char *label) {
+    // Only perform label cat if a label is given.
+    if (!label) {
+        return bufLen;
+    }
+    
+    size_t finalLen = bufLen;
+
+    finalLen = cxxutil::core::strCatSafe(buf, finalLen, bufSize, label); 
+    finalLen = cxxutil::core::strCatSafe(buf, finalLen, bufSize, ": ");
+
+    return finalLen;
+}
+
+void TestContext::lblAssertTrue(const char *label, bool p) {
     if (p) {
         return;
     }
 
-    
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
+
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, "Assert true failure.");
+
+    this->fatal(buf);
 }
+
+void TestContext::lblAssertFalse(const char *label, bool p) {
+    if (!p) {
+        return;
+    }
+
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
+
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, "Assert false failure.");
+
+    this->fatal(buf);
+}
+
+void TestContext::lblAssertEqChar(const char *label, char expected, char actual) {
+    if (expected == actual) {
+        return;
+    } 
+
+    char eStr[2] = { expected, '\0' };
+    char aStr[2] = { actual, '\0' };
+
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
+
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
+
+    // Probably a better way to do better cats.
+
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, 
+            "Assert equal character failutre. (ex = ");
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, eStr);
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, ", ac = ");
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, aStr);
+    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, ")");
+
+    this->fatal(buf);
+}
+
+
+
+
+
+
+
+
+
+
 
 
 

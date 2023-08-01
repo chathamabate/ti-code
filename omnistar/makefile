@@ -12,7 +12,7 @@ ARCHIVED = NO
 CFLAGS = -Wall -Wextra -Oz -I.. 
 CXXFLAGS = -Wall -Wextra -Oz -I..
 
-# This Actually Works!!!
+# This is because I use snprintf.
 HAS_PRINTF := NO
 
 # Add it sources boy....

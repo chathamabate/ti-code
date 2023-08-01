@@ -19,13 +19,7 @@ using namespace cxxutil;
 
 int main(void) {    
     os_ClrHome();
-    int y = 0;
-    int *x = &y;
 
-    if (x) {
-        os_PutStrFull("This, didn't work");
-        os_NewLine();
-    }
 
     core::waitClear();
     
