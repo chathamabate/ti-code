@@ -2,6 +2,7 @@
 #include "keypadc.h"
 #include "ti/getcsc.h"
 #include "ti/screen.h"
+#include <cstddef>
 #include <cstdint>
 #include <stdlib.h>
 #include <tice.h>
@@ -20,10 +21,28 @@ using namespace cxxutil;
 int main(void) {    
     os_ClrHome();
 
+    const size_t destSize = 10;
+    char dest[destSize];
+
+    const size_t strsSize = 4;
+    const char *strs[strsSize] = {
+        "hello", " ", "m", "ygood"
+    };
+
+    size_t finalLen = core::multiStrCatSafe(dest, 0, 
+            destSize, strsSize, strs);
+
+    os_PutStrFull(dest);
+    os_NewLine();
+
+    char lenBuf[20];
+    sprintf(lenBuf, "Len: %u", finalLen);
+
+    os_PutStrFull(lenBuf);
+    os_NewLine();
 
     core::waitClear();
     
-
     core::checkMemLeaks();
 
     return 0;

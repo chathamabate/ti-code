@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cxxutil/core/mem.h>
 
 namespace cxxutil {
@@ -16,6 +17,11 @@ namespace core {
     // after the cat.
     size_t strCatSafe(char *dest, size_t destLen, size_t destSize, 
             const char *src);
+
+    // Returns ths size of the string in dest after the multiple
+    // cats.
+    size_t multiStrCatSafe(char *dest, size_t destLen, size_t destSize,
+            size_t numStrs, const char **strs);
 
     template <typename T>
     class CoreList : public SafeObject {
