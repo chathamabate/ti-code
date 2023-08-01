@@ -22,10 +22,10 @@ namespace core {
 
     // Simple misc macro like function which wait for the user to hit clear.
     inline void waitClear() {
-        while (!kb_IsDown(kb_KeyClear)) {
-            delay(50);
+        do {
+            delay(100);
             kb_Scan();
-        }
+        } while (!kb_IsDown(kb_KeyClear));
     }
 
     // Memory channel compile time constants.

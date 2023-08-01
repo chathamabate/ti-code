@@ -14,9 +14,9 @@ namespace unit {
 
     // I don't think unit test should be created dynamically.
     // I designed this structure so that the user would create
-    // static constant test structures only.
+    // static constant tests only.
     typedef struct {
-        const char *name;
+        const char * const name;
         void (* const test)(TestContext *tc);
     } unit_test_t;
 
@@ -90,19 +90,37 @@ namespace unit {
         TestRun *testRun;
 
         // Environment used to exit the test early if needed.
-        jmp_buf exitEnv;
+        jmp_buf *exitEnv;
 
-        TestContext(TestRun *tr);
+        TestContext(jmp_buf *jb, TestRun *tr);
         ~TestContext();
+
+        void log(log_level_t level, const char *msg);
 
     public:
         void stopTest();
 
-        void info(char *msg);
-        void warn(char *msg);
-        void fatal(char *msg);   
+        // The buffers used to log messages will never
+        // be greater than this length.
+        static constexpr uint16_t TC_MSG_BUF_SIZE = 100;
 
-        void reportMemLeak();
+        inline void info(const char *msg) {
+            this->log(INFO, msg);
+        }
+
+        inline void warn(const char *msg) {
+            this->log(WARN, msg);
+        } 
+
+        // NOTE: fatal will stop the test always!
+        void fatal(const char *msg) {
+            this->log(FATAL, msg);
+            this->stopTest();
+        }
+
+        inline void reportMemLeak() {
+            this->testRun->memLeak = true;
+        }
 
         void lblAssertTrue(const char *label, bool p);
         inline void assertTrue(bool p) {

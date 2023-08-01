@@ -19,29 +19,16 @@ using namespace cxxutil;
 
 int main(void) {    
     os_ClrHome();
+    int y = 0;
+    int *x = &y;
 
-    core::CoreList<int> *cl = new core::CoreList<int>(core::CXX_FREE_CHNL_START);
-
-    cl->add(1);
-    cl->add(4);
-    cl->add(5);
-
-    char buff[30];
-    for (int i = 0; i < cl->getLen(); i++) {
-        sprintf(buff, "%d : %d", i, cl->get(i));
-
-        os_PutStrFull(buff);
+    if (x) {
+        os_PutStrFull("This, didn't work");
         os_NewLine();
     }
 
-    sprintf(buff, "Cap : %u", cl->getCap());
-
-    os_PutStrFull(buff);
-    os_NewLine();
-
-    delete cl;
-
     core::waitClear();
+    
 
     core::checkMemLeaks();
 
