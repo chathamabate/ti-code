@@ -5,20 +5,66 @@
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 
+/*
+//////////////////// TestCase Template //////////////////////
+// Here is an example TestCase.
+// Always refer to the Test Case using 
+// the ONLY pointer.
+
+class MyTestCase : public unit::TestCase {
+private:
+    static MyTestCase ONLY_VAL;
+    MyTestCase() : TestCase("MyTest") {}
+
+    // Pointers to dynamic memory...
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+
+    virtual void attempt(unit::TestContext *tc) override {
+        // Test Code....
+    }
+
+    virtual void finally() override {
+        // Clean Up Code...
+    }
+};
+
+MyTestCase MyTestCase::ONLY_VAL;
+
+//////////////////////////////////////////////////////////////
+*/
+
 namespace cxxutil {
 namespace unit {
 
     class TestLogLine;
     class TestRun;
     class TestContext;
+    class TestCase;
 
-    // I don't think unit test should be created dynamically.
-    // I designed this structure so that the user would create
-    // static constant tests only.
-    typedef struct {
+    // Test Cases should only exist as singletons
+    // in static memory. Thus, they need not extend
+    // SafeObject.
+    class TestCase {
+    private:
         const char * const name;
-        void (* const test)(TestContext *tc);
-    } unit_test_t;
+
+    protected:
+        TestCase(const char *n);
+
+    public:
+        inline const char *getName() const {
+            return this->name;
+        }
+
+        // NOTE, these are not purely virtual intentionally.
+
+        virtual void attempt(TestContext *tc);
+
+        // Finally is always run after the test.
+        // It should clean up any memory used.
+        virtual void finally();
+    };
 
     // NOTE: All objects made dynamically from the below types
     // will reside in the testing memory channel.
@@ -54,11 +100,10 @@ namespace unit {
     // When a test completes, this is what will
     // be returned.
     class TestRun : public core::SafeObject {
-        friend class TestContext;        
-        friend const TestRun *runUnitTest(const unit_test_t *ut);
+        friend class TestContext;        friend const TestRun *runUnitTest(TestCase * const ut);
 
     private:
-        const unit_test_t *parentTest;
+        TestCase * const parentTest;
 
         bool memLeak;   // Whether or not there was a memory leak.
 
@@ -68,12 +113,12 @@ namespace unit {
         // the logs.
         log_level_t maxLevel;
 
-        TestRun(const unit_test_t *ut);
+        TestRun(TestCase *ut);
 
     public:
         ~TestRun();
 
-        inline const unit_test_t *getParentTest() const {
+        inline TestCase *getParentTest() const {
             return this->parentTest;
         }
 
@@ -91,7 +136,7 @@ namespace unit {
     };
 
     class TestContext : public core::SafeObject {
-        friend const TestRun *runUnitTest(const unit_test_t *ut);
+        friend const TestRun *runUnitTest(TestCase * const ut);
     private:
         TestRun *testRun;
 
@@ -165,6 +210,6 @@ namespace unit {
 
     };
 
-    const TestRun *runUnitTest(const unit_test_t *ut);
+    const TestRun *runUnitTest(TestCase * const ut);
 }
 }

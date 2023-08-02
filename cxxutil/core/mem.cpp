@@ -111,7 +111,7 @@ public:
         for (int8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
             bool rowEnd = (i + 1) % ROW_WIDTH == 0;
 
-            sprintf(buff, rowEnd ? "%u: %u" : "%u: %u ", i, this->memChnls[i]);
+            sprintf(buff, rowEnd ? "%u:%u" : "%u:%u  ", i, this->memChnls[i]);
             os_PutStrFull(buff);
 
             if (rowEnd) {

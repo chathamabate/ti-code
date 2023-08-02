@@ -18,31 +18,44 @@
 
 using namespace cxxutil;
 
-static void test1(unit::TestContext *tc) {
-    tc->info("Message1");
-    tc->assertTrue(true);
+// This is like a massive declaration for a single
+// test...
 
-    // This all actually seems to work!
-    tc->lblAssertEqInt("lbl1", 1, 2);
-    tc->info("Message2");
-}
+class MyTestCase : public unit::TestCase {
+private:
+    static MyTestCase ONLY_VAL;
+    MyTestCase() : TestCase("MyTest") {}
 
-static const unit::unit_test_t TEST1 = {
-    .name = "My Test 1",
-    .test = test1,
+    // Pointers to dynamic memory...
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+
+    virtual void attempt(unit::TestContext *tc) override {
+        // Test Code....
+    }
+
+    virtual void finally() override {
+        // Clean Up Code...
+    }
 };
 
+MyTestCase MyTestCase::ONLY_VAL;
 
 int main(void) {    
     os_ClrHome();
 
-    const unit::TestRun *tr = unit::runUnitTest(&TEST1);
+    const unit::TestRun *tr = unit::runUnitTest(MyTestCase::ONLY);
 
     const core::CoreList<unit::TestLogLine *> *logs = tr->getLogs(); 
     const int len = logs->getLen();
 
     for (int i = 0; i < len; i++) {
         os_PutStrFull(logs->get(i)->getMsg());
+        os_NewLine();
+    }
+
+    if (tr->getMemLeak()) {
+        os_PutStrFull("Mem Leaks Found");
         os_NewLine();
     }
 

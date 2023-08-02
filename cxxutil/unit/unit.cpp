@@ -13,6 +13,18 @@
 
 using namespace cxxutil::unit;
 
+TestCase::TestCase(const char *n) : name(n) {
+
+}
+
+void TestCase::attempt(TestContext *tc) {
+    (void)tc;
+}
+
+void TestCase::finally() {
+
+}
+
 TestLogLine::TestLogLine(log_level_t l, const char *m)
     : core::SafeObject(core::CXX_TEST_CHNL) {
     this->level = l;
@@ -29,9 +41,8 @@ TestLogLine::~TestLogLine() {
     delete this->msg;
 }
 
-TestRun::TestRun(const unit_test_t *ut) 
-    : core::SafeObject(core::CXX_TEST_CHNL) {
-    this->parentTest = ut;
+TestRun::TestRun(TestCase *ut) :
+    core::SafeObject(core::CXX_TEST_CHNL), parentTest(ut) {
     this->memLeak = false;
     this->logs = new core::CoreList<TestLogLine *>(core::CXX_TEST_CHNL);
     this->maxLevel = INFO;
@@ -255,9 +266,11 @@ void TestContext::lblAssertEqStr(const char *label,
     this->fatal(buf);
 }
 
-const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
+const TestRun *cxxutil::unit::runUnitTest(TestCase * const ut) {
     // The value of tr will not change, thus
     // it does not need to be marked volatile.
+    //  
+    // Safe goes for the ut parameter.
     TestRun * const tr = new TestRun(ut);
 
     // We will create our test context after calling setjmp,
@@ -280,7 +293,7 @@ const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
         // If this is the first time set jmp returns,
         // create our test context and run our test!
         tc = new TestContext(&env, tr);
-        ut->test(tc);
+        ut->attempt(tc);
     } 
 
     // NOTE: we make it here in two situations.
@@ -288,9 +301,10 @@ const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
     // calling longjmp.
     // 2) Our test exits after calling longjmp.
     //
-    // In both cases, we should delete the TestContext
+    // In both cases, we should clean up our test, delete the TestContext
     // and return the TestRun.
 
+    ut->finally();
     
     if (core::memLeaks(core::CXX_TEST_CHNL + 1)) {
         tr->memLeak = true;
