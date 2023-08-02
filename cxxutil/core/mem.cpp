@@ -36,7 +36,7 @@ public:
 
 class MemoryTracker {
 private:
-    uint24_t memChnls[CXX_NUM_MEM_CHNLS];
+    size_t memChnls[CXX_NUM_MEM_CHNLS];
     const MemoryExitRoutine *mer;
 
     inline void checkChnl(uint8_t memChnl) {
@@ -75,7 +75,7 @@ public:
     }
 
     bool memLeaks(uint8_t bound) {
-        for (uint8_t i = bound; bound < CXX_NUM_MEM_CHNLS; i++) {
+        for (uint8_t i = bound; i < CXX_NUM_MEM_CHNLS; i++) {
             if (this->memChnls[i] > 0) {
                 return true;
             }
@@ -89,7 +89,7 @@ public:
 
         this->memChnls[memChnl]++;
 
-        if (this->memChnls[memChnl] == 0){
+        if (this->memChnls[memChnl] == 0) {
             this->runMER(MemoryExitCode::OVERFLOW);
         }
     }
@@ -162,7 +162,7 @@ void cxxutil::core::checkMemLeaks() {
 }
 
 bool cxxutil::core::memLeaks(uint8_t bound) {
-    MT.memLeaks(bound);
+    return MT.memLeaks(bound);
 }
 
 #else
@@ -189,7 +189,7 @@ void cxxutil::core::checkMemLeaks() {
 }
 
 bool cxxutil::core::memLeaks(uint8_t bound) {
-
+    return false;
 }
 #endif
 

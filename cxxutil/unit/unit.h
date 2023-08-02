@@ -42,11 +42,11 @@ namespace unit {
         TestLogLine(log_level_t l, const char *m);
         ~TestLogLine();
 
-        inline log_level_t getLevel() {
+        inline log_level_t getLevel() const {
             return this->level;
         }
 
-        inline const char *getMsg() {
+        inline const char *getMsg() const {
             return this->msg->getArr();
         }
     };
@@ -73,19 +73,19 @@ namespace unit {
     public:
         ~TestRun();
 
-        inline const unit_test_t *getParentTest() {
+        inline const unit_test_t *getParentTest() const {
             return this->parentTest;
         }
 
-        inline bool getMemLeak() {
+        inline bool getMemLeak() const {
             return this->memLeak;
         }
 
-        inline const core::CoreList<TestLogLine *> *getLogs() {
+        inline const core::CoreList<TestLogLine *> *getLogs() const {
             return this->logs;
         }
 
-        inline log_level_t getMaxLevel() {            
+        inline log_level_t getMaxLevel() const {            
             return this->maxLevel;
         }
     };

@@ -27,7 +27,7 @@ namespace core {
     class CoreList : public SafeObject {
     private:
         SafeArray<T> *safeArr;
-        int16_t len;
+        size_t len;
 
     public:
         CoreList() : CoreList(CXX_DEF_CHNL) { }
@@ -41,16 +41,16 @@ namespace core {
             delete this->safeArr;
         }
 
-        inline uint16_t getCap() {
+        inline size_t getCap() const {
             return this->safeArr->getLen();
         }
 
-        inline uint16_t getLen() {
+        inline size_t getLen() const {
             return this->len;
         }
 
         void add(T ele) {
-            uint16_t cap = this->safeArr->getLen();
+            size_t cap = this->safeArr->getLen();
 
             if (this->len == cap) {
                 // Create a new array with double the capacity of the old array.
@@ -60,7 +60,7 @@ namespace core {
                 T *newArrUnder = newArr->getArr();
 
                 // Copy elements of old array into the new array.
-                for (uint16_t i = 0; i < cap; i++) {
+                for (size_t i = 0; i < cap; i++) {
                     newArrUnder[i] = this->safeArr->get(i);
                 }
 
@@ -73,7 +73,7 @@ namespace core {
             this->len++;
         }
 
-        inline T get(uint16_t i) {
+        inline T get(size_t i) const {
             return this->safeArr->get(i);
         }
     };

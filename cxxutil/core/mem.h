@@ -105,12 +105,12 @@ namespace core {
     template <typename T> 
     class SafeArray : public SafeObject {
     private:
-        uint16_t len;
+        size_t len;
         T *arr;
     public:
-        SafeArray(uint16_t len) : SafeArray(CXX_DEF_CHNL, len) { }
+        SafeArray(size_t len) : SafeArray(CXX_DEF_CHNL, len) { }
 
-        SafeArray(uint8_t chnl, uint16_t len) : SafeObject(chnl) {
+        SafeArray(uint8_t chnl, size_t len) : SafeObject(chnl) {
             this->len = len;
 
             T *arr = new (std::nothrow) T[len];
@@ -128,16 +128,21 @@ namespace core {
             delete [] this->arr;
         }
 
-        inline uint16_t getLen() {
+        inline size_t getLen() const {
             return this->len;
         }
 
         // NOTE: No bounds checking for speed!
-        inline T get(uint16_t i) {
+        inline T get(size_t i) const {
             return this->arr[i];
         }
 
-        inline T *getPtr(uint16_t i) {
+        // getPtr and getArr do not change the safeArray
+        // However, since they are used to change the safe
+        // array using pointers, I will not be marking them
+        // const.
+
+        inline T *getPtr(size_t i) {
             return &(this->arr[i]);
         }
 
@@ -146,7 +151,7 @@ namespace core {
             return this->arr;
         }
 
-        inline void set(uint16_t i, T ele) {
+        inline void set(size_t i, T ele) {
             this->arr[i] = ele;
         }
     };

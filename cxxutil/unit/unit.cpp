@@ -38,6 +38,13 @@ TestRun::TestRun(const unit_test_t *ut)
 }
 
 TestRun::~TestRun() {
+    // NOTE: logs does not realize its loglines need to be deleted.
+    // Thus, we do it here.
+    const size_t len = this->logs->getLen();
+    for (size_t i = 0; i < len; i++) {
+        delete (this->logs->get(i));
+    }
+    
     delete this->logs;
 }
 
@@ -59,8 +66,7 @@ void TestContext::stopTest() {
 
 void TestContext::log(log_level_t level, const char *msg) {
     const char *logMsg = msg;
-
-    // If the given message is too long,
+// If the given message is too long,
     // we copy it into a temporary static buffer
     // with a constant max size.
     char tempBuf[TC_MSG_BUF_SIZE];
@@ -270,9 +276,6 @@ const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
     jmp_buf env;
     int exited = setjmp(env); 
 
-    os_PutStrFull("Here");
-    os_NewLine();
-
     if (!exited) {
         // If this is the first time set jmp returns,
         // create our test context and run our test!
@@ -288,6 +291,7 @@ const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
     // In both cases, we should delete the TestContext
     // and return the TestRun.
 
+    
     if (core::memLeaks(core::CXX_TEST_CHNL + 1)) {
         tr->memLeak = true;
     }
