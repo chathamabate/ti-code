@@ -58,6 +58,8 @@ namespace unit {
         friend const TestRun *runUnitTest(const unit_test_t *ut);
 
     private:
+        const unit_test_t *parentTest;
+
         bool memLeak;   // Whether or not there was a memory leak.
 
         core::CoreList<TestLogLine *> *logs;
@@ -66,10 +68,14 @@ namespace unit {
         // the logs.
         log_level_t maxLevel;
 
-        TestRun();
+        TestRun(const unit_test_t *ut);
 
     public:
         ~TestRun();
+
+        inline const unit_test_t *getParentTest() {
+            return this->parentTest;
+        }
 
         inline bool getMemLeak() {
             return this->memLeak;

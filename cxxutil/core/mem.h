@@ -70,6 +70,10 @@ namespace core {
     // Will exit with error if there are memory leaks!
     void checkMemLeaks();
 
+    // this returns true if memory leaks are
+    // found in any channel >= bound.
+    bool memLeaks(uint8_t bound); 
+
     // All Classes which are used to make objects in dynamic memory should
     // extend SafeObject. This class will automatically increment and decrement
     // the memory tracker without the user needing to write any special code!

@@ -14,32 +14,24 @@
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/input.h>
 #include <cxxutil/core/data.h>
+#include <cxxutil/unit/unit.h>
 
 using namespace cxxutil;
+
+static void test1(unit::TestContext *tc) {
+
+}
+
+static const unit::unit_test_t TEST1 = {
+    .name = "My Test 1",
+    .test = test1,
+};
 
 
 int main(void) {    
     os_ClrHome();
 
-    const size_t destSize = 10;
-    char dest[destSize];
-
-    const size_t strsSize = 6;
-    const char *strs[strsSize] = {
-        "hello", " ", "", "m", "ygood", ""
-    };
-
-    size_t finalLen = core::multiStrCatSafe(dest, 0, 
-            destSize, strsSize, strs);
-
-    os_PutStrFull(dest);
-    os_NewLine();
-
-    char lenBuf[50];
-    sprintf(lenBuf, "Len: %u (%p)", finalLen, dest);
-
-    os_PutStrFull(lenBuf);
-    os_NewLine();
+    const unit::TestRun *tr = unit::runUnitTest(&TEST1);
 
     core::waitClear();
     

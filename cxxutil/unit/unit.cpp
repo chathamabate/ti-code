@@ -1,10 +1,14 @@
+#include "ti/screen.h"
+#include <setjmp.h>
 #include <cstddef>
 #include <cstdio>
+#include <tice.h>
+#include <string.h>
+
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 #include <cxxutil/unit/unit.h>
 
-#include <string.h>
 
 
 using namespace cxxutil::unit;
@@ -25,8 +29,9 @@ TestLogLine::~TestLogLine() {
     delete this->msg;
 }
 
-TestRun::TestRun() 
+TestRun::TestRun(const unit_test_t *ut) 
     : core::SafeObject(core::CXX_TEST_CHNL) {
+    this->parentTest = ut;
     this->memLeak = false;
     this->logs = new core::CoreList<TestLogLine *>(core::CXX_TEST_CHNL);
     this->maxLevel = INFO;
@@ -49,7 +54,7 @@ TestContext::~TestContext() {
 }
 
 void TestContext::stopTest() {
-    // Do something with the jump buffer I guess?
+    longjmp(*(this->exitEnv), 1);
 }
 
 void TestContext::log(log_level_t level, const char *msg) {
@@ -242,5 +247,52 @@ void TestContext::lblAssertEqStr(const char *label,
 
     bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
     this->fatal(buf);
+}
+
+const TestRun *cxxutil::unit::runUnitTest(const unit_test_t *ut) {
+    // The value of tr will not change, thus
+    // it does not need to be marked volatile.
+    TestRun * const tr = new TestRun(ut);
+
+    // We will create our test context after calling setjmp,
+    // so that we have access to the jmp buffer.
+    //
+    // We must make sure that this variable is not stored in a
+    // register!
+    TestContext * volatile tc = nullptr;
+
+    // NOTE: Maybe I should ask about this, but my assumption
+    // is that the setjmp env will only potentially hold the
+    // values of local variables in this function.
+    //
+    // I do not believe I need to worry about global variables.
+    
+    jmp_buf env;
+    int exited = setjmp(env); 
+
+    os_PutStrFull("Here");
+    os_NewLine();
+
+    if (!exited) {
+        // If this is the first time set jmp returns,
+        // create our test context and run our test!
+        tc = new TestContext(&env, tr);
+        ut->test(tc);
+    } 
+
+    // NOTE: we make it here in two situations.
+    // 1) Our test runs normally and exits without
+    // calling longjmp.
+    // 2) Our test exits after calling longjmp.
+    //
+    // In both cases, we should delete the TestContext
+    // and return the TestRun.
+
+    if (core::memLeaks(core::CXX_TEST_CHNL + 1)) {
+        tr->memLeak = true;
+    }
+
+    delete tc;
+    return tr;
 }
 

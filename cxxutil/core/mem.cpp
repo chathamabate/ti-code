@@ -74,6 +74,16 @@ public:
         }
     }
 
+    bool memLeaks(uint8_t bound) {
+        for (uint8_t i = bound; bound < CXX_NUM_MEM_CHNLS; i++) {
+            if (this->memChnls[i] > 0) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     void incr(uint8_t memChnl) {
         this->checkChnl(memChnl);
 
@@ -128,6 +138,7 @@ public:
 
 static const BasicMemoryExitRoutine BASIC_MER_VAL;
 const MemoryExitRoutine * const cxxutil::core::BASIC_MER = &BASIC_MER_VAL;
+
 static MemoryTracker MT(BASIC_MER);
 
 void cxxutil::core::incrMemChnl(uint8_t memChnl) {
@@ -150,6 +161,10 @@ void cxxutil::core::checkMemLeaks() {
     MT.checkMemLeaks();
 }
 
+bool cxxutil::core::memLeaks(uint8_t bound) {
+    MT.memLeaks(bound);
+}
+
 #else
 const MemoryExitRoutine * const cxxutil::core::BASIC_MER = nullptr;
 
@@ -170,6 +185,10 @@ void cxxutil::core::runMER(MemoryExitCode mec) {
 }
 
 void cxxutil::core::checkMemLeaks() {
+
+}
+
+bool cxxutil::core::memLeaks(uint8_t bound) {
 
 }
 #endif
