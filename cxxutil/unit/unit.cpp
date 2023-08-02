@@ -1,4 +1,5 @@
 #include <cstddef>
+#include <cstdio>
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 #include <cxxutil/unit/unit.h>
@@ -121,35 +122,125 @@ void TestContext::lblAssertEqChar(const char *label, char expected, char actual)
         return;
     } 
 
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
+
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
+
     char eStr[2] = { expected, '\0' };
     char aStr[2] = { actual, '\0' };
+
+    constexpr size_t NUM_STRS = 5;
+    const char *strs[NUM_STRS] = {
+        "Assert eq char failure. (ex = ", eStr, 
+        ", ac = ", aStr, ")"
+    };
+
+    bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
+    this->fatal(buf);
+}
+
+void TestContext::lblAssertEqInt(const char *label, int expected, int actual) {
+    if (expected == actual) {
+        return;
+    } 
 
     char buf[TC_MSG_BUF_SIZE];      
     size_t bufLen = 0;
 
     bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
 
-    // Probably a better way to do better cats.
+    // 25 characters should be more than enough to hold an integer.
+    char eStr[25];
+    sprintf(eStr, "%d", expected);
 
-    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, 
-            "Assert equal character failutre. (ex = ");
-    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, eStr);
-    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, ", ac = ");
-    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, aStr);
-    bufLen = core::strCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, ")");
+    char aStr[25];
+    sprintf(aStr, "%d", actual);
 
+    constexpr size_t NUM_STRS = 5;
+    const char *strs[NUM_STRS] = {
+        "Assert eq int failure (ex = ", eStr, 
+        ", ac = ", aStr, ")"
+    };
+
+    bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
     this->fatal(buf);
 }
 
+void TestContext::lblAssertEqUInt(const char *label, 
+        unsigned int expected, unsigned int actual) {
+    if (expected == actual) {
+        return;
+    } 
 
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
 
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
 
+    // 25 characters should be more than enough to hold an integer.
+    char eStr[25];
+    sprintf(eStr, "%u", expected);
 
+    char aStr[25];
+    sprintf(aStr, "%u", actual);
 
+    constexpr size_t NUM_STRS = 5;
+    const char *strs[NUM_STRS] = {
+        "Assert eq uint failure (ex = ", eStr, 
+        ", ac = ", aStr, ")"
+    };
 
+    bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
+    this->fatal(buf);
+}
 
+void TestContext::lblAssertEqPtr(const char *label, 
+        const void *expected, const void *actual) {
+    if (expected == actual) {
+        return;
+    } 
 
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
 
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
 
+    // 25 characters should be more than enough to hold an integer.
+    char eStr[25];
+    sprintf(eStr, "%p", expected);
 
+    char aStr[25];
+    sprintf(aStr, "%p", actual);
+
+    constexpr size_t NUM_STRS = 5;
+    const char *strs[NUM_STRS] = {
+        "Assert eq ptr failure (ex = ", eStr, 
+        ", ac = ", aStr, ")"
+    };
+
+    bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
+    this->fatal(buf);
+}
+
+void TestContext::lblAssertEqStr(const char *label, 
+        const char *expected, const char *actual) {
+    if (!strcmp(expected, actual)) {
+        return;
+    }
+    
+    char buf[TC_MSG_BUF_SIZE];      
+    size_t bufLen = 0;
+
+    bufLen = catLabel(buf, bufLen, TC_MSG_BUF_SIZE, label);
+
+    constexpr size_t NUM_STRS = 5;
+    const char *strs[NUM_STRS] = {
+        "Assert eq str failure (ex = ", expected, 
+        ", ac = ", actual, ")"
+    };
+
+    bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
+    this->fatal(buf);
+}
 

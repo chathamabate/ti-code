@@ -24,9 +24,9 @@ int main(void) {
     const size_t destSize = 10;
     char dest[destSize];
 
-    const size_t strsSize = 4;
+    const size_t strsSize = 6;
     const char *strs[strsSize] = {
-        "hello", " ", "m", "ygood"
+        "hello", " ", "", "m", "ygood", ""
     };
 
     size_t finalLen = core::multiStrCatSafe(dest, 0, 
@@ -35,8 +35,8 @@ int main(void) {
     os_PutStrFull(dest);
     os_NewLine();
 
-    char lenBuf[20];
-    sprintf(lenBuf, "Len: %u", finalLen);
+    char lenBuf[50];
+    sprintf(lenBuf, "Len: %u (%p)", finalLen, dest);
 
     os_PutStrFull(lenBuf);
     os_NewLine();
