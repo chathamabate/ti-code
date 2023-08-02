@@ -46,7 +46,8 @@ private:
     }
 
 public:
-    MemoryTracker(const MemoryExitRoutine *pmer) : mer(pmer) {
+    MemoryTracker(const MemoryExitRoutine *pmer) {
+        this->mer = pmer;
         // Don't think this is needed, but whatevs.
         for (int8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
             this->memChnls[i] = 0;

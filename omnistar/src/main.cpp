@@ -24,11 +24,11 @@ using namespace cxxutil;
 class MyTestCase : public unit::TestCase {
 private:
     static MyTestCase ONLY_VAL;
-    MyTestCase() : TestCase("MyTest") {}
 
+    MyTestCase() : TestCase("MyTest") {}
     // Pointers to dynamic memory...
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestCase * ONLY = &ONLY_VAL;
 
     virtual void attempt(unit::TestContext *tc) override {
         // Test Code....
