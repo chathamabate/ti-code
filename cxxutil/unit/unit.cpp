@@ -64,13 +64,66 @@ void TestCase::run(TestMonitor *mn) {
     delete tc;
 }
 
-TestMonitor::TestMonitor() : core::SafeObject(core::CXX_TEST_CHNL) {
+TestSuite::TestSuite(const char *n, TestCase * const *ts, size_t tsLen) 
+    : name(n), tests(ts), testsLen(tsLen) {
+}
 
+void TestSuite::run(TestMonitor *mn) {
+    mn->notifySuiteStart(this);
+
+    for (size_t i = 0; i < this->testsLen; i++) {
+        this->tests[i]->run(mn);
+    }
+
+    mn->notifySuiteEnd();
+}
+
+TestModule::TestModule(const char *n, TestSuite * const *ss, size_t ssLen) 
+    : name(n), suites(ss), suitesLen(ssLen) {
+}
+
+void TestModule::run(TestMonitor *mn) {
+    mn->notifyModuleStart(this);
+
+    for (size_t i = 0; i < this->suitesLen; i++) {
+        this->suites[i]->run(mn);
+    }
+
+    mn->notifyModuleEnd();
+}
+
+TestMonitor::TestMonitor() : core::SafeObject(core::CXX_TEST_CHNL) {
 }
 
 TestMonitor::~TestMonitor() {
-
 }
+
+void TestMonitor::notifyModuleStart(TestModule *mod) {
+    (void)mod;
+}
+
+void TestMonitor::notifyModuleEnd() {
+}
+
+void TestMonitor::notifySuiteStart(TestSuite *suite) {
+    (void)suite;
+}
+
+void TestMonitor::notifySuiteEnd() {
+}
+
+void TestMonitor::notifyTestStart(TestCase *test) {
+    (void)test;
+}
+
+void TestMonitor::notifyTestEnd() {
+}
+
+void TestMonitor::log(log_level_t level, const char *msg) {
+    (void)level;
+    (void)msg;
+}
+
 
 TestContext::TestContext(jmp_buf *jb, TestMonitor *m) 
     : core::SafeObject(core::CXX_TEST_CHNL) {

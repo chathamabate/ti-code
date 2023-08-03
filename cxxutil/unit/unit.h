@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cdefs.h"
 #include <setjmp.h>
 
 #include <cxxutil/core/mem.h>
@@ -37,6 +38,9 @@ MyTestCase MyTestCase::ONLY_VAL;
 namespace cxxutil {
 namespace unit {
     class TestCase;
+    class TestSuite;
+    class TestModule;
+
     class TestMonitor;
     class TestContext;
 
@@ -68,6 +72,60 @@ namespace unit {
         void run(TestMonitor *mn);
     };
 
+    class TestSuite {
+    private:
+        const char * const name;
+
+        TestCase * const * const tests;
+        const size_t testsLen;
+
+    public:
+       TestSuite(const char *n, TestCase * const *ts, size_t tsLen);
+
+       // Again, no destructor, none of this information
+       // should reside in dynamic memory/need any sort
+       // of cleanup.
+
+       inline const char *getName() const {
+           return this->name;
+       }
+
+       inline TestCase * const *getTests() const {
+           return this->tests; 
+       }
+
+       inline size_t getTestsLen() const {
+           return this->testsLen;
+       }
+
+       void run(TestMonitor *mn);
+    };
+
+    class TestModule {
+    private:
+        const char * const name;
+
+        TestSuite * const * const suites;
+        const size_t suitesLen;
+
+    public:
+       TestModule(const char *n, TestSuite * const *ss, size_t ssLen);
+
+       inline const char *getName() const {
+           return this->name;
+       }
+
+       inline TestSuite * const *getSuites() const {
+           return this->suites;
+       }
+
+       inline size_t getSuitesLen() const {
+           return this->suitesLen;
+       }
+
+       void run(TestMonitor *mn);
+    };
+
     // NOTE: All objects made dynamically from the below types
     // will reside in the testing memory channel.
 
@@ -79,15 +137,26 @@ namespace unit {
 
     class TestMonitor : public core::SafeObject {
         friend class TestCase;
+        friend class TestSuite;
+        friend class TestModule;
+
         friend class TestContext;
 
     protected:
-        virtual void notifyTestStart(TestCase *test) = 0;
-        virtual void notifyTestEnd() = 0;
+        // NOTE: the defualt versions of all these virtual
+        // functions will do nothing.
+        virtual void notifyModuleStart(TestModule *mod);
+        virtual void notifyModuleEnd();
+
+        virtual void notifySuiteStart(TestSuite *suite);
+        virtual void notifySuiteEnd();
+
+        virtual void notifyTestStart(TestCase *test);
+        virtual void notifyTestEnd();
 
         // NOTE: this will never store the pointer msg!
         // If the string must be stored, it will be copied.
-        virtual void log(log_level_t level, const char *msg) = 0;
+        virtual void log(log_level_t level, const char *msg);
 
     public:
         TestMonitor();
