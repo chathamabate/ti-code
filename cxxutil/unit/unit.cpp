@@ -43,7 +43,7 @@ TestLogLine::~TestLogLine() {
 
 TestRun::TestRun(TestCase *ut) :
     core::SafeObject(core::CXX_TEST_CHNL), parentTest(ut) {
-    this->memLeak = false;
+    this->memIssue = false;
     this->logs = new core::CoreList<TestLogLine *>(core::CXX_TEST_CHNL);
     this->maxLevel = INFO;
 }
@@ -286,6 +286,13 @@ const TestRun *cxxutil::unit::runUnitTest(TestCase * const ut) {
     //
     // I do not believe I need to worry about global variables.
     
+    // Additionally, this buffer will not be modified or
+    // read from until after the jump occures (if it does)
+    // Don't think I need to do anything with volatile or const
+    // for this.
+    size_t memChnlBuf[core::CXX_NUM_MEM_CHNLS];
+    core::MemoryTracker::ONLY->remember(memChnlBuf);
+    
     jmp_buf env;
     int exited = setjmp(env); 
 
@@ -306,8 +313,9 @@ const TestRun *cxxutil::unit::runUnitTest(TestCase * const ut) {
 
     ut->finally();
     
-    if (core::MemoryTracker::ONLY->memLeaks(core::CXX_TEST_CHNL + 1)) {
-        tr->memLeak = true;
+    if (!core::MemoryTracker::ONLY->consistent(memChnlBuf,
+                core::CXX_TEST_CHNL + 1)) {
+        tr->memIssue = true;
     }
 
     delete tc;

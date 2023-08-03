@@ -92,6 +92,15 @@ namespace core {
         void incr(uint8_t memChnl);
         void decr(uint8_t memChnl);
         void printMemChnls();
+
+        // This will copy all the current 
+        // memChnl values into buf. buf thus
+        // must have a size >= CXX_NUM_MEM_CHNLS.
+        void remember(size_t *buf);
+        
+        // Returns true if the buf[i] = memChnl[i]
+        // for all i >= bound.
+        bool consistent(size_t *buf, uint8_t bound);
     };
 
     // All Classes which are used to make objects in dynamic memory should

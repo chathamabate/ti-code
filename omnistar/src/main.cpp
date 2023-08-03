@@ -54,8 +54,8 @@ int main(void) {
         os_NewLine();
     }
 
-    if (tr->getMemLeak()) {
-        os_PutStrFull("Mem Leaks Found");
+    if (tr->getMemIssue()) {
+        os_PutStrFull("Mem Issue Found");
         os_NewLine();
     }
 

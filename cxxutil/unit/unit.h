@@ -106,7 +106,12 @@ namespace unit {
     private:
         TestCase * const parentTest;
 
-        bool memLeak;   // Whether or not there was a memory leak.
+        // This field is false iff the values in the non-test 
+        // memory channels are equal before and after the test runs.
+        //
+        // Thus, if this field is true, there has probably been a memory
+        // leak. Or the test does something risky.
+        bool memIssue;   
 
         core::CoreList<TestLogLine *> *logs;
 
@@ -123,8 +128,8 @@ namespace unit {
             return this->parentTest;
         }
 
-        inline bool getMemLeak() const {
-            return this->memLeak;
+        inline bool getMemIssue() const {
+            return this->memIssue;
         }
 
         inline const core::CoreList<TestLogLine *> *getLogs() const {
@@ -207,8 +212,6 @@ namespace unit {
         inline void assertEqStr(const char *expected, const char *actual) {
             this->lblAssertEqStr(nullptr, expected, actual);
         }
-
-
     };
 
     const TestRun *runUnitTest(TestCase * const ut);

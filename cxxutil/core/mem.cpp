@@ -120,6 +120,22 @@ void MemoryTracker::printMemChnls() {
         }
     }
 }
+
+void MemoryTracker::remember(size_t *buf) {
+    for (uint8_t i = 0; i < CXX_NUM_MEM_CHNLS; i++) {
+        buf[i] = this->memChnls[i];
+    }
+}
+
+bool MemoryTracker::consistent(size_t *buf, uint8_t bound) {
+    for (uint8_t i = bound; i < CXX_NUM_MEM_CHNLS; i++) {
+        if (buf[i] != this->memChnls[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
 #else
 MemoryTracker::MemoryTracker(const MemoryExitRoutine *pmer) {
     (void)pmer;
@@ -154,6 +170,16 @@ void MemoryTracker::decr(uint8_t memChnl) {
 }
 
 void MemoryTracker::printMemChnls() {
+}
+
+void MemoryTracker::remember(size_t *buf) {
+    (void)buf;
+}
+
+bool MemoryTracker::consistent(size_t *buf, uint8_t bound) {
+    (void)buf;
+    (void)bound;
+    return false;
 }
 #endif
 
