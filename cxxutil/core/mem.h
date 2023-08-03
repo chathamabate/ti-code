@@ -20,6 +20,9 @@
 namespace cxxutil {
 namespace core {
 
+    class MemoryTracker;
+    class MemoryExitRoutine;
+
     // Simple misc macro like function which wait for the user to hit clear.
     inline void waitClear() {
         do {
@@ -52,27 +55,44 @@ namespace core {
 
     const char *translateMEC(MemoryExitCode mec);
 
-    class MemoryExitRoutine;
+    class MemoryExitRoutine {
+    public:
+        virtual void run(MemoryTracker *mt, MemoryExitCode mec) = 0;
+    };
 
-    extern const MemoryExitRoutine * const BASIC_MER;
+    class BasicMemoryExitRoutine : public MemoryExitRoutine {
+    private:
+        static BasicMemoryExitRoutine ONLY_VAL;
+    public:
+        static constexpr BasicMemoryExitRoutine *ONLY = &ONLY_VAL;
+        virtual void run(MemoryTracker *mt, MemoryExitCode mec) override;
+    };
 
-    // NOTE: The below functions can all be called even if memory checks
-    // isn't turned on. In this case, they will do nothing!
+    class MemoryTracker {
+    private:
+        static MemoryTracker ONLY_VAL;
 
-    void setMER(const MemoryExitRoutine *mer);
+#ifdef CXX_MEM_CHECKS
+        size_t memChnls[CXX_NUM_MEM_CHNLS];
+        MemoryExitRoutine *mer;
+#endif
 
-    // Memory tracker class will be hidden.
-    void incrMemChnl(uint8_t memChnl);
-    void decrMemChnl(uint8_t memChnl);
+        MemoryTracker(MemoryExitRoutine *pmer);
 
-    void runMER(MemoryExitCode mec);
+        void checkChnl(uint8_t memChnl);
+    public:
+        static constexpr MemoryTracker *ONLY = &ONLY_VAL;
 
-    // Will exit with error if there are memory leaks!
-    void checkMemLeaks();
-
-    // this returns true if memory leaks are
-    // found in any channel >= bound.
-    bool memLeaks(uint8_t bound); 
+        // NOTE: If memchecks are off, none of these functions
+        // do anything. 
+        void setMER(MemoryExitRoutine *pmer);
+        void runMER(MemoryExitCode mec);
+        void checkMemLeaks();
+        bool memLeaks(uint8_t bound);
+        void incr(uint8_t memChnl);
+        void decr(uint8_t memChnl);
+        void printMemChnls();
+    };
 
     // All Classes which are used to make objects in dynamic memory should
     // extend SafeObject. This class will automatically increment and decrement
@@ -117,7 +137,7 @@ namespace core {
 
 #ifdef CXX_MEM_CHECKS
             if (!arr) {
-                runMER(MemoryExitCode::OUT_OF_MEMORY);
+                MemoryTracker::ONLY->runMER(MemoryExitCode::OUT_OF_MEMORY);
             } 
 #endif
 

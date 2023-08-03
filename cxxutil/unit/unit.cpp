@@ -306,7 +306,7 @@ const TestRun *cxxutil::unit::runUnitTest(TestCase * const ut) {
 
     ut->finally();
     
-    if (core::memLeaks(core::CXX_TEST_CHNL + 1)) {
+    if (core::MemoryTracker::ONLY->memLeaks(core::CXX_TEST_CHNL + 1)) {
         tr->memLeak = true;
     }
 

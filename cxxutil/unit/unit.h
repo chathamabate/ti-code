@@ -100,7 +100,8 @@ namespace unit {
     // When a test completes, this is what will
     // be returned.
     class TestRun : public core::SafeObject {
-        friend class TestContext;        friend const TestRun *runUnitTest(TestCase * const ut);
+        friend class TestContext;        
+        friend const TestRun *runUnitTest(TestCase * const ut);
 
     private:
         TestCase * const parentTest;

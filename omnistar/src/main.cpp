@@ -28,10 +28,10 @@ private:
     MyTestCase() : TestCase("MyTest") {}
     // Pointers to dynamic memory...
 public:
-    static constexpr unit::TestCase * ONLY = &ONLY_VAL;
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 
     virtual void attempt(unit::TestContext *tc) override {
-        // Test Code....
+        new core::SafeArray<int>(1, 4);
     }
 
     virtual void finally() override {
@@ -61,9 +61,9 @@ int main(void) {
 
     core::waitClear();
 
-    delete tr;
+    // delete tr;
     
-    core::checkMemLeaks();
+    core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;
 }
