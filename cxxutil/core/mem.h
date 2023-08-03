@@ -55,6 +55,7 @@ namespace core {
 
     const char *translateMEC(MemoryExitCode mec);
 
+    // NOTE: Memory Exit Routines should be static singletons.
     class MemoryExitRoutine {
     public:
         virtual void run(MemoryTracker *mt, MemoryExitCode mec) = 0;

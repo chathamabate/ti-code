@@ -36,11 +36,9 @@ MyTestCase MyTestCase::ONLY_VAL;
 
 namespace cxxutil {
 namespace unit {
-
-    class TestLogLine;
-    class TestRun;
-    class TestContext;
     class TestCase;
+    class TestMonitor;
+    class TestContext;
 
     // Test Cases should only exist as singletons
     // in static memory. Thus, they need not extend
@@ -49,21 +47,25 @@ namespace unit {
     private:
         const char * const name;
 
+        // NOTE, these are not purely virtual intentionally.
+        virtual void attempt(TestContext *tc);
+
+        // Finally is always run after the test.
+        // It should clean up any memory used.
+        virtual void finally();
     protected:
         TestCase(const char *n);
+
+        // NOTE: again, as test cases should only reside
+        // in static memory. There destructors should
+        // never be invoked by the user!
 
     public:
         inline const char *getName() const {
             return this->name;
         }
 
-        // NOTE, these are not purely virtual intentionally.
-
-        virtual void attempt(TestContext *tc);
-
-        // Finally is always run after the test.
-        // It should clean up any memory used.
-        virtual void finally();
+        void run(TestMonitor *mn);
     };
 
     // NOTE: All objects made dynamically from the below types
@@ -75,81 +77,38 @@ namespace unit {
     constexpr log_level_t WARN = 1;
     constexpr log_level_t FATAL = 2;
 
-    class TestLogLine : public core::SafeObject {
-    private:
-        log_level_t level;
+    class TestMonitor : public core::SafeObject {
+        friend class TestCase;
+        friend class TestContext;
 
-        // The message of a TestLogLine will always be a unique
-        // copy which resides in dynamic memory. For this reason,
-        // we use a SafeArray to represent the string.
-        core::SafeArray<char> *msg;  
-    
-    public:
-        TestLogLine(log_level_t l, const char *m);
-        ~TestLogLine();
+    protected:
+        virtual void notifyTestStart(TestCase *test) = 0;
+        virtual void notifyTestEnd() = 0;
 
-        inline log_level_t getLevel() const {
-            return this->level;
-        }
-
-        inline const char *getMsg() const {
-            return this->msg->getArr();
-        }
-    };
-
-    // When a test completes, this is what will
-    // be returned.
-    class TestRun : public core::SafeObject {
-        friend class TestContext;        
-        friend const TestRun *runUnitTest(TestCase * const ut);
-
-    private:
-        TestCase * const parentTest;
-
-        // This field is false iff the values in the non-test 
-        // memory channels are equal before and after the test runs.
-        //
-        // Thus, if this field is true, there has probably been a memory
-        // leak. Or the test does something risky.
-        bool memIssue;   
-
-        core::CoreList<TestLogLine *> *logs;
-
-        // This is the highest level ever reported to
-        // the logs.
-        log_level_t maxLevel;
-
-        TestRun(TestCase *ut);
+        // NOTE: this will never store the pointer msg!
+        // If the string must be stored, it will be copied.
+        virtual void log(log_level_t level, const char *msg) = 0;
 
     public:
-        ~TestRun();
-
-        inline TestCase *getParentTest() const {
-            return this->parentTest;
-        }
-
-        inline bool getMemIssue() const {
-            return this->memIssue;
-        }
-
-        inline const core::CoreList<TestLogLine *> *getLogs() const {
-            return this->logs;
-        }
-
-        inline log_level_t getMaxLevel() const {            
-            return this->maxLevel;
-        }
+        TestMonitor();
+        virtual ~TestMonitor();
     };
 
+    // NOTE: a TestContext is simply a wrapper around the
+    // user defined test monitor. It provides helper functions
+    // for assertions and more...
     class TestContext : public core::SafeObject {
-        friend const TestRun *runUnitTest(TestCase * const ut);
+        friend class TestCase;
+
     private:
-        TestRun *testRun;
+        TestMonitor *mn;
 
         // Environment used to exit the test early if needed.
         jmp_buf *exitEnv;
 
-        TestContext(jmp_buf *jb, TestRun *tr);
+        // NOTE: these are hidden so that the user can
+        // never create a test context!
+        TestContext(jmp_buf *jb, TestMonitor *m);
         ~TestContext();
 
         void log(log_level_t level, const char *msg);
@@ -159,19 +118,22 @@ namespace unit {
 
         // The buffers used to log messages will never
         // be greater than this length.
+        //
+        // NOTE: consider changing this, as dynamically
+        // sized strings are useful.
         static constexpr size_t TC_MSG_BUF_SIZE = 100;
 
         inline void info(const char *msg) {
-            this->log(INFO, msg);
+            this->mn->log(INFO, msg);
         }
 
         inline void warn(const char *msg) {
-            this->log(WARN, msg);
+            this->mn->log(WARN, msg);
         } 
 
         // NOTE: fatal will stop the test always!
         void fatal(const char *msg) {
-            this->log(FATAL, msg);
+            this->mn->log(FATAL, msg);
             this->stopTest();
         }
 
@@ -213,7 +175,5 @@ namespace unit {
             this->lblAssertEqStr(nullptr, expected, actual);
         }
     };
-
-    const TestRun *runUnitTest(TestCase * const ut);
 }
 }

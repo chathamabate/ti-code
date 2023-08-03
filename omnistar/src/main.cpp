@@ -18,6 +18,7 @@
 
 using namespace cxxutil;
 
+
 // This is like a massive declaration for a single
 // test...
 
@@ -31,38 +32,74 @@ public:
     static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 
     virtual void attempt(unit::TestContext *tc) override {
-        new core::SafeArray<int>(1, 4);
+        tc->info("Hello");
+        tc->fatal("Goodbye");
+        tc->info("Don't print");
     }
 
     virtual void finally() override {
-        // Clean Up Code...
+        os_PutStrFull("Clean-UP");
+        os_NewLine();
     }
 };
 
 MyTestCase MyTestCase::ONLY_VAL;
 
+
+class MyMonitor : public unit::TestMonitor {
+private:
+    virtual void notifyTestStart(unit::TestCase *test) override {
+        os_PutStrFull("S: ");
+        os_PutStrFull(test->getName());
+        os_NewLine();
+    }
+
+    virtual void notifyTestEnd() override {
+        os_PutStrFull("Test Over");
+        os_NewLine();
+    }
+
+    virtual void log(unit::log_level_t level, const char *msg) override {
+        os_PutStrFull(msg);
+        os_NewLine();
+    }
+
+public:
+    MyMonitor() {}
+    virtual ~MyMonitor() override {}
+};
+
+
+class A {
+public:
+    ~A() {
+        os_PutStrFull("Deleting A");
+        os_NewLine();
+    }
+};
+
+class B : public A {
+public:
+    virtual ~B() {
+        os_PutStrFull("Deleteing B");
+        os_NewLine();
+    }
+};
+
+class C : public B {
+public:
+    virtual ~C() override {
+        os_PutStrFull("Deleting C");
+        os_NewLine();
+    }
+};
+
+
+
 int main(void) {    
     os_ClrHome();
 
-    const unit::TestRun *tr = unit::runUnitTest(MyTestCase::ONLY);
-
-    const core::CoreList<unit::TestLogLine *> *logs = tr->getLogs(); 
-    const int len = logs->getLen();
-
-    for (int i = 0; i < len; i++) {
-        os_PutStrFull(logs->get(i)->getMsg());
-        os_NewLine();
-    }
-
-    if (tr->getMemIssue()) {
-        os_PutStrFull("Mem Issue Found");
-        os_NewLine();
-    }
-
     core::waitClear();
-
-    // delete tr;
-    
     core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;

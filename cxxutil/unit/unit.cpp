@@ -25,76 +25,64 @@ void TestCase::finally() {
 
 }
 
-TestLogLine::TestLogLine(log_level_t l, const char *m)
-    : core::SafeObject(core::CXX_TEST_CHNL) {
-    this->level = l;
+void TestCase::run(TestMonitor *mn) {
+    // NOTE: this is volatile, as we set its value
+    // in between set and long jump.
+    TestContext * volatile tc = nullptr;
 
-    size_t len = strlen(m);   
+    size_t memChnlBuf[core::CXX_NUM_MEM_CHNLS];
+    core::MemoryTracker::ONLY->remember(memChnlBuf);
     
-    this->msg = new core::SafeArray<char>(core::CXX_TEST_CHNL, len + 1);
+    jmp_buf env;
+    int exited = setjmp(env); 
 
-    // Copy given string into dynamic memory.
-    strcpy(this->msg->getArr(), m);
-}
+    if (!exited) {
+        // If this is the first time set jmp returns,
+        // create our test context and run our test!
+        tc = new TestContext(&env, mn);
 
-TestLogLine::~TestLogLine() {
-    delete this->msg;
-}
+        mn->notifyTestStart(this);
+        this->attempt(tc);
+    } 
 
-TestRun::TestRun(TestCase *ut) :
-    core::SafeObject(core::CXX_TEST_CHNL), parentTest(ut) {
-    this->memIssue = false;
-    this->logs = new core::CoreList<TestLogLine *>(core::CXX_TEST_CHNL);
-    this->maxLevel = INFO;
-}
+    // NOTE: we make it here in two situations.
+    // 1) Our test runs normally and exits without
+    // calling longjmp.
+    // 2) Our test exits after calling longjmp.
+    //
+    // In both cases, we should clean up our test.
 
-TestRun::~TestRun() {
-    // NOTE: logs does not realize its loglines need to be deleted.
-    // Thus, we do it here.
-    const size_t len = this->logs->getLen();
-    for (size_t i = 0; i < len; i++) {
-        delete (this->logs->get(i));
+    this->finally();
+
+    if (!core::MemoryTracker::ONLY->consistent(memChnlBuf,
+                core::CXX_TEST_CHNL + 1)) {
+        mn->log(FATAL, "Memory issue");
     }
-    
-    delete this->logs;
+
+    mn->notifyTestEnd();
+
+    delete tc;
 }
 
-TestContext::TestContext(jmp_buf *jb, TestRun *tr) 
+TestMonitor::TestMonitor() : core::SafeObject(core::CXX_TEST_CHNL) {
+
+}
+
+TestMonitor::~TestMonitor() {
+
+}
+
+TestContext::TestContext(jmp_buf *jb, TestMonitor *m) 
     : core::SafeObject(core::CXX_TEST_CHNL) {
+    this->mn = m;
     this->exitEnv = jb;
-    this->testRun = tr;
 }
 
 TestContext::~TestContext() {
-    // Don't think I really need to do anything here. 
-    // Remember that test run persists outside of
-    // this individual context.
 }
 
 void TestContext::stopTest() {
     longjmp(*(this->exitEnv), 1);
-}
-
-void TestContext::log(log_level_t level, const char *msg) {
-    const char *logMsg = msg;
-// If the given message is too long,
-    // we copy it into a temporary static buffer
-    // with a constant max size.
-    char tempBuf[TC_MSG_BUF_SIZE];
-    if (strlen(msg) >= TC_MSG_BUF_SIZE) {
-        memcpy(tempBuf, msg, TC_MSG_BUF_SIZE - 1);
-        tempBuf[TC_MSG_BUF_SIZE - 1] = '\0';
-
-        logMsg = tempBuf;
-    }
-
-    TestLogLine *logLine = new TestLogLine(level, logMsg);
-
-    this->testRun->logs->add(logLine);
-
-    if (level > this->testRun->maxLevel) {
-        this->testRun->maxLevel = level;
-    }
 }
 
 static size_t catLabel(char *buf, size_t bufLen, size_t bufSize, const char *label) {
@@ -265,60 +253,3 @@ void TestContext::lblAssertEqStr(const char *label,
     bufLen = core::multiStrCatSafe(buf, bufLen, TC_MSG_BUF_SIZE, NUM_STRS, strs);
     this->fatal(buf);
 }
-
-const TestRun *cxxutil::unit::runUnitTest(TestCase * const ut) {
-    // The value of tr will not change, thus
-    // it does not need to be marked volatile.
-    //  
-    // Safe goes for the ut parameter.
-    TestRun * const tr = new TestRun(ut);
-
-    // We will create our test context after calling setjmp,
-    // so that we have access to the jmp buffer.
-    //
-    // We must make sure that this variable is not stored in a
-    // register!
-    TestContext * volatile tc = nullptr;
-
-    // NOTE: Maybe I should ask about this, but my assumption
-    // is that the setjmp env will only potentially hold the
-    // values of local variables in this function.
-    //
-    // I do not believe I need to worry about global variables.
-    
-    // Additionally, this buffer will not be modified or
-    // read from until after the jump occures (if it does)
-    // Don't think I need to do anything with volatile or const
-    // for this.
-    size_t memChnlBuf[core::CXX_NUM_MEM_CHNLS];
-    core::MemoryTracker::ONLY->remember(memChnlBuf);
-    
-    jmp_buf env;
-    int exited = setjmp(env); 
-
-    if (!exited) {
-        // If this is the first time set jmp returns,
-        // create our test context and run our test!
-        tc = new TestContext(&env, tr);
-        ut->attempt(tc);
-    } 
-
-    // NOTE: we make it here in two situations.
-    // 1) Our test runs normally and exits without
-    // calling longjmp.
-    // 2) Our test exits after calling longjmp.
-    //
-    // In both cases, we should clean up our test, delete the TestContext
-    // and return the TestRun.
-
-    ut->finally();
-    
-    if (!core::MemoryTracker::ONLY->consistent(memChnlBuf,
-                core::CXX_TEST_CHNL + 1)) {
-        tr->memIssue = true;
-    }
-
-    delete tc;
-    return tr;
-}
-
