@@ -124,15 +124,25 @@ public:
 
 
 int main(void) {    
-    os_ClrHome();
+    gfx_Begin();
+    gfx_SetDrawBuffer();
 
-    MyMonitor *m = new MyMonitor();
+    gfx_SetTextScale(1, 2);
 
-    M.run(m);
+    gfx_SetColor(1);
+    gfx_FillRectangle(0, 0, GFX_LCD_WIDTH, GFX_LCD_HEIGHT);
 
+    gfx_SetTextFGColor(0);
+
+
+    gfx_PrintStringXY("Hello", 0, 0);
+
+    gfx_SwapDraw();
+    gfx_Wait();
+    
     core::waitClear();
 
-    delete m;
+    gfx_End();
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
