@@ -124,6 +124,18 @@ public:
 
 
 int main(void) {    
+    os_ClrHome();
+
+    if (new int[0]) {
+        os_PutStrFull("Works as expected");
+    } else {
+        os_PutStrFull("Error");
+    }
+
+    os_NewLine();
+
+    core::waitClear();
+
     gfx_Begin();
     gfx_SetDrawBuffer();
 

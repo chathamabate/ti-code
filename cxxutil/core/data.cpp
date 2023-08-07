@@ -1,3 +1,4 @@
+#include "cxxutil/core/mem.h"
 #include <cstddef>
 #include <cxxutil/core/data.h>
 
@@ -39,3 +40,12 @@ size_t cxxutil::core::multiStrCatSafe(char *dest, size_t destLen, size_t destSiz
 
     return currLen;
 }
+
+SafeArray<char> *cxxutil::core::strCopySafe(uint8_t memChnl, const char *s) {
+    size_t len = strlen(s);
+    SafeArray<char> *arr = new SafeArray<char>(memChnl, len + 1);
+    strcpy(arr->getArr(), s);
+
+    return arr;
+}
+

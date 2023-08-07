@@ -35,8 +35,7 @@ MyTestCase MyTestCase::ONLY_VAL;
 //////////////////////////////////////////////////////////////
 */
 
-namespace cxxutil {
-namespace unit {
+namespace cxxutil { namespace unit {
     class TestCase;
     class TestSuite;
     class TestModule;
@@ -244,5 +243,4 @@ namespace unit {
             this->lblAssertEqStr(nullptr, expected, actual);
         }
     };
-}
-}
+}}

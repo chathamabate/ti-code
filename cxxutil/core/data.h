@@ -3,8 +3,8 @@
 #include <cstddef>
 #include <cxxutil/core/mem.h>
 
-namespace cxxutil {
-namespace core {
+namespace cxxutil { namespace core {
+    template <typename T> class CoreList;
 
     // destLen is the length of the string currently held in dest.
     // (Not including /0)
@@ -22,6 +22,9 @@ namespace core {
     // cats.
     size_t multiStrCatSafe(char *dest, size_t destLen, size_t destSize,
             size_t numStrs, const char **strs);
+
+    // Make a copy of s stored in a safe array.
+    SafeArray<char> *strCopySafe(uint8_t memChnl, const char *s);
 
     template <typename T>
     class CoreList : public SafeObject {
@@ -49,6 +52,17 @@ namespace core {
             return this->len;
         }
 
+        inline T get(size_t i) const {
+            return this->safeArr->get(i);
+        }
+
+        inline void clear() {
+            this->len = 0;
+        }
+
+        // This copies the CoreList's data into a new SafeArray.
+        SafeArray<T> *toArray() const;
+
         void add(T ele) {
             size_t cap = this->safeArr->getLen();
 
@@ -72,11 +86,5 @@ namespace core {
             *(this->safeArr->getPtr(this->len)) = ele;
             this->len++;
         }
-
-        inline T get(size_t i) const {
-            return this->safeArr->get(i);
-        }
     };
-
-}
-} 
+}} 
