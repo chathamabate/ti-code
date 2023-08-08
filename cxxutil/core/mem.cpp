@@ -8,6 +8,8 @@
 #include <tice.h>
 #include <keypadc.h>
 
+#include <graphx.h>
+
 using namespace cxxutil::core;
 
 const char *cxxutil::core::translateMEC(MemoryExitCode mec) {
@@ -38,6 +40,13 @@ void BasicMemoryExitRoutine::run(MemoryTracker *mt, MemoryExitCode mec) {
 }
 
 BasicMemoryExitRoutine BasicMemoryExitRoutine::ONLY_VAL;
+
+void GraphicsMemoryExitRoutine::run(MemoryTracker *mt, MemoryExitCode mec) {
+    gfx_End();
+    BasicMemoryExitRoutine::ONLY->run(mt, mec);
+}
+
+GraphicsMemoryExitRoutine GraphicsMemoryExitRoutine::ONLY_VAL;
 
 #ifdef CXX_MEM_CHECKS
 MemoryTracker::MemoryTracker(MemoryExitRoutine *pmer) {

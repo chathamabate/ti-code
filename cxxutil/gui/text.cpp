@@ -110,7 +110,7 @@ static size_t buildLine(uint8_t memChnl,
     return i;
 }
 
-TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
+TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth) 
     : core::SafeObject(memChnl) {
     
     // Msg must be non-null.
@@ -156,6 +156,7 @@ TextBlock::~TextBlock() {
 }
 
 
+/*
 Terminal::Terminal(uint8_t memChnl, const char *title) 
     : core::SafeObject(memChnl) {
 
@@ -167,5 +168,5 @@ Terminal::Terminal(const char *title) : Terminal(core::CXX_DEF_CHNL, title) {
 Terminal::~Terminal() {
     // Fill this bad boy in.
 }
-
+*/
 

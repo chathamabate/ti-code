@@ -69,6 +69,14 @@ namespace core {
         virtual void run(MemoryTracker *mt, MemoryExitCode mec) override;
     };
 
+    class GraphicsMemoryExitRoutine : public MemoryExitRoutine {
+    private:
+        static GraphicsMemoryExitRoutine ONLY_VAL;
+    public:
+        static constexpr GraphicsMemoryExitRoutine *ONLY = &ONLY_VAL;
+        virtual void run(MemoryTracker *mt, MemoryExitCode mec) override;
+    };
+
     class MemoryTracker {
     private:
         static MemoryTracker ONLY_VAL;

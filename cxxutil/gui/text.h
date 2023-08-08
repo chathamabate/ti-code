@@ -51,6 +51,7 @@ namespace cxxutil { namespace gui {
 
     // NOTE: for the Terminal class, all given strings
     // will be copied into dynamic memory.
+    /*
     class Terminal : core::SafeObject {
     public: 
         Terminal(uint8_t memChnl, const char *title);
@@ -65,7 +66,7 @@ namespace cxxutil { namespace gui {
         // I'm thinking no log levels.
 
         void output(uint8_t color, const char *msg);
-    };
+    }; */
 }}
 
 
