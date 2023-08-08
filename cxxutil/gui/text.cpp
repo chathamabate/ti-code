@@ -12,8 +12,7 @@ using namespace cxxutil::gui;
 // Undefined behavoir if msg is null.
 //
 // Returns the index of the next character which needs to be processed.
-static size_t buildLine(uint8_t memChnl, 
-        cxxutil::core::CoreList<char> *strBuilder, 
+static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder, 
         const char *msg, uint24_t clipWidth) {
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
@@ -127,14 +126,14 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
     core::CoreList<char> *strBuilder = 
         new core::CoreList<char>(memChnl);
     
-    size_t i = buildLine(memChnl, strBuilder, msg, clipWidth);
+    size_t i = buildLine(strBuilder, msg, clipWidth);
 
     while (strBuilder->getLen() > 0) {
         strBuilder->add('\0'); // Add NULL Terminator.
         blkBuilder->add(strBuilder->toArray());
         strBuilder->clear();
 
-        i = buildLine(memChnl, strBuilder, &(msg[i]), clipWidth);
+        i = buildLine(strBuilder, &(msg[i]), clipWidth);
     }
 
     delete strBuilder;

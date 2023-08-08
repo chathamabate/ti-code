@@ -60,8 +60,6 @@ private:
 
     virtual void log(unit::log_level_t level, const char *msg) override {
         (void)level;
-
-        os_PutStrFull("  ");
         os_PutStrFull(msg);
         os_NewLine();
         /*
