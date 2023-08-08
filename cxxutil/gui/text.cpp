@@ -11,13 +11,12 @@ using namespace cxxutil::gui;
 // This copies words from message into the given string builder.
 // Undefined behavoir if msg is null.
 //
-// Returns nullptr if there is no next line.
-static cxxutil::core::SafeArray<char> *nextWordLine(uint8_t memChnl, 
+// Returns the index of the next character which needs to be processed.
+static size_t buildLine(uint8_t memChnl, 
         cxxutil::core::CoreList<char> *strBuilder, 
         const char *msg, uint24_t clipWidth) {
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
-
     size_t i = 0;      
 
     bool firstWord = true; // True if we are still processing
@@ -103,36 +102,15 @@ static cxxutil::core::SafeArray<char> *nextWordLine(uint8_t memChnl,
         // Here, if our next character exists and is non-space,
         // we must've stopped processing because our word was too long
         // for a single line. just exit!
-        if (!isspace(msg[i]) || msg[i] == '\0') {
+        if (!isspace(msg[i]) && msg[i] != '\0') {
             break;     
         }
     }   
 
-    // Here the "first word" was never added.
-    // Nothing to return.
-    if (firstWord) {
-        return nullptr;
-    }
-
-    cxxutil::core::SafeArray<char> *str = strBuilder->toArray();
-    strBuilder->clear();
-
-    return str;
+    return i;
 }
 
-
-// A word is a consecutive sequence of non-space characters.
-// A break is a consequtivve sequence of space characters.
-//
-// A line is a sequnce of words separated by single spaces.
-// The display width of a single line cannot exceed clipW.
-//
-// The given message will be transformed into an array of lines.
-// 
-// A word in the original message is only ever divided if its 
-// width alone exceeds the clipW, in this case, its contents will
-// be displayed over multiple lines.
-TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipW)
+TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
     : core::SafeObject(memChnl) {
     
     // Msg must be non-null.
@@ -148,49 +126,33 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipW)
 
     core::CoreList<char> *strBuilder = 
         new core::CoreList<char>(memChnl);
+    
+    size_t i = buildLine(memChnl, strBuilder, msg, clipWidth);
 
-    // What if the string is just spaces though???
-    // These are things we need to think about...
-    // There might not be a "clean" way to do this..
+    while (strBuilder->getLen() > 0) {
+        strBuilder->add('\0'); // Add NULL Terminator.
+        blkBuilder->add(strBuilder->toArray());
+        strBuilder->clear();
 
-    size_t i = 0;        
-    while (msg[i] != '\0') {
-        // Ignore initial leading spaces.
-        while (msg[i] != '\0' && isspace(msg[i])) {
-            i++;
-        }
-
-        if (msg[i] == '\0') {
-            break;
-        }
-
-        size_t width = 0;
-
-        // Add words one at a time until the width is exceeded,
-        // C'mon mate, you can do this... I know it...
-        // than stop?
-        // Word than space then word then space....
-
-        while (width < clipW) {
-
-        }
-         
-        // Chop off a line using the string builder.
-        // Add it to the blkbuilder.
-        // continue.
+        i = buildLine(memChnl, strBuilder, &(msg[i]), clipWidth);
     }
 
     delete strBuilder;
 
     this->lines = blkBuilder->toArray();
-    delete blkBuilder;
+    delete blkBuilder; 
 }
 
-TextBlock::TextBlock(const char *msg, uint24_t clipW) 
-    : TextBlock(core::CXX_DEF_CHNL, msg, clipW) {
+TextBlock::TextBlock(const char *msg, uint24_t clipWidth) 
+    : TextBlock(core::CXX_DEF_CHNL, msg, clipWidth) {
 }
 
 TextBlock::~TextBlock() {
+    for (size_t i = 0; i < this->lines->getLen(); i++) {
+        delete this->lines->get(i); 
+    }
+
+    delete this->lines;
 }
 
 

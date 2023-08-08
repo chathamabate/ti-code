@@ -124,39 +124,16 @@ public:
 
 
 int main(void) {    
-    os_ClrHome();
-
-    if (new int[0]) {
-        os_PutStrFull("Works as expected");
-    } else {
-        os_PutStrFull("Error");
-    }
-
-    os_NewLine();
-
-    core::waitClear();
-
     gfx_Begin();
-    gfx_SetDrawBuffer();
-
+    gfx_FillScreen(0);
+    
     gfx_SetTextScale(1, 2);
 
-    gfx_SetColor(1);
-    gfx_FillRectangle(0, 0, GFX_LCD_WIDTH, GFX_LCD_HEIGHT);
-
-    gfx_SetTextFGColor(0);
 
 
-    gfx_PrintStringXY("Hello", 0, 0);
-
-    gfx_SwapDraw();
-    gfx_Wait();
-    
     core::waitClear();
 
     gfx_End();
-
-    core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;
 }

@@ -37,9 +37,13 @@ namespace cxxutil { namespace gui {
     private:
         core::SafeArray<core::SafeArray<char> *> *lines;
     public:
-        TextBlock(uint8_t memChnl, const char *msg, uint24_t clipW);
-        TextBlock(const char *msg, uint24_t clipW);
+        TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth);
+        TextBlock(const char *msg, uint24_t clipWidth);
         ~TextBlock();
+        
+        inline core::SafeArray<core::SafeArray<char> *> *getLines() {
+            return this->lines;
+        }
     };
     
     

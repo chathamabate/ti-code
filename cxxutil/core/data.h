@@ -61,7 +61,14 @@ namespace cxxutil { namespace core {
         }
 
         // This copies the CoreList's data into a new SafeArray.
-        SafeArray<T> *toArray() const;
+        SafeArray<T> *toArray() const {
+            SafeArray<T> *arr = new SafeArray<T>(this->getChnl(), this->len);
+            for (size_t i = 0; i < this->len; i++) {
+                arr->set(i, this->safeArr->get(i));
+            } 
+
+            return arr;
+        }
 
         void add(T ele) {
             size_t cap = this->safeArr->getLen();

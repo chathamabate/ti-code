@@ -122,11 +122,11 @@ namespace core {
         void *operator new(size_t size);
 
 #ifdef CXX_MEM_CHECKS
-        inline uint8_t getChnl() {
+        inline uint8_t getChnl() const {
             return this->chnl;
         }
 #else
-        constexpr uint8_t getChnl() {
+        constexpr uint8_t getChnl() const {
             return 0;
         }
 #endif
