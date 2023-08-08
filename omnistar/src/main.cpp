@@ -98,6 +98,7 @@ int main(void) {
 
     core::waitClear();
 
+    
     /*
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
 
@@ -107,18 +108,22 @@ int main(void) {
     gfx_FillScreen(10);
 
     gfx_SetColor(255);
-    gfx_FillRectangle(0, 0, 80, GFX_LCD_HEIGHT);
+    gfx_FillRectangle(0, 0, 40, GFX_LCD_HEIGHT);
  
     gfx_SwapDraw();
     gfx_Wait();
     gfx_BlitScreen(); // Copy screen to other buffer.
+    
+    gfx_SetMonospaceFont(8);
+    gfx_PrintStringXY("A A A A", 0, 0);
 
-    MyMonitor *m = new MyMonitor();
-    gui::TEXT_SUITE.run(m);
+    gfx_SwapDraw();
+    gfx_Wait();
 
     core::waitClear();
 
-    gfx_End();*/
+    gfx_End();
+    */
 
     return 0;
 }

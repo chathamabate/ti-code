@@ -21,9 +21,23 @@ private:
         // Width scale is all that matters here.
         // NOTE: Will be width of 8 for all TextBlock Tests.
         gfx_SetTextScale(1, 2);
+        gfx_SetMonospaceFont(8); // This is used to make building the tests
+                                 // easier.
 
         this->tb = new gui::TextBlock(1, this->initialText, this->clipWidth);
-        
+
+        // First confirm all lines have a valid width.
+        for (size_t i = 0; i < this->tb->getLines()->getLen(); i++) {
+            char widLbl[10];
+            sprintf(widLbl, "wid %u", i);
+
+            uint24_t lineWidth = gfx_GetStringWidth(
+                    this->tb->getLines()->get(i)->getArr());
+            
+            tc->lblAssertTrue(widLbl, lineWidth <= this->clipWidth);
+        }
+
+        // Then check for equality against the expected.
         tc->lblAssertEqUInt("len", this->expectedNumLines, 
                 this->tb->getLines()->getLen());
 
@@ -32,7 +46,7 @@ private:
             sprintf(lnLbl, "%u", i);
             tc->lblAssertEqStr(lnLbl, 
                     this->expectedLines[i], 
-                    tb->getLines()->get(i)->getArr());
+                    this->tb->getLines()->get(i)->getArr());
         }
     }
 
@@ -92,12 +106,92 @@ static TextBlockTestCase SIMPLE_TB4(
         }
 );
 
-const size_t TEXT_SUITE_LEN = 4;
+static TextBlockTestCase SIMPLE_TB5(
+        "Simple TB 5", 
+        "A AAAA AAA", 
+        40, 
+        3,
+        (const char *[]){
+            "A",
+            "AAAA",
+            "AAA"
+        }
+);
+
+static TextBlockTestCase SIMPLE_TB6(
+        "Simple TB 6", 
+        "A  AAAAAA    AAA", 
+        40, 
+        3,
+        (const char *[]){
+            "A AAA",
+            "AAA",
+            "AAA"
+        }
+);
+
+static TextBlockTestCase SIMPLE_TB7(
+        "Simple TB 7", 
+        "AAAAAAAAAAA AAAA", 
+        40, 
+        4,
+        (const char *[]){
+            "AAAAA",
+            "AAAAA",
+            "A",
+            "AAAA"
+        }
+);
+
+static TextBlockTestCase SIMPLE_TB8(
+        "Simple TB 8", 
+        "AA A A", 
+        40, 
+        2,
+        (const char *[]){
+            "AA A",
+            "A"
+        }
+);
+
+static TextBlockTestCase EMPTY_TB(
+        "Empty TB", 
+        "                 ", 
+        40, 
+        0,
+        (const char *[]){
+        }
+);
+
+static TextBlockTestCase LONG_TB(
+        "Long TB", 
+        "AA AAAA   A A A AAAAAAA A A AAA", 
+        40, 
+        6,
+        (const char *[]){
+            "AA",
+            "AAAA",
+            "A A A",
+            "AAAAA",
+            "AA A",
+            "A AAA",
+        }
+);
+
+
+const size_t TEXT_SUITE_LEN = 10;
 static cxxutil::unit::TestCase * const TEXT_SUITE_TESTS[TEXT_SUITE_LEN] = {
     &SIMPLE_TB1,
     &SIMPLE_TB2,
     &SIMPLE_TB3,
     &SIMPLE_TB4,
+    &SIMPLE_TB5,
+    &SIMPLE_TB6,
+    &SIMPLE_TB7,
+    &SIMPLE_TB8,
+
+    &EMPTY_TB,
+    &LONG_TB,
 };
 
 unit::TestSuite cxxutil::gui::TEXT_SUITE("Text Suite", TEXT_SUITE_TESTS, TEXT_SUITE_LEN);

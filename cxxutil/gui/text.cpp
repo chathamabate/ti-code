@@ -1,8 +1,10 @@
 #include "./text.h"
 #include "cxxutil/core/data.h"
 #include "cxxutil/core/mem.h"
+#include "ti/screen.h"
 
 #include <cctype>
+#include <cstdio>
 #include <graphx.h>
 #include <string.h>
 
@@ -16,6 +18,7 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
         const char *msg, uint24_t clipWidth) {
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
+
     size_t i = 0;      
 
     bool firstWord = true; // True if we are still processing
@@ -75,9 +78,24 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
             wordBound++; 
         }
 
+        /*
+        char sbuf[30];
+
+        sprintf(sbuf, "Word W: %u", wordWidth);
+        os_PutStrFull(sbuf); os_NewLine();
+
+        sprintf(sbuf, "Line W: %u", lineWidth);
+        os_PutStrFull(sbuf); os_NewLine();
+
+        uint24_t addWidth = lineWidth + (firstWord ? 0 : SPACE_WIDTH) + wordWidth; 
+        sprintf(sbuf, "Add W: %u", addWidth);
+        os_PutStrFull(sbuf); os_NewLine();
+        */
+
         // Case where our word can fit on a single line, but not this one.
-        // Simply exit. (NOTE: it is impossible here for firstWord = true)
-        if (wordWidth <= clipWidth && lineWidth + wordWidth > clipWidth) {
+        // Simply exit. 
+        if (wordWidth <= clipWidth && 
+                lineWidth + (firstWord ? 0 : SPACE_WIDTH) + wordWidth > clipWidth) {
             break;
         }
 
@@ -111,7 +129,6 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
 
 TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth) 
     : core::SafeObject(memChnl) {
-    
     // Msg must be non-null.
     if (!msg) {
         this->lines = 
@@ -125,15 +142,24 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
 
     core::CoreList<char> *strBuilder = 
         new core::CoreList<char>(memChnl);
-    
-    size_t i = buildLine(strBuilder, msg, clipWidth);
+
+    const char *m = msg;
+    size_t processed = buildLine(strBuilder, m, clipWidth);
 
     while (strBuilder->getLen() > 0) {
-        strBuilder->add('\0'); // Add NULL Terminator.
-        blkBuilder->add(strBuilder->toArray());
+        strBuilder->add('\0');
+
+        core::SafeArray<char> *arr = strBuilder->toArray();
+
+        os_PutStrFull(arr->getArr());
+        os_NewLine();
+
+        blkBuilder->add(arr);
         strBuilder->clear();
 
-        i = buildLine(strBuilder, &(msg[i]), clipWidth);
+        m = &(m[processed]);
+
+        processed = buildLine(strBuilder, m, clipWidth);
     }
 
     delete strBuilder;
