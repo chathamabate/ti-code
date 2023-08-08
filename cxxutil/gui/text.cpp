@@ -8,6 +8,117 @@
 
 using namespace cxxutil::gui;
 
+// This copies words from message into the given string builder.
+// Undefined behavoir if msg is null.
+//
+// Returns nullptr if there is no next line.
+static cxxutil::core::SafeArray<char> *nextWordLine(uint8_t memChnl, 
+        cxxutil::core::CoreList<char> *strBuilder, 
+        const char *msg, uint24_t clipWidth) {
+    // This may be different depending on font configuration.
+    const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
+
+    size_t i = 0;      
+
+    bool firstWord = true; // True if we are still processing
+                           // the first word.
+                           
+    size_t lineWidth = 0;
+
+    while (true) {
+        while (msg[i] != '\0' && isspace(msg[i])) {
+            i++;
+        }
+
+        if (msg[i] == '\0') {
+            break;
+        }
+
+        // We have made it to a non-space character!
+
+        // The exlusive end of the word, and a lower bound on the
+        // width of the word.
+        size_t wordBound = i;   
+        uint24_t wordWidth = 0;
+
+        // midBound is either the exlusive end of the word, or
+        // the exclusive end of the line, whichever comes first.
+        //
+        // midWidth is the width of the string from i to midBound.
+        size_t midBound = i;   
+        uint24_t midWidth  = 0;
+
+        // width of next character to be processed.
+        size_t nextCharWidth = gfx_GetCharWidth(msg[i]);
+
+        // We process until:
+        // 1) We hit the end of the string.
+        // 2) We hit a space.
+        // or 3) The final width after adding the word exceeds the clipWidth.
+        while (msg[wordBound] != '\0' && !isspace(msg[wordBound]) && 
+                lineWidth + (firstWord ? 0 : SPACE_WIDTH) + 
+                wordWidth + nextCharWidth <= clipWidth) {
+            midWidth += nextCharWidth;
+            midBound++;
+
+            wordWidth += nextCharWidth;
+            wordBound++; 
+
+            nextCharWidth = gfx_GetCharWidth(msg[wordBound]);
+        }
+
+        // Now we process until:
+        // 1) we hit the end of the string.
+        // 2) we hit a space.
+        // or 3) the width of the word alone is too large for one line.
+        while (msg[wordBound] != '\0' && !isspace(msg[wordBound]) && 
+                wordWidth <= clipWidth) {
+            wordWidth += gfx_GetCharWidth(msg[wordBound]);
+            wordBound++; 
+        }
+
+        // Case where our word can fit on a single line, but not this one.
+        // Simply exit. (NOTE: it is impossible here for firstWord = true)
+        if (wordWidth <= clipWidth && lineWidth + wordWidth > clipWidth) {
+            break;
+        }
+
+        // At this point midBound marks the exact exlusive index we can add
+        // to until a space is hit, the line is full, or both.
+        
+        if (!firstWord) {
+            strBuilder->add(' ');
+            lineWidth += SPACE_WIDTH;
+        } else {
+            firstWord = false;
+        }
+
+        // Add our characters.
+        for (; i < midBound; i++) {
+            strBuilder->add(msg[i]);
+        } 
+
+        lineWidth += midWidth;
+
+        // Here, if our next character exists and is non-space,
+        // we must've stopped processing because our word was too long
+        // for a single line. just exit!
+        if (!isspace(msg[i]) || msg[i] == '\0') {
+            break;     
+        }
+    }   
+
+    // Here the "first word" was never added.
+    // Nothing to return.
+    if (firstWord) {
+        return nullptr;
+    }
+
+    cxxutil::core::SafeArray<char> *str = strBuilder->toArray();
+    strBuilder->clear();
+
+    return str;
+}
 
 
 // A word is a consecutive sequence of non-space characters.
