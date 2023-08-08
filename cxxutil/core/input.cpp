@@ -86,7 +86,7 @@ KeyManager::~KeyManager() {
 void KeyManager::setRepeatDelay(uint8_t repeatDelay) {
     // NOTE: All focused keys will have there counts set back to 0.
     for (uint8_t i = 0; i < this->keyCounts->getLen(); i++) {
-        this->keyCounts->getPtr(i)->cnt = 0;
+        this->keyCounts->getPtrMut(i)->cnt = 0;
     }
 
     this->repeatDelay = repeatDelay;
@@ -117,10 +117,10 @@ void KeyManager::scanFocusedKeys() {
     for (uint8_t i = 0; i < this->keyCounts->getLen(); i++) {
         if (kb_IsDown(CXX_KEY_MAP[this->keyCounts->get(i).key])) {
             if (this->keyCounts->get(i).cnt < this->repeatDelay) {
-                this->keyCounts->getPtr(i)->cnt++;
+                this->keyCounts->getPtrMut(i)->cnt++;
             }
         } else {
-            this->keyCounts->getPtr(i)->cnt = 0;
+            this->keyCounts->getPtrMut(i)->cnt = 0;
         }
     }
 }

@@ -78,7 +78,7 @@ namespace cxxutil { namespace core {
                 SafeArray<T> *newArr = 
                     new SafeArray<T>(this->getChnl(), cap * 2);
                 
-                T *newArrUnder = newArr->getArr();
+                T *newArrUnder = newArr->getArrMut();
 
                 // Copy elements of old array into the new array.
                 for (size_t i = 0; i < cap; i++) {
@@ -90,7 +90,7 @@ namespace cxxutil { namespace core {
                 this->safeArr = newArr;
             }
 
-            *(this->safeArr->getPtr(this->len)) = ele;
+            *(this->safeArr->getPtrMut(this->len)) = ele;
             this->len++;
         }
     };

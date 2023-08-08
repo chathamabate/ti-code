@@ -167,18 +167,16 @@ namespace core {
             return this->arr[i];
         }
 
-        // getPtr and getArr do not change the safeArray
-        // However, since they are used to change the safe
-        // array using pointers, I will not be marking them
-        // const.
-
-        inline T *getPtr(size_t i) {
-            return &(this->arr[i]);
+        inline const T *getArr() const {
+            return this->arr;
         }
 
-        // This kinda dangerous, so be careful!!!
-        inline T *getArr() {
+        inline T *getArrMut() {
             return this->arr;
+        }
+
+        inline T *getPtrMut(size_t i) {
+            return &(this->arr[i]);
         }
 
         inline void set(size_t i, T ele) {

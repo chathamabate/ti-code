@@ -116,13 +116,13 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
     // Msg must be non-null.
     if (!msg) {
         this->lines = 
-            new core::SafeArray<core::SafeArray<char> *>(memChnl, 0);
+            new core::SafeArray<const core::SafeArray<char> *>(memChnl, 0);
 
         return;
     }
 
-    core::CoreList<core::SafeArray<char> *> *blkBuilder = 
-        new core::CoreList<core::SafeArray<char> *>(memChnl);
+    core::CoreList<const core::SafeArray<char> *> *blkBuilder = 
+        new core::CoreList<const core::SafeArray<char> *>(memChnl);
 
     core::CoreList<char> *strBuilder = 
         new core::CoreList<char>(memChnl);

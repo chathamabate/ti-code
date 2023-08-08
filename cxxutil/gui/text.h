@@ -33,15 +33,16 @@ namespace cxxutil { namespace gui {
     // NOTE: All string width measurements are dependent on the 
     // text width properties present in gfx at the time of 
     // TextBlock creation.
-    class TextBlock : core::SafeObject {
+    class TextBlock : public core::SafeObject {
     private:
-        core::SafeArray<core::SafeArray<char> *> *lines;
+        core::SafeArray<const core::SafeArray<char> *> *lines;
     public:
         TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth);
         TextBlock(const char *msg, uint24_t clipWidth);
         ~TextBlock();
         
-        inline core::SafeArray<core::SafeArray<char> *> *getLines() {
+        inline const core::SafeArray<const core::SafeArray<char> *> * 
+            getLines() const {
             return this->lines;
         }
     };
