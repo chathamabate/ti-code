@@ -1,4 +1,5 @@
 
+#include "cxxutil/gui/text.h"
 #include "keypadc.h"
 #include "ti/getcsc.h"
 #include "ti/screen.h"
@@ -20,7 +21,6 @@
 #include <cxxutil/gui/test/text.h>
 
 using namespace cxxutil;
-
 
 
 class MyMonitor : public unit::TestMonitor {
@@ -62,26 +62,6 @@ private:
         (void)level;
         os_PutStrFull(msg);
         os_NewLine();
-        /*
-        gfx_SetTextScale(1, 2);
-
-        size_t len = strlen(msg);
-        core::SafeArray<char> *newMsg = 
-            new core::SafeArray<char>(core::CXX_TEST_CHNL, len + 1);
-
-        for (size_t i = 0; i <  len; i++) {
-            if (msg[i] == ' ') {
-                newMsg->set(i, '_');
-            } else {
-                newMsg->set(i, msg[i]);
-            }
-        }
-
-        gfx_PrintStringXY(newMsg->getArr(), 0, l * 16);
-        l++;
-
-        delete newMsg;
-        */
     }
 
 public:
@@ -97,7 +77,7 @@ int main(void) {
     gui::TEXT_SUITE.run(m);
 
     core::waitClear();
-
+    
     
     /*
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
@@ -108,14 +88,18 @@ int main(void) {
     gfx_FillScreen(10);
 
     gfx_SetColor(255);
-    gfx_FillRectangle(0, 0, 40, GFX_LCD_HEIGHT);
+    gfx_FillRectangle(0, 0, 80, GFX_LCD_HEIGHT);
  
     gfx_SwapDraw();
     gfx_Wait();
     gfx_BlitScreen(); // Copy screen to other buffer.
     
-    gfx_SetMonospaceFont(8);
-    gfx_PrintStringXY("A A A A", 0, 0);
+    gfx_SetTextScale(1, 2);
+    gui::TextBlock *tb = new gui::TextBlock(1, "", 80);
+
+    for (size_t r = 0; r < tb->getLines()->getLen(); r++) {
+        gfx_PrintStringXY(tb->getLines()->get(r)->getArr(), 0, r * 16);
+    }
 
     gfx_SwapDraw();
     gfx_Wait();

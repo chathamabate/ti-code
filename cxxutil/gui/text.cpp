@@ -19,15 +19,18 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
 
+    // Index of the next character to be processed.
     size_t i = 0;      
 
     bool firstWord = true; // True if we are still processing
                            // the first word.
                            
+    // Combined width in pixels of all characters added to the
+    // give strBuilder.
     size_t lineWidth = 0;
 
     while (true) {
-        while (msg[i] != '\0' && isspace(msg[i])) {
+        while (isspace(msg[i])) {
             i++;
         }
 
@@ -37,22 +40,25 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
 
         // We have made it to a non-space character!
 
-        // The exlusive end of the word, and a lower bound on the
-        // width of the word.
+        // msg[i:wordBound] will be the word which is currently 
+        // being processed. wordBound will stop increasing once
+        // 1) a space or \0 is hit.
+        // or 2) width(msg[i:wordBound]) exceeds clipWidth.
         size_t wordBound = i;   
-        uint24_t wordWidth = 0;
+        uint24_t wordWidth = 0; // = width(msg[i:wordBound]).
 
-        // midBound is either the exlusive end of the word, or
-        // the exclusive end of the line, whichever comes first.
-        //
-        // midWidth is the width of the string from i to midBound.
+        // msg[i:midBound] will be the character which we may add to
+        // our line. midBound stops increasing once
+        // 1) a space or \0 is hit.
+        // or 2) wid(msg[i:midBound]) is its maximum possible value
+        // before adding msg[i:midBound] to line exceed clipWidth.
         size_t midBound = i;   
         uint24_t midWidth  = 0;
 
         // width of next character to be processed.
         size_t nextCharWidth = gfx_GetCharWidth(msg[i]);
 
-        // We process until:
+        // We go until:
         // 1) We hit the end of the string.
         // 2) We hit a space.
         // or 3) The final width after adding the word exceeds the clipWidth.
@@ -68,7 +74,14 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
             nextCharWidth = gfx_GetCharWidth(msg[wordBound]);
         }
 
-        // Now we process until:
+        // msg[i:midBound] will be the characters we add (if we choose to)
+        // Thus, if midBound == i, there are no characters we can add
+        // without exceeding clipWidth! Just exit.
+        if (midBound == i) {
+            break;
+        }
+
+        // Now we go until:
         // 1) we hit the end of the string.
         // 2) we hit a space.
         // or 3) the width of the word alone is too large for one line.
@@ -78,20 +91,6 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
             wordBound++; 
         }
 
-        /*
-        char sbuf[30];
-
-        sprintf(sbuf, "Word W: %u", wordWidth);
-        os_PutStrFull(sbuf); os_NewLine();
-
-        sprintf(sbuf, "Line W: %u", lineWidth);
-        os_PutStrFull(sbuf); os_NewLine();
-
-        uint24_t addWidth = lineWidth + (firstWord ? 0 : SPACE_WIDTH) + wordWidth; 
-        sprintf(sbuf, "Add W: %u", addWidth);
-        os_PutStrFull(sbuf); os_NewLine();
-        */
-
         // Case where our word can fit on a single line, but not this one.
         // Simply exit. 
         if (wordWidth <= clipWidth && 
@@ -100,7 +99,7 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
         }
 
         // At this point midBound marks the exact exlusive index we can add
-        // to until a space is hit, the line is full, or both.
+        // to until a space is hit or the line is full.
         
         if (!firstWord) {
             strBuilder->add(' ');
@@ -116,10 +115,13 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
 
         lineWidth += midWidth;
 
-        // Here, if our next character exists and is non-space,
-        // we must've stopped processing because our word was too long
-        // for a single line. just exit!
-        if (!isspace(msg[i]) && msg[i] != '\0') {
+        // If our next char to process is not a space character,
+        // 1) We only added a piece of a word, 
+        //    impling we have reached clipwidth.
+        // 2) We have reached the end of the string.
+        //
+        // In both cases we can exit.
+        if (!isspace(msg[i])) {
             break;     
         }
     }   
@@ -149,12 +151,7 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
     while (strBuilder->getLen() > 0) {
         strBuilder->add('\0');
 
-        core::SafeArray<char> *arr = strBuilder->toArray();
-
-        os_PutStrFull(arr->getArr());
-        os_NewLine();
-
-        blkBuilder->add(arr);
+        blkBuilder->add(strBuilder->toArray());
         strBuilder->clear();
 
         m = &(m[processed]);

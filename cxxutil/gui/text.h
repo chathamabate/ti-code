@@ -5,7 +5,6 @@
 
 namespace cxxutil { namespace gui {
 
-
 // void gfx_SetTextScale(uint8_t width_scale, uint8_t height_scale);
 // void gfx_PrintStringXY(const char *string, int x, int y);
 // uint8_t gfx_SetTextFGColor(uint8_t color);
