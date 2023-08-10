@@ -10,6 +10,8 @@ using namespace cxxutil;
 
 class TextBlockTestCase : public unit::TestCase {
 private:
+    static const gui::text_info_t TC_TEXT_INFO;
+
     const char * const initialText;
     const uint24_t clipWidth;
     const size_t expectedNumLines;
@@ -23,7 +25,7 @@ private:
         gfx_SetMonospaceFont(8); // This is used to make building the tests
                                  // easier.
 
-        this->tb = new gui::TextBlock(1, this->initialText, this->clipWidth);
+        this->tb = new gui::TextBlock(1, &TC_TEXT_INFO, this->initialText, this->clipWidth);
         const core::SafeArray<const core::SafeArray<char> *> *lines = tb->getLines();
 
         size_t n = lines->getLen() < this->expectedNumLines 
@@ -60,6 +62,14 @@ public:
         expectedNumLines(expNumLines),
         expectedLines(expLines) {
     }
+};
+
+const gui::text_info_t TextBlockTestCase::TC_TEXT_INFO = {
+    .widthScale = 1,
+    .heightScale = 2,
+
+    .fgColor = 0,
+    .bgColor = 255,
 };
 
 static TextBlockTestCase SIMPLE_TB1(
@@ -197,7 +207,7 @@ static TextBlockTestCase LONG_TB2(
             "AA AA",
             "A A A",
             "AAAAA",
-            "A AA",
+            "A AA", 
         }
 );
 

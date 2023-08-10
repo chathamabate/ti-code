@@ -24,26 +24,37 @@ namespace cxxutil { namespace gui {
 //
 //
 // uint8_t gfx_SetColor(uint8_t index);
+    
+    typedef struct {
+        uint8_t widthScale;
+        uint8_t heightScale;
+
+        uint8_t fgColor;
+        uint8_t bgColor;
+    } text_info_t;    
 
     // A text block is a wrapper class around an array of strings.
     // This class take a single string and splits up its words
     // into lines depending on a given "clip width".
-    //
-    // NOTE: All string width measurements are dependent on the 
-    // text width properties present in gfx at the time of 
-    // TextBlock creation.
     class TextBlock : public core::SafeObject {
     private:
+        const text_info_t * const textInfo;
         core::SafeArray<const core::SafeArray<char> *> *lines;
     public:
-        TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth);
-        TextBlock(const char *msg, uint24_t clipWidth);
+        TextBlock(uint8_t memChnl, const text_info_t *ti, const char *msg, uint24_t clipWidth);
+        TextBlock(const text_info_t *ti, const char *msg, uint24_t clipWidth);
         ~TextBlock();
         
         inline const core::SafeArray<const core::SafeArray<char> *> * 
             getLines() const {
             return this->lines;
         }
+    };
+
+    // This class is for scrolling through TextBlocks.
+    class ScrollingTextBox : public core::SafeObject {
+    private:
+    public:
     };
     
     

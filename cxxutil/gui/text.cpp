@@ -15,7 +15,10 @@ using namespace cxxutil::gui;
 //
 // Returns the index of the next character which needs to be processed.
 static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder, 
-        const char *msg, uint24_t clipWidth) {
+        const text_info_t *ti, const char *msg, uint24_t clipWidth) {
+    // Height scale not necessary here, but still used.
+    gfx_SetTextScale(ti->widthScale, ti->heightScale);
+
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
 
@@ -80,6 +83,9 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
         if (midBound == i) {
             break;
         }
+        
+        // After this point, we know there are character which can be added,
+        // now we must decided if we should add them or not.
 
         // Now we go until:
         // 1) we hit the end of the string.
@@ -129,8 +135,8 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
     return i;
 }
 
-TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth) 
-    : core::SafeObject(memChnl) {
+TextBlock::TextBlock(uint8_t memChnl, const text_info_t *ti, const char *msg, uint24_t clipWidth) 
+    : core::SafeObject(memChnl), textInfo(ti) {
     // Msg must be non-null.
     if (!msg) {
         this->lines = 
@@ -146,7 +152,7 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
         new core::CoreList<char>(memChnl);
 
     const char *m = msg;
-    size_t processed = buildLine(strBuilder, m, clipWidth);
+    size_t processed = buildLine(strBuilder, this->textInfo, m, clipWidth);
 
     while (strBuilder->getLen() > 0) {
         strBuilder->add('\0');
@@ -156,7 +162,7 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
 
         m = &(m[processed]);
 
-        processed = buildLine(strBuilder, m, clipWidth);
+        processed = buildLine(strBuilder, this->textInfo, m, clipWidth);
     }
 
     delete strBuilder;
@@ -165,8 +171,8 @@ TextBlock::TextBlock(uint8_t memChnl, const char *msg, uint24_t clipWidth)
     delete blkBuilder; 
 }
 
-TextBlock::TextBlock(const char *msg, uint24_t clipWidth) 
-    : TextBlock(core::CXX_DEF_CHNL, msg, clipWidth) {
+TextBlock::TextBlock(const text_info_t *ti, const char *msg, uint24_t clipWidth) 
+    : TextBlock(core::CXX_DEF_CHNL, ti, msg, clipWidth) {
 }
 
 TextBlock::~TextBlock() {

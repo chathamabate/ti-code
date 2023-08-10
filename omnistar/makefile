@@ -9,7 +9,7 @@ DESCRIPTION = "OmniStar"
 COMPRESSED := YES
 ARCHIVED = NO
 
-CFLAGS = -Wall -Wextra -Oz -I.. 
+CFLAGS = -Wall -Wextra -Oz -I..
 CXXFLAGS = -Wall -Wextra -Oz -I..
 
 # This is because I use snprintf.
