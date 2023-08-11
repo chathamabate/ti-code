@@ -22,7 +22,6 @@ void TestCase::attempt(TestContext *tc) {
 }
 
 void TestCase::finally() {
-
 }
 
 void TestCase::run(TestMonitor *mn) {

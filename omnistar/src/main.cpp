@@ -78,7 +78,6 @@ int main(void) {
 
     core::waitClear();
     
-    
     /*
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
 
