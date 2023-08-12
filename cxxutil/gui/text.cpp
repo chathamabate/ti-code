@@ -137,7 +137,6 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
 
 TextBlock::TextBlock(uint8_t memChnl, const text_info_t *ti, const char *msg, uint24_t clipWidth) 
     : core::SafeObject(memChnl), textInfo(ti) {
-    // Msg must be non-null.
     if (!msg) {
         this->lines = 
             new core::SafeArray<const core::SafeArray<char> *>(memChnl, 0);
@@ -184,17 +183,198 @@ TextBlock::~TextBlock() {
 }
 
 
-/*
-Terminal::Terminal(uint8_t memChnl, const char *title) 
-    : core::SafeObject(memChnl) {
+ScrollTextPane::ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi) 
+    : core::SafeObject(memChnl), paneInfo(stpi) {
+    this->blocks = new core::CoreList<const TextBlock *>(memChnl);
+
+    this->focusInd = {
+        .blockInd = 0,
+        .lineInd = 0,
+    };
+
+    this->top = true;
+    this->totalHeight = 0;
+}
+
+ScrollTextPane::ScrollTextPane(const scroll_text_pane_info_t *stpi) 
+    : ScrollTextPane(core::CXX_DEF_CHNL, stpi) {
+}
+
+ScrollTextPane::~ScrollTextPane() {
+    size_t blocksLen = this->blocks->getLen();
+    for (size_t i = 0; i < blocksLen; i++) {
+        delete this->blocks->get(i);
+    }
+
+    delete this->blocks;
+}
+
+bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
+    if (i.lineInd > 0) {
+        d->blockInd = i.blockInd;
+        d->lineInd = i.lineInd - 1;
+
+        return true;
+    }
+
+    if (i.blockInd > 0) {
+        size_t newBlockInd = i.blockInd - 1;
+
+        d->blockInd = newBlockInd;
+        d->lineInd = 
+            this->blocks->get(newBlockInd)->getLines()->getLen() - 1;
+    }
+
+    return false;
+}
+
+bool ScrollTextPane::nextDown(tp_index_t i, tp_index_t *d) const {
+    if (i.lineInd < this->blocks->get(i.blockInd)->getLines()->getLen() - 1) {
+        d->blockInd = i.blockInd;
+        d->lineInd = i.lineInd++;
+
+        return true;
+    }
+
+    if (i.blockInd < this->blocks->getLen() - 1) {
+        d->blockInd = i.blockInd + 1;
+        d->lineInd = 0;
+
+        return true;
+    }
+
+    return false;
+}
+
+void ScrollTextPane::scrollUp() {
+    if (this->blocks->getLen() == 0) {
+        return; // No lines.. do nothing!
+    }
+
+    tp_index_t lastVisible = this->focusInd;
+
+    if (!(this->top)) {
+        uint8_t aH = this->getLineHeight(lastVisible);
+
+        while (true) {
+            tp_index_t next;
+            if (!(this->nextUp(lastVisible, &next))) {
+                // NOTE: even though top can always take a value of 
+                // true, if a scrollUp doesn't cause any actual scrolling
+                // top will remain false.
+                return;
+            }
+
+            uint8_t nextHeight = this->getLineHeight(next);
+            if (aH + this->paneInfo->vertLineSpace + nextHeight > 
+                    this->paneInfo->height) {
+                break;
+            }
+
+            lastVisible = next;
+            aH += this->paneInfo->vertLineSpace + nextHeight;
+        } 
+
+        this->top = true;
+    }
+
+    this->nextUp(lastVisible, &(this->focusInd));
 
 }
 
-Terminal::Terminal(const char *title) : Terminal(core::CXX_DEF_CHNL, title) {
+void ScrollTextPane::scrollDown() {
+    if (this->blocks->getLen() == 0) {
+        return; // No lines.. do nothing!
+    }
+
+    tp_index_t lastVisible = this->focusInd;
+
+    if (this->top) {
+        // We can only "scrollDown" if there exists a line below
+        // focusInd which is not entirely visible. 
+        //
+        // Otherwise, this function does nothing.
+
+        uint8_t aH = this->getLineHeight(lastVisible);
+
+        while (true) {
+            // If we reach the end before running out of 
+            // space, a scroll down is not possible, exit.
+            tp_index_t next;
+            if (!(this->nextDown(lastVisible, &next))) {
+                return;
+            }
+
+            uint8_t nextHeight = this->getLineHeight(next);
+            if (aH + this->paneInfo->vertLineSpace + nextHeight > 
+                    this->paneInfo->height) {
+                // If our next addition exceeds height,
+                // we have found our last visible! exit the loop! 
+                
+                break;
+            }
+
+            // Otherwise, continue.
+            lastVisible = next;
+            aH += this->paneInfo->vertLineSpace + nextHeight;
+        }
+
+        this->top = false;
+    }
+
+    this->nextDown(lastVisible, &(this->focusInd));
 }
 
-Terminal::~Terminal() {
-    // Fill this bad boy in.
+void ScrollTextPane::gotoTop() {
+    this->focusInd = {
+        .blockInd = 0,
+        .lineInd = 0,
+    };
+
+    this->top = true;
 }
-*/
+
+void ScrollTextPane::gotoBottom() {
+    if (this->totalHeight <= this->paneInfo->height) {
+        return; // We must already be at the bottom.
+                // And... top cannot equal false.
+    }
+
+    size_t lastBlockInd = this->blocks->getLen() - 1;
+
+    this->focusInd = {
+        .blockInd = lastBlockInd,
+        .lineInd = this->blocks->get(lastBlockInd)->getLines()->getLen() - 1,
+    };
+
+    this->top = false;
+}
+
+bool ScrollTextPane::log(const text_info_t *ti, const char *msg) {
+    TextBlock *tb = 
+        new TextBlock(this->getChnl(), ti, msg, this->paneInfo->lineWidth);
+
+    size_t numLines = tb->getLines()->getLen();
+
+    if (numLines == 0) {
+        delete tb;
+
+        return false;
+    }
+
+    if (this->blocks->getLen() == 0) {
+        this->totalHeight = (numLines * ti->heightScale * 8) + 
+            ((numLines - 1) * this->paneInfo->vertLineSpace);
+    } else {
+        this->totalHeight += numLines * 
+            ((ti->heightScale * 8) + this->paneInfo->vertLineSpace);
+    }
+
+    this->gotoBottom();
+
+    return true;
+}
+
+
+
 

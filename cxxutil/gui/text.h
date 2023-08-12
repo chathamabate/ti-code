@@ -52,6 +52,10 @@ namespace cxxutil { namespace gui {
             getLines() const {
             return this->lines;
         }
+
+        inline const text_info_t *getTextInfo() const {
+            return this->textInfo;
+        }
     };
 
     typedef struct {
@@ -71,6 +75,11 @@ namespace cxxutil { namespace gui {
         uint8_t vertLineSpace;
     } scroll_text_pane_info_t;
 
+    typedef struct {
+        size_t blockInd;
+        size_t lineInd;
+    } tp_index_t;  // Text pane index.
+
     // Will probs need ot use clipping!
     // Text Printing can be negative!
     // void gfx_SetClipRegion(int xmin, int ymin, int xmax, int ymax);
@@ -84,9 +93,9 @@ namespace cxxutil { namespace gui {
     // the pane itself.
     class ScrollTextPane : public core::SafeObject {
     private:
-        const scroll_text_pane_info_t *paneInfo; 
+        const scroll_text_pane_info_t * const paneInfo; 
 
-        core::CoreList<const TextBlock *> blocks;
+        core::CoreList<const TextBlock *> *blocks;
 
         // As no line has a height larger than the height of the pane,
         // it is possible for any line to be displayed in its entirety.
@@ -94,9 +103,7 @@ namespace cxxutil { namespace gui {
 
         // (blockInd, lineInd) refers to the "focused line".
         // All visible lines will be rendered relative to this line.
-        size_t blockInd;
-        size_t lineInd;
-
+        tp_index_t focusInd;
 
         // If top = true, the focused line will be rendered in its entirety
         // at the top of the pane.
@@ -107,11 +114,35 @@ namespace cxxutil { namespace gui {
         // If there are too few lines to fill the pane, top will always be 
         // true.
         bool top;
+
+        // This is the height of the entire pane should all lines be
+        // visible. top can only be false when totalHeight > height.
+        uint24_t totalHeight;
     public:
         ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi);
         ScrollTextPane(const scroll_text_pane_info_t *stpi);
+        ~ScrollTextPane();
 
-        // For now, logging will always display 
+        // Given a valid index into the Pane, this stores the index
+        // of the line above/below i into d. 
+        //
+        // If there is no line above/below i,
+        // nothing happens, false is returned.
+        //
+        // NOTE: UB if index is not valid.
+        bool nextUp(tp_index_t i, tp_index_t *d) const;
+        bool nextDown(tp_index_t i, tp_index_t *d) const;
+
+        void scrollUp();
+        void scrollDown();
+
+        void gotoTop();
+        void gotoBottom();
+
+        // NOTE: if msg results in a TextBlock with no lines,
+        // the TextBlock will be discarded.
+        //
+        // NOTE: For now, logging will alwas call gotoBottom()
         bool log(const text_info_t *ti, const char *msg);
 
         // These getters below will help with testing.
@@ -119,19 +150,16 @@ namespace cxxutil { namespace gui {
         inline bool getTop() const {
             return this->top;
         }
-        
-        inline size_t getBlockInd() const {
-            return this->blockInd;
+
+        inline tp_index_t getFocusInd() const {
+            return this->focusInd;
         }
 
-        inline size_t getLineInd() const {
-            return this->lineInd;
+        inline uint8_t getLineHeight(tp_index_t i) const {
+            return this->blocks->get(i.blockInd)->getTextInfo()->heightScale * 8;
         }
-         
     };
     
-    
-
     // NOTE: for the Terminal class, all given strings
     // will be copied into dynamic memory.
     /*
