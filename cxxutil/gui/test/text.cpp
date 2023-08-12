@@ -317,7 +317,15 @@ private:
         this->stp->scrollDown();
         this->lblAssertFocus(tc, "5L.3", false, 2, 0);
 
-        // Looking good!
+        // Half height
+        this->stp->log(&TC_TEXT_INFO_1, "AAA AAA");
+        this->lblAssertFocus(tc, "7L.0", false, 3, 1);
+
+        this->stp->scrollDown();
+        this->lblAssertFocus(tc, "7L.1", false, 3, 1);
+
+        this->stp->scrollUp();
+        this->lblAssertFocus(tc, "7L.2", true, 1, 0);
     }
 
     // 4 rows (16 px lines)
@@ -326,8 +334,23 @@ private:
 public:
     static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 };
-
 STPTestCase1 STPTestCase1::ONLY_VAL;
+
+class STPTestCase2 : public ScrollTextPaneTestCase {
+private:
+    static STPTestCase2 ONLY_VAL;
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+    }
+
+    // 4 rows (16 px lines)
+    STPTestCase2() : ScrollTextPaneTestCase("STP 1", 16 + (3 * 18)) {
+    }
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+};
+
+STPTestCase2 STPTestCase2::ONLY_VAL;
 
 
 const size_t SCROLL_TEXT_PANE_SUITE_LEN = 1;

@@ -1,5 +1,3 @@
-#include "./text.h"
-#include "cxxutil/core/data.h"
 #include "cxxutil/core/mem.h"
 #include "ti/screen.h"
 
@@ -10,7 +8,6 @@
 
 using namespace cxxutil::gui;
 
-// This copies words from message into the given string builder.
 // Undefined behavoir if msg is null.
 //
 // Returns the index of the next character which needs to be processed.

@@ -9,8 +9,6 @@
 #include <cxxutil/core/data.h>
 #include <cxxutil/unit/unit.h>
 
-
-
 using namespace cxxutil::unit;
 
 TestCase::TestCase(const char *n) : name(n) {
