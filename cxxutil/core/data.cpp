@@ -35,6 +35,11 @@ size_t cxxutil::core::multiStrCatSafe(char *dest, size_t destLen, size_t destSiz
     // Only add strings while there are strings to add, and
     // while there is space in the destination.
     for (size_t i = 0; i < numStrs && currLen + 1 < destSize; i++) {
+        // Null entries in the array will be scipped over.
+        if (!(strs[i])) {
+            continue;
+        }
+
         currLen = strCatSafe(dest, currLen, destSize, strs[i]);
     }
 

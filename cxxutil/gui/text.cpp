@@ -232,7 +232,7 @@ bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
 bool ScrollTextPane::nextDown(tp_index_t i, tp_index_t *d) const {
     if (i.lineInd < this->blocks->get(i.blockInd)->getLines()->getLen() - 1) {
         d->blockInd = i.blockInd;
-        d->lineInd = i.lineInd++;
+        d->lineInd = i.lineInd + 1;
 
         return true;
     }
@@ -302,7 +302,6 @@ void ScrollTextPane::scrollDown() {
             this->getLineHeight(iter);
     } while (aH <= this->paneInfo->height);
 
-
     this->top = false;
     this->focusInd = iter;
 }
@@ -352,6 +351,7 @@ bool ScrollTextPane::log(const text_info_t *ti, const char *msg) {
             ((ti->heightScale * 8) + this->paneInfo->vertLineSpace);
     }
 
+    this->blocks->add(tb);
     this->gotoBottom();
 
     return true;

@@ -28,7 +28,7 @@ namespace cxxutil { namespace gui {
     
     // NOTE: It is assumed that this describes text of the default 
     // font. (i.e. 8x8 defualt size, not monospace)
-    typedef struct {
+    struct text_info_t {
         // These params are all fed direclty into gfx.
         
         uint8_t widthScale;     // Actual width = 8 * widthScale.
@@ -37,7 +37,7 @@ namespace cxxutil { namespace gui {
 
         uint8_t fgColor;
         uint8_t bgColor;
-    } text_info_t;    
+    };    
 
     // A text block is a wrapper class around an array of strings.
     // This class take a single string and splits up its words
@@ -61,7 +61,7 @@ namespace cxxutil { namespace gui {
         }
     };
 
-    typedef struct {
+    struct scroll_text_pane_info_t {
         // x and y can be given at render time.
         
         uint8_t height;
@@ -76,13 +76,18 @@ namespace cxxutil { namespace gui {
 
         // Vertical space which separates lines.
         uint8_t vertLineSpace;
-    } scroll_text_pane_info_t;
+    };
 
-    typedef struct {
+    struct tp_index_t {
         size_t blockInd;
         size_t lineInd;
-    } tp_index_t;  // Text pane index.
 
+        inline bool operator==(const tp_index_t &i) const {
+            return this->blockInd == i.blockInd &&
+                this->lineInd == i.lineInd;
+        }
+    };  // Text pane index.
+    
     // Will probs need ot use clipping!
     // Text Printing can be negative!
     // void gfx_SetClipRegion(int xmin, int ymin, int xmax, int ymax);
