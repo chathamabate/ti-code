@@ -29,8 +29,11 @@ namespace cxxutil { namespace gui {
     // NOTE: It is assumed that this describes text of the default 
     // font. (i.e. 8x8 defualt size, not monospace)
     typedef struct {
+        // These params are all fed direclty into gfx.
+        
         uint8_t widthScale;     // Actual width = 8 * widthScale.
         uint8_t heightScale;    // Actual height = 8 * heightScale.
+        uint8_t monospace;
 
         uint8_t fgColor;
         uint8_t bgColor;

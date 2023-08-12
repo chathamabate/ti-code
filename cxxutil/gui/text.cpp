@@ -18,6 +18,7 @@ static size_t buildLine(cxxutil::core::CoreList<char> *strBuilder,
         const text_info_t *ti, const char *msg, uint24_t clipWidth) {
     // Height scale not necessary here, but still used.
     gfx_SetTextScale(ti->widthScale, ti->heightScale);
+    gfx_SetMonospaceFont(ti->monospace);
 
     // This may be different depending on font configuration.
     const uint24_t SPACE_WIDTH = gfx_GetCharWidth(' ');
@@ -251,35 +252,26 @@ void ScrollTextPane::scrollUp() {
         return; // No lines.. do nothing!
     }
 
-    tp_index_t lastVisible = this->focusInd;
-
-    if (!(this->top)) {
-        uint8_t aH = this->getLineHeight(lastVisible);
-
-        while (true) {
-            tp_index_t next;
-            if (!(this->nextUp(lastVisible, &next))) {
-                // NOTE: even though top can always take a value of 
-                // true, if a scrollUp doesn't cause any actual scrolling
-                // top will remain false.
-                return;
-            }
-
-            uint8_t nextHeight = this->getLineHeight(next);
-            if (aH + this->paneInfo->vertLineSpace + nextHeight > 
-                    this->paneInfo->height) {
-                break;
-            }
-
-            lastVisible = next;
-            aH += this->paneInfo->vertLineSpace + nextHeight;
-        } 
-
-        this->top = true;
+    if (this->top) {
+        this->nextUp(this->focusInd, &(this->focusInd));
+        return;
     }
 
-    this->nextUp(lastVisible, &(this->focusInd));
+    // NOTE: if !top, there must be a line to scroll up to.
+    // Here, just find the first line which is not entirely visible.
+    uint8_t aH = this->getLineHeight(this->focusInd);
+    tp_index_t iter = this->focusInd;
+    
+    do {
+        this->nextUp(iter, &iter);
 
+        aH += this->paneInfo->vertLineSpace + 
+            this->getLineHeight(iter);
+
+    } while (aH <= this->paneInfo->height);
+
+    this->top = true;
+    this->focusInd = iter;
 }
 
 void ScrollTextPane::scrollDown() {
@@ -287,42 +279,32 @@ void ScrollTextPane::scrollDown() {
         return; // No lines.. do nothing!
     }
 
-    tp_index_t lastVisible = this->focusInd;
-
-    if (this->top) {
-        // We can only "scrollDown" if there exists a line below
-        // focusInd which is not entirely visible. 
-        //
-        // Otherwise, this function does nothing.
-
-        uint8_t aH = this->getLineHeight(lastVisible);
-
-        while (true) {
-            // If we reach the end before running out of 
-            // space, a scroll down is not possible, exit.
-            tp_index_t next;
-            if (!(this->nextDown(lastVisible, &next))) {
-                return;
-            }
-
-            uint8_t nextHeight = this->getLineHeight(next);
-            if (aH + this->paneInfo->vertLineSpace + nextHeight > 
-                    this->paneInfo->height) {
-                // If our next addition exceeds height,
-                // we have found our last visible! exit the loop! 
-                
-                break;
-            }
-
-            // Otherwise, continue.
-            lastVisible = next;
-            aH += this->paneInfo->vertLineSpace + nextHeight;
-        }
-
-        this->top = false;
+    if (!(this->top)) {
+        // Might do something, might not.
+        this->nextDown(this->focusInd, &(this->focusInd));
+        return;
     }
 
-    this->nextDown(lastVisible, &(this->focusInd));
+    // If top, we can only "scrollDown" if there exists a line below
+    // focusInd which is not entirely visible. 
+    //
+    // Such a line might not always exist.
+
+    uint8_t aH = this->getLineHeight(this->focusInd);
+    tp_index_t iter = this->focusInd;
+
+    do {
+        if (!(this->nextDown(iter, &iter))) {
+            return; // No line to scroll down to!
+        }
+
+        aH += this->paneInfo->vertLineSpace + 
+            this->getLineHeight(iter);
+    } while (aH <= this->paneInfo->height);
+
+
+    this->top = false;
+    this->focusInd = iter;
 }
 
 void ScrollTextPane::gotoTop() {

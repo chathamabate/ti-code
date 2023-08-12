@@ -20,11 +20,6 @@ private:
     gui::TextBlock *tb;
 
     virtual void attempt(unit::TestContext *tc) override {
-        // Width should be 8 pixels per character.
-        gfx_SetTextScale(1, 2);
-        gfx_SetMonospaceFont(8); // This is used to make building the tests
-                                 // easier.
-
         this->tb = new gui::TextBlock(1, &TC_TEXT_INFO, this->initialText, this->clipWidth);
         const core::SafeArray<const core::SafeArray<char> *> *lines = tb->getLines();
 
@@ -67,6 +62,7 @@ public:
 const gui::text_info_t TextBlockTestCase::TC_TEXT_INFO = {
     .widthScale = 1,
     .heightScale = 2,
+    .monospace = 8,
 
     .fgColor = 0,
     .bgColor = 255,
