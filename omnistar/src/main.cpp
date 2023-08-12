@@ -74,8 +74,8 @@ int main(void) {
     os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
-    gui::TEXT_SUITE.run(m);
-
+    gui::TEXT_BLOCK_SUITE.run(m);
+    gui::SCROLL_TEXT_PANE_SUITE.run(m);
     core::waitClear();
     
     /*

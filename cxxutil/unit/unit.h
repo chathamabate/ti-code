@@ -18,9 +18,7 @@ private:
     MyTestCase() : TestCase("MyTest") {}
 
     // Pointers to dynamic memory...
-public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
-
+    
     virtual void attempt(unit::TestContext *tc) override {
         // Test Code....
     }
@@ -28,6 +26,8 @@ public:
     virtual void finally() override {
         // Clean Up Code...
     }
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 };
 
 MyTestCase MyTestCase::ONLY_VAL;

@@ -8,10 +8,22 @@
 
 using namespace cxxutil;
 
+static const gui::text_info_t TC_TEXT_INFO_1 = {
+    .widthScale = 1,
+    .heightScale = 1,
+    .monospace = 8,
+
+    // Color fields don't matter.
+};
+
+static const gui::text_info_t TC_TEXT_INFO_2 = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 8,
+};
+
 class TextBlockTestCase : public unit::TestCase {
 private:
-    static const gui::text_info_t TC_TEXT_INFO;
-
     const char * const initialText;
     const uint24_t clipWidth;
     const size_t expectedNumLines;
@@ -20,7 +32,7 @@ private:
     gui::TextBlock *tb;
 
     virtual void attempt(unit::TestContext *tc) override {
-        this->tb = new gui::TextBlock(1, &TC_TEXT_INFO, this->initialText, this->clipWidth);
+        this->tb = new gui::TextBlock(1, &TC_TEXT_INFO_2, this->initialText, this->clipWidth);
         const core::SafeArray<const core::SafeArray<char> *> *lines = tb->getLines();
 
         size_t n = lines->getLen() < this->expectedNumLines 
@@ -57,15 +69,6 @@ public:
         expectedNumLines(expNumLines),
         expectedLines(expLines) {
     }
-};
-
-const gui::text_info_t TextBlockTestCase::TC_TEXT_INFO = {
-    .widthScale = 1,
-    .heightScale = 2,
-    .monospace = 8,
-
-    .fgColor = 0,
-    .bgColor = 255,
 };
 
 static TextBlockTestCase SIMPLE_TB1(
@@ -207,8 +210,9 @@ static TextBlockTestCase LONG_TB2(
         }
 );
 
-const size_t TEXT_SUITE_LEN = 12;
-static cxxutil::unit::TestCase * const TEXT_SUITE_TESTS[TEXT_SUITE_LEN] = {
+const size_t TEXT_BLOCK_SUITE_LEN = 12;
+static cxxutil::unit::TestCase * const 
+TEXT_BLOCK_SUITE_TESTS[TEXT_BLOCK_SUITE_LEN] = {
     &SIMPLE_TB1,
     &SIMPLE_TB2,
     &SIMPLE_TB3,
@@ -225,4 +229,62 @@ static cxxutil::unit::TestCase * const TEXT_SUITE_TESTS[TEXT_SUITE_LEN] = {
     &LONG_TB2,
 };
 
-unit::TestSuite cxxutil::gui::TEXT_SUITE("Text Suite", TEXT_SUITE_TESTS, TEXT_SUITE_LEN);
+unit::TestSuite cxxutil::gui::TEXT_BLOCK_SUITE(
+        "Text Block Suite", TEXT_BLOCK_SUITE_TESTS, TEXT_BLOCK_SUITE_LEN);
+
+class ScrollTextPaneTestCase : public unit::TestCase {
+private:
+    const gui::scroll_text_pane_info_t stpi;
+
+    // This design ensures the text pane will not be allocated
+    // until the test is run!
+    virtual void attempt(unit::TestContext *tc) override {
+        this->stp = new gui::ScrollTextPane(1, &(this->stpi));
+        this->attemptBody(tc);
+    }
+
+    virtual void finally() override {
+        delete this->stp;
+    }
+
+    virtual void attemptBody(unit::TestContext *tc) = 0;
+
+protected:
+    gui::ScrollTextPane *stp;
+
+    // Only height is variable for a test.
+    // All tests will have identical width and vertical line spacing.
+    ScrollTextPaneTestCase(const char *n, uint8_t h) 
+        : unit::TestCase(n), 
+        stpi({ .height = h, .lineWidth = 40, .vertLineSpace = 2,}) {
+    }
+};
+
+class STPTestCase1 : public ScrollTextPaneTestCase {
+private:
+    static STPTestCase1 ONLY_VAL;
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+        tc->info("Running Pane Test");
+    }
+
+    // 4 rows.
+    STPTestCase1() : ScrollTextPaneTestCase("STP 1", 16 + (3 * 18)) {
+
+    }
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+};
+
+STPTestCase1 STPTestCase1::ONLY_VAL;
+
+
+const size_t SCROLL_TEXT_PANE_SUITE_LEN = 1;
+static cxxutil::unit::TestCase * const 
+SCROLL_TEXT_PANE_SUITE_TESTS[SCROLL_TEXT_PANE_SUITE_LEN] = {
+    STPTestCase1::ONLY,
+};
+
+unit::TestSuite cxxutil::gui::SCROLL_TEXT_PANE_SUITE(
+        "Scroll Text Pane Suite", SCROLL_TEXT_PANE_SUITE_TESTS,
+        SCROLL_TEXT_PANE_SUITE_LEN);

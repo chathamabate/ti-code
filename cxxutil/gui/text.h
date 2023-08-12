@@ -162,25 +162,6 @@ namespace cxxutil { namespace gui {
             return this->blocks->get(i.blockInd)->getTextInfo()->heightScale * 8;
         }
     };
-    
-    // NOTE: for the Terminal class, all given strings
-    // will be copied into dynamic memory.
-    /*
-    class Terminal : core::SafeObject {
-    public: 
-        Terminal(uint8_t memChnl, const char *title);
-        Terminal(const char *title);
-
-        ~Terminal();
-
-        void render();
-        void update();
-
-        // Should we log shit?
-        // I'm thinking no log levels.
-
-        void output(uint8_t color, const char *msg);
-    }; */
 }}
 
 
