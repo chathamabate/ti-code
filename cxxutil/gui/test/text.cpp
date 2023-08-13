@@ -341,10 +341,11 @@ private:
     static STPTestCase2 ONLY_VAL;
 
     virtual void attemptBody(unit::TestContext *tc) override {
+        tc->info("Hello From Test 2");
     }
 
     // 4 rows (16 px lines)
-    STPTestCase2() : ScrollTextPaneTestCase("STP 1", 16 + (3 * 18)) {
+    STPTestCase2() : ScrollTextPaneTestCase("STP 2", 16 + (3 * 18)) {
     }
 public:
     static constexpr unit::TestCase *ONLY = &ONLY_VAL;
@@ -353,10 +354,11 @@ public:
 STPTestCase2 STPTestCase2::ONLY_VAL;
 
 
-const size_t SCROLL_TEXT_PANE_SUITE_LEN = 1;
+const size_t SCROLL_TEXT_PANE_SUITE_LEN = 2;
 static cxxutil::unit::TestCase * const 
 SCROLL_TEXT_PANE_SUITE_TESTS[SCROLL_TEXT_PANE_SUITE_LEN] = {
     STPTestCase1::ONLY,
+    STPTestCase2::ONLY,
 };
 
 unit::TestSuite cxxutil::gui::SCROLL_TEXT_PANE_SUITE(

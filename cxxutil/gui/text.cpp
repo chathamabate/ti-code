@@ -1,3 +1,5 @@
+#include "./text.h"
+
 #include "cxxutil/core/mem.h"
 #include "ti/screen.h"
 

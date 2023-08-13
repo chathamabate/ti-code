@@ -12,7 +12,6 @@
 using namespace cxxutil::unit;
 
 TestCase::TestCase(const char *n) : name(n) {
-
 }
 
 void TestCase::attempt(TestContext *tc) {
