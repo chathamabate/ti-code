@@ -1,5 +1,7 @@
 
-#include "cxxutil/gui/text.h"
+#include <cxxutil/gui/text_block.h>
+#include <cxxutil/gui/scroll_text_pane.h>
+
 #include "keypadc.h"
 #include "ti/getcsc.h"
 #include "ti/screen.h"
@@ -18,7 +20,8 @@
 #include <cxxutil/core/data.h>
 #include <cxxutil/unit/unit.h>
 
-#include <cxxutil/gui/test/text.h>
+#include <cxxutil/gui/test/text_block.h>
+#include <cxxutil/gui/test/scroll_text_pane.h>
 
 using namespace cxxutil;
 
