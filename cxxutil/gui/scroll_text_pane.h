@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include <cxxutil/gui/pane.h>
 #include <cxxutil/gui/text_block.h>
 
 namespace cxxutil { namespace gui {
@@ -15,7 +16,9 @@ namespace cxxutil { namespace gui {
 
         // BG color of the pane.
         uint8_t bgColor;
-        uint8_t scrollBarColor;
+
+        uint8_t scrollBarFGColor;
+        uint8_t scrollBarBGColor;
 
         // Vertical space which separates lines.
         uint8_t vertLineSpace;
@@ -42,7 +45,7 @@ namespace cxxutil { namespace gui {
     // The width/height of a single line from a text block will be scaled with a base
     // factor of 8. The height of a single line can never exceed the height of 
     // the pane itself.
-    class ScrollTextPane : public core::SafeObject {
+    class ScrollTextPane : public Pane {
     private:
         const scroll_text_pane_info_t * const paneInfo; 
 
@@ -51,10 +54,9 @@ namespace cxxutil { namespace gui {
         // As no line has a height larger than the height of the pane,
         // it is possible for any line to be displayed in its entirety.
 
-
-        // (blockInd, lineInd) refers to the "focused line".
+        // (blockInd, lineInd) refers to the "view index".
         // All visible lines will be rendered relative to this line.
-        tp_index_t focusInd;
+        tp_index_t viewInd;
 
         // If top = true, the focused line will be rendered in its entirety
         // at the top of the pane.
@@ -72,7 +74,18 @@ namespace cxxutil { namespace gui {
     public:
         ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi);
         ScrollTextPane(const scroll_text_pane_info_t *stpi);
-        ~ScrollTextPane();
+
+        virtual ~ScrollTextPane() override;
+
+        virtual void render(uint24_t x, uint8_t y) override;
+
+        inline virtual uint24_t getWidth() override {
+            return this->paneInfo->lineWidth + this->paneInfo->scrollBarWidth;
+        }
+
+        inline virtual uint8_t getHeight() override {
+            return this->paneInfo->height;
+        }
 
         // Given a valid index into the Pane, this stores the index
         // of the line above/below i into d. 
@@ -103,7 +116,7 @@ namespace cxxutil { namespace gui {
         }
 
         inline tp_index_t getFocusInd() const {
-            return this->focusInd;
+            return this->viewInd;
         }
 
         inline uint8_t getLineHeight(tp_index_t i) const {

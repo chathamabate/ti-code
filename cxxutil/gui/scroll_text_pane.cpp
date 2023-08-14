@@ -1,6 +1,7 @@
 #include "./scroll_text_pane.h"
 
 #include "cxxutil/core/mem.h"
+#include "cxxutil/gui/pane.h"
 #include "ti/screen.h"
 
 #include <cctype>
@@ -11,10 +12,10 @@
 using namespace cxxutil::gui;
 
 ScrollTextPane::ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi) 
-    : core::SafeObject(memChnl), paneInfo(stpi) {
+    : Pane(memChnl), paneInfo(stpi) {
     this->blocks = new core::CoreList<const TextBlock *>(memChnl);
 
-    this->focusInd = {
+    this->viewInd = {
         .blockInd = 0,
         .lineInd = 0,
     };
@@ -32,8 +33,14 @@ ScrollTextPane::~ScrollTextPane() {
     for (size_t i = 0; i < blocksLen; i++) {
         delete this->blocks->get(i);
     }
+}
 
-    delete this->blocks;
+void ScrollTextPane::render(uint24_t x, uint8_t y) {
+    const scroll_text_pane_info_t *pi = this->paneInfo;
+
+    gfx_SetColor(pi->bgColor);
+    gfx_FillRectangle(x, y, pi->lineWidth, pi->height);
+
 }
 
 bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
@@ -79,14 +86,14 @@ void ScrollTextPane::scrollUp() {
     }
 
     if (this->top) {
-        this->nextUp(this->focusInd, &(this->focusInd));
+        this->nextUp(this->viewInd, &(this->viewInd));
         return;
     }
 
     // NOTE: if !top, there must be a line to scroll up to.
     // Here, just find the first line which is not entirely visible.
-    uint8_t aH = this->getLineHeight(this->focusInd);
-    tp_index_t iter = this->focusInd;
+    uint8_t aH = this->getLineHeight(this->viewInd);
+    tp_index_t iter = this->viewInd;
     
     do {
         this->nextUp(iter, &iter);
@@ -97,7 +104,7 @@ void ScrollTextPane::scrollUp() {
     } while (aH <= this->paneInfo->height);
 
     this->top = true;
-    this->focusInd = iter;
+    this->viewInd = iter;
 }
 
 void ScrollTextPane::scrollDown() {
@@ -107,17 +114,17 @@ void ScrollTextPane::scrollDown() {
 
     if (!(this->top)) {
         // Might do something, might not.
-        this->nextDown(this->focusInd, &(this->focusInd));
+        this->nextDown(this->viewInd, &(this->viewInd));
         return;
     }
 
     // If top, we can only "scrollDown" if there exists a line below
-    // focusInd which is not entirely visible. 
+    // viewInd which is not entirely visible. 
     //
     // Such a line might not always exist.
 
-    uint8_t aH = this->getLineHeight(this->focusInd);
-    tp_index_t iter = this->focusInd;
+    uint8_t aH = this->getLineHeight(this->viewInd);
+    tp_index_t iter = this->viewInd;
 
     do {
         if (!(this->nextDown(iter, &iter))) {
@@ -129,11 +136,11 @@ void ScrollTextPane::scrollDown() {
     } while (aH <= this->paneInfo->height);
 
     this->top = false;
-    this->focusInd = iter;
+    this->viewInd = iter;
 }
 
 void ScrollTextPane::gotoTop() {
-    this->focusInd = {
+    this->viewInd = {
         .blockInd = 0,
         .lineInd = 0,
     };
@@ -149,7 +156,7 @@ void ScrollTextPane::gotoBottom() {
 
     size_t lastBlockInd = this->blocks->getLen() - 1;
 
-    this->focusInd = {
+    this->viewInd = {
         .blockInd = lastBlockInd,
         .lineInd = this->blocks->get(lastBlockInd)->getLines()->getLen() - 1,
     };
