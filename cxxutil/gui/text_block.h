@@ -2,6 +2,7 @@
 #pragma once
 
 #include "cxxutil/core/data.h"
+#include "graphx.h"
 #include <cstdint>
 #include <cxxutil/core/mem.h>
 
@@ -38,6 +39,18 @@ namespace cxxutil { namespace gui {
 
         uint8_t fgColor;
         uint8_t bgColor;
+
+        // Consider making this non inline?
+        inline void install() const {
+            gfx_SetTextScale(this->widthScale, this->heightScale);
+            gfx_SetTextFGColor(this->fgColor);
+            gfx_SetTextBGColor(this->bgColor);
+            gfx_SetMonospaceFont(this->monospace);
+        }
+
+        inline uint8_t getHeight() const {
+            return this->heightScale * 8;
+        }
     };    
 
     // A text block is a wrapper class around an array of strings.
@@ -59,6 +72,10 @@ namespace cxxutil { namespace gui {
 
         inline const text_info_t *getTextInfo() const {
             return this->textInfo;
+        }
+
+        inline uint8_t getLineHeight() const {
+            return this->textInfo->getHeight();
         }
     };
 

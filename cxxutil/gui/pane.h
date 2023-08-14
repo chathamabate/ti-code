@@ -1,5 +1,6 @@
 #pragma once
 
+#include "cxxutil/core/input.h"
 #include <cxxutil/core/mem.h>
 
 namespace cxxutil { namespace gui {
@@ -14,6 +15,9 @@ namespace cxxutil { namespace gui {
         virtual ~Pane();
     public:
         virtual void render(uint24_t x, uint8_t y) = 0;
+
+        // Key scanning should be done before this call.
+        virtual void update(core::KeyManager *km) = 0;
 
         virtual uint24_t getWidth() = 0;
         virtual uint8_t getHeight() = 0;

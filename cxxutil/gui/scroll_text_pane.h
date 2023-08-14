@@ -1,6 +1,7 @@
 
 #pragma once
 
+#include "cxxutil/core/input.h"
 #include <cxxutil/gui/pane.h>
 #include <cxxutil/gui/text_block.h>
 
@@ -71,6 +72,9 @@ namespace cxxutil { namespace gui {
         // This is the height of the entire pane should all lines be
         // visible. top can only be false when totalHeight > height.
         uint24_t totalHeight;
+
+        void renderDown(uint24_t x, uint8_t y); 
+        void renderUp(uint24_t x, uint8_t y); 
     public:
         ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi);
         ScrollTextPane(const scroll_text_pane_info_t *stpi);
@@ -78,6 +82,8 @@ namespace cxxutil { namespace gui {
         virtual ~ScrollTextPane() override;
 
         virtual void render(uint24_t x, uint8_t y) override;
+
+        virtual void update(core::KeyManager *km) override;
 
         inline virtual uint24_t getWidth() override {
             return this->paneInfo->lineWidth + this->paneInfo->scrollBarWidth;
@@ -105,6 +111,9 @@ namespace cxxutil { namespace gui {
 
         // NOTE: if msg results in a TextBlock with no lines,
         // the TextBlock will be discarded.
+        //
+        // NOTE: Also, if the message line height is larger than the height
+        // of the pane, nothing will be logged.
         //
         // NOTE: For now, logging will alwas call gotoBottom()
         bool log(const text_info_t *ti, const char *msg);

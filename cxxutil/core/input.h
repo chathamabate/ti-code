@@ -132,13 +132,13 @@ namespace core {
         // NOTE: in below functions behavoir is undefined if
         // key is not focused!
 
-        inline bool isKeyPressed(cxx_key_t key) {
+        inline bool isKeyPressed(cxx_key_t key) const {
             const uint8_t count = this->keyCounts->get(this->keyMap[key]).cnt;
 
             return count == 1 || count == this->repeatDelay;
         }
 
-        inline bool isKeyDown(cxx_key_t key) {
+        inline bool isKeyDown(cxx_key_t key) const {
             return this->keyCounts->get(this->keyMap[key]).cnt >= 1;
         }
     };

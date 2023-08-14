@@ -3,6 +3,7 @@
 #include <cxxutil/gui/scroll_text_pane.h>
 
 #include "keypadc.h"
+#include "sys/timers.h"
 #include "ti/getcsc.h"
 #include "ti/screen.h"
 #include <cstddef>
@@ -87,9 +88,9 @@ int main(void) {
     */
 
     gui::scroll_text_pane_info_t stpi = {
-        .height = 120,
+        .height = 80,
 
-        .lineWidth = 200,
+        .lineWidth = 100,
         .scrollBarWidth = 8,
 
         .bgColor = 247,
@@ -100,37 +101,42 @@ int main(void) {
         .vertLineSpace = 2,
     };
 
+    core::KeyManager *km = new core::KeyManager(1);
+    km->setFocusedKeys(
+            (core::cxx_key_t[]){
+                core::CXX_KEY_4, 
+                core::CXX_KEY_5, 
+                core::CXX_KEY_6, 
+                core::CXX_KEY_8,
+                core::CXX_KEY_Clear}, 5);
+
+    km->setRepeatDelay(5);
+
 
     gui::ScrollTextPane *stp = new gui::ScrollTextPane(1, &stpi);
-    
+    stp->focus();
+
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
 
     gfx_Begin();
-
     gfx_SetDrawBuffer();
-    
-    gfx_FillScreen(255);
-    stp->render(50, 50);
 
-    gfx_SetClipRegion(0, 0, GFX_LCD_WIDTH, GFX_LCD_HEIGHT);
-    // gfx_SetTextConfig(gfx_text_clip);
+    do {
+        km->scanFocusedKeys();
+        stp->update(km);
 
-    // HMMM no more text clipping I guess... what instead????
-    gfx_SetTextScale(1, 1);
-    gfx_SetTextFGColor(0);
-    gfx_PrintStringXY("Hello", 10, 10);
+        stp->render(50, 50);
+        gfx_BlitBuffer();
 
-    gfx_SwapDraw();
-    gfx_Wait();
-    
-    core::waitClear();
+        delay(100);
+    } while (!km->isKeyDown(core::CXX_KEY_Clear));
 
     gfx_End();
 
     delete stp;
+    delete km;
 
     core::MemoryTracker::ONLY->checkMemLeaks();
-    core::waitClear();
 
     return 0;
 }

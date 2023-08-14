@@ -2,6 +2,7 @@
 
 #include "cxxutil/core/mem.h"
 #include "cxxutil/gui/pane.h"
+#include "cxxutil/gui/text_block.h"
 #include "ti/screen.h"
 
 #include <cctype>
@@ -37,6 +38,98 @@ ScrollTextPane::~ScrollTextPane() {
     delete this->blocks;
 }
 
+
+void ScrollTextPane::renderDown(uint24_t x, uint8_t y) {
+    if (this->blocks->getLen() == 0) {
+        return; // Don't render anything if there is nothing to render.
+    }
+
+    // It is promised at least 1 line will be entirely rendered as no 
+    // line's height is greater than that of the height of the entire pane.
+
+    const scroll_text_pane_info_t *pi = this->paneInfo;
+
+    tp_index_t iter = this->viewInd;    
+    const TextBlock *belowBlock = this->blocks->get(this->viewInd.blockInd);
+    const TextBlock *currBlock = nullptr;
+    uint8_t relY = 0;
+
+    do {
+        // Simple pointer comparison.
+        if (belowBlock != currBlock) {
+            belowBlock->getTextInfo()->install();
+            currBlock = belowBlock;
+        }
+
+        const char *msg = currBlock->getLines()->get(iter.lineInd)->getArr();
+        gfx_PrintStringXY(msg, x, y + relY);
+
+        relY += currBlock->getLineHeight();
+
+        // No space left, or nothing to render.
+        if (relY == pi->height || !(this->nextDown(iter, &iter))) {
+            break;  
+        }
+
+        belowBlock = this->blocks->get(iter.blockInd);
+
+        if (relY + pi->vertLineSpace + belowBlock->getLineHeight() > pi->height) {
+            gfx_SetColor(pi->scrollBarBGColor);
+            gfx_FillRectangle(x, y + relY, pi->lineWidth, pi->height - relY);
+
+            break;
+        }
+
+        // If we make it here, it is promised at least one more line will be rendered.
+        relY += pi->vertLineSpace;
+    } while (true);
+}
+
+void ScrollTextPane::renderUp(uint24_t x, uint8_t y) {
+    if (this->blocks->getLen() == 0) {
+        return; // Don't render anything if there is nothing to render.
+    }
+
+    // It is promised at least 1 line will be entirely rendered as no 
+    // line's height is greater than that of the height of the entire pane.
+
+    const scroll_text_pane_info_t *pi = this->paneInfo;
+
+    tp_index_t iter = this->viewInd;    
+    const TextBlock *aboveBlock = this->blocks->get(iter.blockInd);
+    const TextBlock *currBlock = nullptr;
+    uint8_t relY = pi->height;
+
+    do {
+        // Simple pointer comparison.
+        if (aboveBlock != currBlock) {
+            aboveBlock->getTextInfo()->install();
+            currBlock = aboveBlock;
+        }
+
+        relY -= currBlock->getLineHeight();
+
+        const char *msg = currBlock->getLines()->get(iter.lineInd)->getArr();
+        gfx_PrintStringXY(msg, x, y + relY);
+
+        if (relY == 0 || !(this->nextUp(iter, &iter))) {
+            break;
+        }
+
+        aboveBlock = this->blocks->get(iter.blockInd);
+
+        if (aboveBlock->getLineHeight() + pi->vertLineSpace > relY) {
+            gfx_SetColor(pi->scrollBarBGColor);
+            gfx_FillRectangle(x, y, pi->lineWidth, relY);
+
+            break;
+        }
+
+        // If we make it here, it is promised at least one more line will be rendered.
+        relY -= pi->vertLineSpace;
+    } while (true);
+}
+
 void ScrollTextPane::render(uint24_t x, uint8_t y) {
     const scroll_text_pane_info_t *pi = this->paneInfo;
 
@@ -46,8 +139,45 @@ void ScrollTextPane::render(uint24_t x, uint8_t y) {
     gfx_SetColor(pi->scrollBarBGColor);
     gfx_FillRectangle(x + pi->lineWidth, y, pi->scrollBarWidth, pi->height);
 
-    // Now we render each message one at a time...
+    if (this->top) {
+        this->renderDown(x, y);
+    } else {
+        this->renderUp(x, y);
+    }
+}
+
+static const cxxutil::gui::text_info_t ti1 = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 0,
+
+    .fgColor = 0,
+    .bgColor = 255, 
+};
+
+static const cxxutil::gui::text_info_t ti2 = {
+    .widthScale = 2,
+    .heightScale = 3,
+    .monospace = 0,
+
+    .fgColor = 6,
+    .bgColor = 255, 
+};
+
+void ScrollTextPane::update(core::KeyManager *km) {
+    if (!(this->isInFocus())) {
+        return;
+    }
     
+    if (km->isKeyPressed(core::CXX_KEY_8)) {
+        this->scrollUp();
+    } else if (km->isKeyPressed(core::CXX_KEY_5)) {
+        this->scrollDown();
+    } else if (km->isKeyPressed(core::CXX_KEY_4)) {
+        this->log(&ti1, "GoodBye");
+    } else if (km->isKeyPressed(core::CXX_KEY_6)) {
+        this->log(&ti2, "Hello");
+    }
 }
 
 bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
@@ -64,6 +194,8 @@ bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
         d->blockInd = newBlockInd;
         d->lineInd = 
             this->blocks->get(newBlockInd)->getLines()->getLen() - 1;
+
+        return true;
     }
 
     return false;
@@ -172,6 +304,10 @@ void ScrollTextPane::gotoBottom() {
 }
 
 bool ScrollTextPane::log(const text_info_t *ti, const char *msg) {
+    if (ti->heightScale * 8 > this->paneInfo->height) {
+        return false;
+    }
+
     TextBlock *tb = 
         new TextBlock(this->getChnl(), ti, msg, this->paneInfo->lineWidth);
 
