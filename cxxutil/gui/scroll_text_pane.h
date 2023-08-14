@@ -17,6 +17,7 @@ namespace cxxutil { namespace gui {
         // BG color of the pane.
         uint8_t bgColor;
 
+        // ScrollbarFG is only render if scroll pane is focused.
         uint8_t scrollBarFGColor;
         uint8_t scrollBarBGColor;
 
@@ -35,7 +36,6 @@ namespace cxxutil { namespace gui {
     };  // Text pane index.
     
     // Will probs need ot use clipping!
-    // Text Printing can be negative!
     // void gfx_SetClipRegion(int xmin, int ymin, int xmax, int ymax);
     
     // A scrolling text pane provides a fixed sized display for viewing

@@ -33,6 +33,8 @@ ScrollTextPane::~ScrollTextPane() {
     for (size_t i = 0; i < blocksLen; i++) {
         delete this->blocks->get(i);
     }
+
+    delete this->blocks;
 }
 
 void ScrollTextPane::render(uint24_t x, uint8_t y) {
@@ -41,6 +43,11 @@ void ScrollTextPane::render(uint24_t x, uint8_t y) {
     gfx_SetColor(pi->bgColor);
     gfx_FillRectangle(x, y, pi->lineWidth, pi->height);
 
+    gfx_SetColor(pi->scrollBarBGColor);
+    gfx_FillRectangle(x + pi->lineWidth, y, pi->scrollBarWidth, pi->height);
+
+    // Now we render each message one at a time...
+    
 }
 
 bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {

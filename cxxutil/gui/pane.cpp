@@ -1,5 +1,6 @@
 # include "./pane.h"
 #include "cxxutil/core/mem.h"
+#include "ti/screen.h"
 
 using namespace cxxutil::gui;
 

@@ -72,44 +72,65 @@ public:
     virtual ~MyMonitor() override {}
 };
 
-
 int main(void) {    
-    os_ClrHome();
+    /*
     
     MyMonitor *m = new MyMonitor();
     // gui::TEXT_BLOCK_SUITE.run(m);
     gui::SCROLL_TEXT_PANE_SUITE.run(m);
     core::waitClear();
+
+    delete m;
+
+    core::MemoryTracker::ONLY->checkMemLeaks();
+    core::waitClear();
+    */
+
+    gui::scroll_text_pane_info_t stpi = {
+        .height = 120,
+
+        .lineWidth = 200,
+        .scrollBarWidth = 8,
+
+        .bgColor = 247,
+
+        .scrollBarFGColor = 24,
+        .scrollBarBGColor = 223,
+
+        .vertLineSpace = 2,
+    };
+
+
+    gui::ScrollTextPane *stp = new gui::ScrollTextPane(1, &stpi);
     
-    /*
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
 
     gfx_Begin();
+
     gfx_SetDrawBuffer();
-
-    gfx_FillScreen(10);
-
-    gfx_SetColor(255);
-    gfx_FillRectangle(0, 0, 80, GFX_LCD_HEIGHT);
- 
-    gfx_SwapDraw();
-    gfx_Wait();
-    gfx_BlitScreen(); // Copy screen to other buffer.
     
-    gfx_SetTextScale(1, 2);
-    gui::TextBlock *tb = new gui::TextBlock(1, "", 80);
+    gfx_FillScreen(255);
+    stp->render(50, 50);
 
-    for (size_t r = 0; r < tb->getLines()->getLen(); r++) {
-        gfx_PrintStringXY(tb->getLines()->get(r)->getArr(), 0, r * 16);
-    }
+    gfx_SetClipRegion(0, 0, GFX_LCD_WIDTH, GFX_LCD_HEIGHT);
+    // gfx_SetTextConfig(gfx_text_clip);
+
+    // HMMM no more text clipping I guess... what instead????
+    gfx_SetTextScale(1, 1);
+    gfx_SetTextFGColor(0);
+    gfx_PrintStringXY("Hello", 10, 10);
 
     gfx_SwapDraw();
     gfx_Wait();
-
+    
     core::waitClear();
 
     gfx_End();
-    */
+
+    delete stp;
+
+    core::MemoryTracker::ONLY->checkMemLeaks();
+    core::waitClear();
 
     return 0;
 }

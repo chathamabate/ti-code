@@ -11,7 +11,6 @@ namespace cxxutil { namespace gui {
         Pane(uint8_t memChnl);
         Pane();
 
-        // Consider adding virtual destructor at some point.
         virtual ~Pane();
     public:
         virtual void render(uint24_t x, uint8_t y) = 0;

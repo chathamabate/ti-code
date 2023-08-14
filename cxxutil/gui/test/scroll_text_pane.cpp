@@ -28,7 +28,8 @@ static const gui::text_info_t TC_TEXT_INFO_2 = {
 };
 
 class ScrollTextPaneTestCase : public unit::TestCase {
-private: const gui::scroll_text_pane_info_t stpi;
+private: 
+    const gui::scroll_text_pane_info_t stpi;
     // This design ensures the text pane will not be allocated
     // until the test is run!
     virtual void attempt(unit::TestContext *tc) override {
