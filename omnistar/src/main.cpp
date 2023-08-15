@@ -90,7 +90,7 @@ int main(void) {
     */
 
     const gui::scroll_text_pane_info_t stpi = {
-        .height = GFX_LCD_HEIGHT - 100,
+        .height = 88,
 
         .lineWidth = GFX_LCD_WIDTH - 100 - 8, 
         .scrollBarWidth = 8,
@@ -126,10 +126,12 @@ int main(void) {
     gui::ScrollTextPane *stp = new gui::ScrollTextPane(1, &stpi);
     stp->focus();
 
-    const size_t len = 3;
+    const size_t len = 4;
     const char *msgs[len] = {
         "Hello, this is a very long message I am testing.",
         "I hope I can scroll through the pane like it's a word document.",
+        "~",
+        "I need to be able to add new line support",
     };
 
     for (size_t i = 0; i < len; i++) {
