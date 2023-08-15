@@ -74,7 +74,7 @@ public:
 };
 
 int main(void) {    
-    /*
+    os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
     // gui::TEXT_BLOCK_SUITE.run(m);
@@ -84,8 +84,8 @@ int main(void) {
     delete m;
 
     core::MemoryTracker::ONLY->checkMemLeaks();
-    core::waitClear();
-    */
+
+    return 0;
 
     gui::scroll_text_pane_info_t stpi = {
         .height = 80,

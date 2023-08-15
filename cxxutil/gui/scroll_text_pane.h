@@ -73,28 +73,44 @@ namespace cxxutil { namespace gui {
         // visible. top can only be false when totalHeight > height.
         uint24_t totalHeight;
 
-        // This variable is used 
+        // This variable is used to determine the position of the viewport
+        // relative to all lines in the pane. Specifically, this is
+        // so we can accurately render the scrollbar.
+        //
+        // When top is true, this equals the inclusive height of the top of
+        // the visible pane.
+        //
+        // When top is false, this equals the exclusive height of the 
+        // bottom of the visible pane.
         uint24_t totalViewHeight;
 
-        void renderDown(uint24_t x, uint8_t y); 
-        void renderUp(uint24_t x, uint8_t y); 
-        void renderScrollBar(uint24_t x, uint8_t y);
+        void renderDown(uint24_t x, uint8_t y) const; 
+        void renderUp(uint24_t x, uint8_t y) const; 
+        void renderScrollBar(uint24_t x, uint8_t y) const;
     public:
         ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi);
         ScrollTextPane(const scroll_text_pane_info_t *stpi);
 
         virtual ~ScrollTextPane() override;
 
-        virtual void render(uint24_t x, uint8_t y) override;
+        virtual void render(uint24_t x, uint8_t y) const override;
 
         virtual void update(core::KeyManager *km) override;
 
-        inline virtual uint24_t getWidth() override {
+        inline virtual uint24_t getWidth() const override {
             return this->paneInfo->lineWidth + this->paneInfo->scrollBarWidth;
         }
 
-        inline virtual uint8_t getHeight() override {
+        inline virtual uint8_t getHeight() const override {
             return this->paneInfo->height;
+        }
+
+        inline uint24_t getTotalHeight() const {
+            return this->totalHeight;
+        }
+
+        inline uint24_t getTotalViewHeight() const {
+            return this->totalViewHeight;
         }
 
         // Given a valid index into the Pane, this stores the index

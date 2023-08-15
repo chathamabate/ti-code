@@ -14,13 +14,13 @@ namespace cxxutil { namespace gui {
 
         virtual ~Pane();
     public:
-        virtual void render(uint24_t x, uint8_t y) = 0;
+        virtual void render(uint24_t x, uint8_t y) const = 0;
 
         // Key scanning should be done before this call.
         virtual void update(core::KeyManager *km) = 0;
 
-        virtual uint24_t getWidth() = 0;
-        virtual uint8_t getHeight() = 0;
+        virtual uint24_t getWidth() const = 0;
+        virtual uint8_t getHeight() const = 0;
 
         inline bool isInFocus() const {
             return this->inFocus;

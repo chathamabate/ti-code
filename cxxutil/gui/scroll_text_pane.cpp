@@ -24,6 +24,7 @@ ScrollTextPane::ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *s
     this->top = true;
 
     this->totalHeight = 0;
+    this->totalViewHeight = 0;
 }
 
 ScrollTextPane::ScrollTextPane(const scroll_text_pane_info_t *stpi) 
@@ -40,7 +41,7 @@ ScrollTextPane::~ScrollTextPane() {
 }
 
 
-void ScrollTextPane::renderDown(uint24_t x, uint8_t y) {
+void ScrollTextPane::renderDown(uint24_t x, uint8_t y) const {
     if (this->blocks->getLen() == 0) {
         return; // Don't render anything if there is nothing to render.
     }
@@ -88,7 +89,7 @@ void ScrollTextPane::renderDown(uint24_t x, uint8_t y) {
     } while (true);
 }
 
-void ScrollTextPane::renderUp(uint24_t x, uint8_t y) {
+void ScrollTextPane::renderUp(uint24_t x, uint8_t y) const {
     if (this->blocks->getLen() == 0) {
         return; // Don't render anything if there is nothing to render.
     }
@@ -135,7 +136,7 @@ void ScrollTextPane::renderUp(uint24_t x, uint8_t y) {
     } while (true);
 }
 
-void ScrollTextPane::renderScrollBar(uint24_t x, uint8_t y) {
+void ScrollTextPane::renderScrollBar(uint24_t x, uint8_t y) const {
     const scroll_text_pane_info_t *pi = this->paneInfo;
 
     gfx_SetColor(pi->scrollBarBGColor);
@@ -147,7 +148,7 @@ void ScrollTextPane::renderScrollBar(uint24_t x, uint8_t y) {
     }
 }
 
-void ScrollTextPane::render(uint24_t x, uint8_t y) {
+void ScrollTextPane::render(uint24_t x, uint8_t y) const {
     const scroll_text_pane_info_t *pi = this->paneInfo;
 
     gfx_SetColor(pi->bgColor);
@@ -242,7 +243,11 @@ void ScrollTextPane::scrollUp() {
     }
 
     if (this->top) {
-        this->nextUp(this->viewInd, &(this->viewInd));
+        if (this->nextUp(this->viewInd, &(this->viewInd))) {
+            this->totalViewHeight -= 
+                this->paneInfo->vertLineSpace + 
+                this->getLineHeight(this->viewInd);
+        }
 
         return;
     }
@@ -262,6 +267,7 @@ void ScrollTextPane::scrollUp() {
 
     this->top = true;
     this->viewInd = iter;
+    this->totalViewHeight -= aH;
 }
 
 void ScrollTextPane::scrollDown() {
@@ -270,7 +276,11 @@ void ScrollTextPane::scrollDown() {
     }
 
     if (!(this->top)) {
-        this->nextDown(this->viewInd, &(this->viewInd));
+        if (this->nextDown(this->viewInd, &(this->viewInd))) {
+            this->totalViewHeight +=   
+                this->paneInfo->vertLineSpace +
+                this->getLineHeight(this->viewInd);
+        }
 
         return;
     }
@@ -294,6 +304,7 @@ void ScrollTextPane::scrollDown() {
 
     this->top = false;
     this->viewInd = iter;
+    this->totalViewHeight += aH;
 }
 
 void ScrollTextPane::gotoTop() {
@@ -303,6 +314,7 @@ void ScrollTextPane::gotoTop() {
     };
 
     this->top = true;
+    this->totalViewHeight = 0;
 }
 
 void ScrollTextPane::gotoBottom() {
@@ -319,6 +331,7 @@ void ScrollTextPane::gotoBottom() {
     };
 
     this->top = false;
+    this->totalViewHeight = this->totalHeight;
 }
 
 bool ScrollTextPane::log(const text_info_t *ti, const char *msg) {

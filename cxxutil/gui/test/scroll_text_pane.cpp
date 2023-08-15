@@ -48,6 +48,25 @@ protected:
 
     static constexpr size_t STPTC_LBL_BUF_SIZE = 50;
 
+    void lblAssertEqInd(unit::TestContext *tc, const char *lbl, 
+            size_t expBlockInd, size_t expLineInd, gui::tp_index_t acInd) {
+        char lblBuf[STPTC_LBL_BUF_SIZE]; 
+
+        const char *blockIndLblParts[2] = {
+            lbl, ".blockInd"
+        };
+
+        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, blockIndLblParts);
+        tc->lblAssertEqUInt(lblBuf, expBlockInd, acInd.blockInd);
+
+        const char *lineIndLblParts[2] = {
+            lbl, ".lineInd"
+        };
+
+        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, lineIndLblParts);
+        tc->lblAssertEqUInt(lblBuf, expLineInd, acInd.lineInd);
+    }
+
     void lblAssertFocus(unit::TestContext *tc, const char *lbl,
             bool expTop, size_t expBlockInd, size_t expLineInd) {
         char lblBuf[STPTC_LBL_BUF_SIZE]; 
@@ -59,19 +78,26 @@ protected:
         core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, topLblParts);
         tc->lblAssertTrue(lblBuf, expTop == this->stp->getTop());
 
-        const char *blockIndLblParts[2] = {
-            lbl, ".blockInd"
+        this->lblAssertEqInd(tc, lbl, expBlockInd, expLineInd, this->stp->getFocusInd());
+    }
+
+    void lblAssertTotalHeight(unit::TestContext *tc, const char *lbl,
+            uint24_t expTotalHeight, uint24_t expTotalViewHeight) {
+        char lblBuf[STPTC_LBL_BUF_SIZE]; 
+
+        const char *thLblParts[2] = {
+            lbl, ".th" 
         };
 
-        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, blockIndLblParts);
-        tc->lblAssertEqUInt(lblBuf, expBlockInd, this->stp->getFocusInd().blockInd);
+        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, thLblParts);
+        tc->lblAssertEqUInt(lblBuf, expTotalHeight, this->stp->getTotalHeight());
 
-        const char *lineIndLblParts[2] = {
-            lbl, ".lineInd"
+        const char *tvhLblParts[2] = {
+            lbl, ".tvh"
         };
 
-        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, lineIndLblParts);
-        tc->lblAssertEqUInt(lblBuf, expLineInd, this->stp->getFocusInd().lineInd);
+        core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, tvhLblParts);
+        tc->lblAssertEqUInt(lblBuf, expTotalViewHeight, this->stp->getTotalViewHeight());
     }
 
     inline void assertFocus(unit::TestContext *tc,
@@ -87,9 +113,49 @@ protected:
     }
 };
 
-class STPTestCase1 : public ScrollTextPaneTestCase {
+class STPTestNext : public ScrollTextPaneTestCase {
 private:
-    static STPTestCase1 ONLY_VAL;
+    static STPTestNext ONLY_VAL;
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+        // NOTE: for testing nextUp/Down, the given index must be valid!
+        gui::tp_index_t ind = { .blockInd = 0, .lineInd = 0 };
+
+        this->stp->log(&TC_TEXT_INFO_1, "AAA");
+
+        tc->lblAssertFalse("1L.0", this->stp->nextUp(ind, &ind));
+        this->lblAssertEqInd(tc, "1L.1", 0, 0, ind);
+
+        tc->lblAssertFalse("1L.2", this->stp->nextDown(ind, &ind));
+        this->lblAssertEqInd(tc, "1L.3", 0, 0, ind);
+
+        this->stp->log(&TC_TEXT_INFO_1, "AAA AAA");
+        
+        tc->lblAssertTrue("3L.0", this->stp->nextDown(ind, &ind)); 
+        tc->lblAssertTrue("3L.1", this->stp->nextDown(ind, &ind)); 
+        tc->lblAssertFalse("3L.2", this->stp->nextDown(ind, &ind)); 
+        this->lblAssertEqInd(tc, "3L.3", 1, 1, ind);
+
+        tc->lblAssertTrue("3L.4", this->stp->nextUp(ind, &ind)); 
+        this->lblAssertEqInd(tc, "3L.5", 1, 0, ind);
+
+        tc->lblAssertTrue("3L.5", this->stp->nextUp(ind, &ind)); 
+        tc->lblAssertFalse("3L.6", this->stp->nextUp(ind, &ind)); 
+        this->lblAssertEqInd(tc, "3L.7", 0, 0, ind);
+    }
+
+    // 2 Rows 8px, shouldn't matter though for this test.
+    STPTestNext() : ScrollTextPaneTestCase("STP Next", 18) {
+    }
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+};
+
+STPTestNext STPTestNext::ONLY_VAL;
+
+class STPTestGeneral : public ScrollTextPaneTestCase {
+private:
+    static STPTestGeneral ONLY_VAL;
 
     virtual void attemptBody(unit::TestContext *tc) override {
         // Log 3 lines.
@@ -123,16 +189,16 @@ private:
     }
 
     // 4 rows (16 px lines)
-    STPTestCase1() : ScrollTextPaneTestCase("STP 1", 16 + (3 * 18)) {
+    STPTestGeneral() : ScrollTextPaneTestCase("STP General", 16 + (3 * 18)) {
     }
 public:
     static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 };
-STPTestCase1 STPTestCase1::ONLY_VAL;
+STPTestGeneral STPTestGeneral::ONLY_VAL;
 
-class STPTestCase2 : public ScrollTextPaneTestCase {
+class STPTest1Row : public ScrollTextPaneTestCase {
 private:
-    static STPTestCase2 ONLY_VAL;
+    static STPTest1Row ONLY_VAL;
 
     virtual void attemptBody(unit::TestContext *tc) override {
         this->stp->scrollDown();
@@ -152,19 +218,70 @@ private:
     }
 
     // 1 rows (16 px lines)
-    STPTestCase2() : ScrollTextPaneTestCase("STP 2", 16) {
+    STPTest1Row() : ScrollTextPaneTestCase("STP 1 Row", 16) {
     }
 public:
     static constexpr unit::TestCase *ONLY = &ONLY_VAL;
 };
 
-STPTestCase2 STPTestCase2::ONLY_VAL;
+STPTest1Row STPTest1Row::ONLY_VAL;
 
-const size_t SCROLL_TEXT_PANE_SUITE_LEN = 2;
+class STPTestViewHeight : public ScrollTextPaneTestCase {
+private:
+    static STPTestViewHeight ONLY_VAL;
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+        this->lblAssertTotalHeight(tc, "0L", 0, 0);
+
+        this->stp->log(&TC_TEXT_INFO_1, "A");
+        this->lblAssertTotalHeight(tc, "1L", 8, 0);
+
+        this->stp->log(&TC_TEXT_INFO_1, "A");
+        this->lblAssertTotalHeight(tc, "2L", 18, 0);
+
+        this->stp->log(&TC_TEXT_INFO_1, "A");
+        this->lblAssertTotalHeight(tc, "3L", 28, 28);
+
+        this->stp->log(&TC_TEXT_INFO_1, "AAA AAA");
+        this->lblAssertTotalHeight(tc, "5L.0", 48, 48);
+
+        this->stp->scrollUp();
+        this->lblAssertTotalHeight(tc, "5L.1", 48, 20);
+
+        this->stp->scrollUp();
+        this->lblAssertTotalHeight(tc, "5L.2", 48, 10);
+
+        this->stp->scrollUp();
+        this->lblAssertTotalHeight(tc, "5L.3", 48, 0);
+
+        this->stp->scrollDown();
+        this->lblAssertTotalHeight(tc, "5L.4", 48, 28);
+
+        this->stp->scrollDown();
+        this->lblAssertTotalHeight(tc, "5L.5", 48, 38);
+
+        this->stp->scrollDown();
+        this->lblAssertTotalHeight(tc, "5L.6", 48, 48);
+    }
+
+    // 2 rows 8px
+    STPTestViewHeight() : ScrollTextPaneTestCase("STP View Height", 18) {
+    }
+public:
+    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+};
+
+STPTestViewHeight STPTestViewHeight::ONLY_VAL;
+
+const size_t SCROLL_TEXT_PANE_SUITE_LEN = 4;
 static cxxutil::unit::TestCase * const 
 SCROLL_TEXT_PANE_SUITE_TESTS[SCROLL_TEXT_PANE_SUITE_LEN] = {
-    STPTestCase1::ONLY,
-    STPTestCase2::ONLY,
+    STPTestNext::ONLY,
+
+    STPTestGeneral::ONLY,
+    STPTest1Row::ONLY,
+
+    STPTestViewHeight::ONLY,
 };
 
 unit::TestSuite cxxutil::gui::SCROLL_TEXT_PANE_SUITE(
