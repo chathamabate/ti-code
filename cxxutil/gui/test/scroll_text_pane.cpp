@@ -78,7 +78,7 @@ protected:
         core::multiStrCatSafe(lblBuf, 0, STPTC_LBL_BUF_SIZE, 2, topLblParts);
         tc->lblAssertTrue(lblBuf, expTop == this->stp->getTop());
 
-        this->lblAssertEqInd(tc, lbl, expBlockInd, expLineInd, this->stp->getFocusInd());
+        this->lblAssertEqInd(tc, lbl, expBlockInd, expLineInd, this->stp->getViewInd());
     }
 
     void lblAssertTotalHeight(unit::TestContext *tc, const char *lbl,
@@ -139,9 +139,9 @@ private:
         tc->lblAssertTrue("3L.4", this->stp->nextUp(ind, &ind)); 
         this->lblAssertEqInd(tc, "3L.5", 1, 0, ind);
 
-        tc->lblAssertTrue("3L.5", this->stp->nextUp(ind, &ind)); 
-        tc->lblAssertFalse("3L.6", this->stp->nextUp(ind, &ind)); 
-        this->lblAssertEqInd(tc, "3L.7", 0, 0, ind);
+        tc->lblAssertTrue("3L.6", this->stp->nextUp(ind, &ind)); 
+        tc->lblAssertFalse("3L.7", this->stp->nextUp(ind, &ind)); 
+        this->lblAssertEqInd(tc, "3L.8", 0, 0, ind);
     }
 
     // 2 Rows 8px, shouldn't matter though for this test.

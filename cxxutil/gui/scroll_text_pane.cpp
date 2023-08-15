@@ -146,6 +146,29 @@ void ScrollTextPane::renderScrollBar(uint24_t x, uint8_t y) const {
     if (!(this->isInFocus()) || this->totalHeight <= pi->height) {
         return;
     }
+
+    uint24_t topTVH = this->totalViewHeight;
+
+    if (!(this->top)) {
+        topTVH -= pi->height;
+    }
+
+    // At this point, topTVH is the inclusive total height of
+    // the top left corner of the viewport.
+    
+    uint24_t relSBY = (pi->height * topTVH) / this->totalHeight;
+
+    // NOTE: if the the viewport is at the very end of the lines,
+    // just fill the scrollbar to the bottom of the pane.
+    //
+    // This ensures there is no awkward space due to integer division.
+    uint24_t sBHeight = this->totalViewHeight == this->totalHeight 
+        ? pi->height - relSBY
+        : (pi->height * pi->height) / this->totalHeight;
+
+    gfx_SetColor(pi->scrollBarFGColor);
+    gfx_FillRectangle(x + pi->lineWidth, y + relSBY, 
+            pi->scrollBarWidth, sBHeight);
 }
 
 void ScrollTextPane::render(uint24_t x, uint8_t y) const {
@@ -164,38 +187,16 @@ void ScrollTextPane::render(uint24_t x, uint8_t y) const {
     }
 }
 
-static const cxxutil::gui::text_info_t ti1 = {
-    .widthScale = 1,
-    .heightScale = 2,
-    .monospace = 0,
-
-    .fgColor = 0,
-    .bgColor = 255, 
-};
-
-static const cxxutil::gui::text_info_t ti2 = {
-    .widthScale = 2,
-    .heightScale = 3,
-    .monospace = 0,
-
-    .fgColor = 6,
-    .bgColor = 255, 
-};
-
 void ScrollTextPane::update(core::KeyManager *km) {
     if (!(this->isInFocus())) {
         return;
     }
     
-    if (km->isKeyPressed(core::CXX_KEY_8)) {
+    if (km->isKeyPressed(core::CXX_KEY_8) || km->isKeyPressed(core::CXX_KEY_Up)) {
         this->scrollUp();
-    } else if (km->isKeyPressed(core::CXX_KEY_5)) {
+    } else if (km->isKeyPressed(core::CXX_KEY_5) || km->isKeyPressed(core::CXX_KEY_Down)) {
         this->scrollDown();
-    } else if (km->isKeyPressed(core::CXX_KEY_4)) {
-        this->log(&ti1, "GoodBye");
-    } else if (km->isKeyPressed(core::CXX_KEY_6)) {
-        this->log(&ti2, "Hello");
-    }
+    } 
 }
 
 bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {

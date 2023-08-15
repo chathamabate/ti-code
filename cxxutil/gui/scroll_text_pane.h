@@ -144,7 +144,7 @@ namespace cxxutil { namespace gui {
             return this->top;
         }
 
-        inline tp_index_t getFocusInd() const {
+        inline tp_index_t getViewInd() const {
             return this->viewInd;
         }
 

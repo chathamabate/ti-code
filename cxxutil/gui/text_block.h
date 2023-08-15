@@ -7,26 +7,6 @@
 #include <cxxutil/core/mem.h>
 
 namespace cxxutil { namespace gui {
-
-// void gfx_SetTextScale(uint8_t width_scale, uint8_t height_scale);
-// void gfx_PrintStringXY(const char *string, int x, int y);
-// uint8_t gfx_SetTextFGColor(uint8_t color);
-// uint8_t gfx_SetTextBGColor(uint8_t color);
-// unsigned int gfx_GetStringWidth(const char *string);
-// unsigned int gfx_GetCharWidth(const char c);
-//
-// typedef enum {
-//    gfx_text_clip = 1, /**< Text routines will clip against the defined clip window. */
-//     gfx_text_noclip    /**< Default, text routines do not clip (much faster). */
-// } gfx_text_options_t;
-//
-// Probs want no clip if we are careful.
-// void gfx_SetTextConfig(uint8_t config);
-//
-// void gfx_SetTextScale(uint8_t width_scale, uint8_t height_scale);
-//
-//
-// uint8_t gfx_SetColor(uint8_t index);
     
     // NOTE: It is assumed that this describes text of the default 
     // font. (i.e. 8x8 defualt size, not monospace)

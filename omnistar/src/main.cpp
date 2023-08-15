@@ -74,6 +74,7 @@ public:
 };
 
 int main(void) {    
+    /*
     os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
@@ -86,11 +87,12 @@ int main(void) {
     core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;
+    */
 
-    gui::scroll_text_pane_info_t stpi = {
-        .height = 80,
+    const gui::scroll_text_pane_info_t stpi = {
+        .height = GFX_LCD_HEIGHT - 100,
 
-        .lineWidth = 100,
+        .lineWidth = GFX_LCD_WIDTH - 100 - 8, 
         .scrollBarWidth = 8,
 
         .bgColor = 247,
@@ -100,21 +102,39 @@ int main(void) {
 
         .vertLineSpace = 2,
     };
+    
+    const gui::text_info_t ti = {
+        .widthScale = 1,
+        .heightScale = 2,
+        .monospace = 0,
+
+        .fgColor = 0,
+        .bgColor = 255,
+    };
 
     core::KeyManager *km = new core::KeyManager(1);
     km->setFocusedKeys(
             (core::cxx_key_t[]){
-                core::CXX_KEY_4, 
+                core::CXX_KEY_8, 
                 core::CXX_KEY_5, 
-                core::CXX_KEY_6, 
-                core::CXX_KEY_8,
+                core::CXX_KEY_Up,
+                core::CXX_KEY_Down,
                 core::CXX_KEY_Clear}, 5);
 
     km->setRepeatDelay(5);
 
-
     gui::ScrollTextPane *stp = new gui::ScrollTextPane(1, &stpi);
     stp->focus();
+
+    const size_t len = 3;
+    const char *msgs[len] = {
+        "Hello, this is a very long message I am testing.",
+        "I hope I can scroll through the pane like it's a word document.",
+    };
+
+    for (size_t i = 0; i < len; i++) {
+        stp->log(&ti, msgs[i]);
+    }
 
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
 
@@ -132,6 +152,8 @@ int main(void) {
     } while (!km->isKeyDown(core::CXX_KEY_Clear));
 
     gfx_End();
+
+    core::MemoryTracker::ONLY->setMER(core::BasicMemoryExitRoutine::ONLY);
 
     delete stp;
     delete km;
