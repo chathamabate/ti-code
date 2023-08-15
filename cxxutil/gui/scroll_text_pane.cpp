@@ -22,6 +22,7 @@ ScrollTextPane::ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *s
     };
 
     this->top = true;
+
     this->totalHeight = 0;
 }
 
@@ -74,8 +75,10 @@ void ScrollTextPane::renderDown(uint24_t x, uint8_t y) {
         belowBlock = this->blocks->get(iter.blockInd);
 
         if (relY + pi->vertLineSpace + belowBlock->getLineHeight() > pi->height) {
+            /* Consider doing something funky here.
             gfx_SetColor(pi->scrollBarBGColor);
             gfx_FillRectangle(x, y + relY, pi->lineWidth, pi->height - relY);
+            */
 
             break;
         }
@@ -119,8 +122,10 @@ void ScrollTextPane::renderUp(uint24_t x, uint8_t y) {
         aboveBlock = this->blocks->get(iter.blockInd);
 
         if (aboveBlock->getLineHeight() + pi->vertLineSpace > relY) {
+            /* Consider doing somethign funky here.
             gfx_SetColor(pi->scrollBarBGColor);
             gfx_FillRectangle(x, y, pi->lineWidth, relY);
+            */
 
             break;
         }
@@ -130,14 +135,26 @@ void ScrollTextPane::renderUp(uint24_t x, uint8_t y) {
     } while (true);
 }
 
+void ScrollTextPane::renderScrollBar(uint24_t x, uint8_t y) {
+    const scroll_text_pane_info_t *pi = this->paneInfo;
+
+    gfx_SetColor(pi->scrollBarBGColor);
+    gfx_FillRectangle(x + pi->lineWidth, y, pi->scrollBarWidth, pi->height);
+
+    // Only render scroll bar if scrolling is possible.
+    if (!(this->isInFocus()) || this->totalHeight <= pi->height) {
+        return;
+    }
+}
+
 void ScrollTextPane::render(uint24_t x, uint8_t y) {
     const scroll_text_pane_info_t *pi = this->paneInfo;
 
     gfx_SetColor(pi->bgColor);
     gfx_FillRectangle(x, y, pi->lineWidth, pi->height);
 
-    gfx_SetColor(pi->scrollBarBGColor);
-    gfx_FillRectangle(x + pi->lineWidth, y, pi->scrollBarWidth, pi->height);
+    this->renderScrollBar(x, y);
+
 
     if (this->top) {
         this->renderDown(x, y);
@@ -226,6 +243,7 @@ void ScrollTextPane::scrollUp() {
 
     if (this->top) {
         this->nextUp(this->viewInd, &(this->viewInd));
+
         return;
     }
 
@@ -252,8 +270,8 @@ void ScrollTextPane::scrollDown() {
     }
 
     if (!(this->top)) {
-        // Might do something, might not.
         this->nextDown(this->viewInd, &(this->viewInd));
+
         return;
     }
 
@@ -269,7 +287,7 @@ void ScrollTextPane::scrollDown() {
         if (!(this->nextDown(iter, &iter))) {
             return; // No line to scroll down to!
         }
-
+ 
         aH += this->paneInfo->vertLineSpace + 
             this->getLineHeight(iter);
     } while (aH <= this->paneInfo->height);

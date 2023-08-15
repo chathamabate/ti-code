@@ -73,8 +73,12 @@ namespace cxxutil { namespace gui {
         // visible. top can only be false when totalHeight > height.
         uint24_t totalHeight;
 
+        // This variable is used 
+        uint24_t totalViewHeight;
+
         void renderDown(uint24_t x, uint8_t y); 
         void renderUp(uint24_t x, uint8_t y); 
+        void renderScrollBar(uint24_t x, uint8_t y);
     public:
         ScrollTextPane(uint8_t memChnl, const scroll_text_pane_info_t *stpi);
         ScrollTextPane(const scroll_text_pane_info_t *stpi);
