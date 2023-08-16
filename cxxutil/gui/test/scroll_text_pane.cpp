@@ -284,6 +284,8 @@ SCROLL_TEXT_PANE_SUITE_TESTS[SCROLL_TEXT_PANE_SUITE_LEN] = {
     STPTestViewHeight::ONLY,
 };
 
-unit::TestSuite cxxutil::gui::SCROLL_TEXT_PANE_SUITE(
+static unit::TestSuite SCROLL_TEXT_PANE_SUITE_VAL(
         "Scroll Text Pane Suite", SCROLL_TEXT_PANE_SUITE_TESTS,
         SCROLL_TEXT_PANE_SUITE_LEN);
+
+unit::TestTree *gui::SCROLL_TEXT_PANE_SUITE = &SCROLL_TEXT_PANE_SUITE_VAL;
