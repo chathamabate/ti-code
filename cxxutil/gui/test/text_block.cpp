@@ -207,7 +207,7 @@ static TextBlockTestCase LONG_TB2(
 );
 
 const size_t TEXT_BLOCK_SUITE_LEN = 12;
-static cxxutil::unit::TestCase * const 
+static cxxutil::unit::TestTree * const 
 TEXT_BLOCK_SUITE_TESTS[TEXT_BLOCK_SUITE_LEN] = {
     &SIMPLE_TB1,
     &SIMPLE_TB2,

@@ -148,7 +148,7 @@ private:
     STPTestNext() : ScrollTextPaneTestCase("STP Next", 18) {
     }
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
 };
 
 STPTestNext STPTestNext::ONLY_VAL;
@@ -192,7 +192,7 @@ private:
     STPTestGeneral() : ScrollTextPaneTestCase("STP General", 16 + (3 * 18)) {
     }
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
 };
 STPTestGeneral STPTestGeneral::ONLY_VAL;
 
@@ -221,7 +221,7 @@ private:
     STPTest1Row() : ScrollTextPaneTestCase("STP 1 Row", 16) {
     }
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
 };
 
 STPTest1Row STPTest1Row::ONLY_VAL;
@@ -268,13 +268,13 @@ private:
     STPTestViewHeight() : ScrollTextPaneTestCase("STP View Height", 18) {
     }
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
 };
 
 STPTestViewHeight STPTestViewHeight::ONLY_VAL;
 
 const size_t SCROLL_TEXT_PANE_SUITE_LEN = 4;
-static cxxutil::unit::TestCase * const 
+static cxxutil::unit::TestTree * const 
 SCROLL_TEXT_PANE_SUITE_TESTS[SCROLL_TEXT_PANE_SUITE_LEN] = {
     STPTestNext::ONLY,
 

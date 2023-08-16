@@ -27,7 +27,7 @@ private:
         // Clean Up Code...
     }
 public:
-    static constexpr unit::TestCase *ONLY = &ONLY_VAL;
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
 };
 
 MyTestCase MyTestCase::ONLY_VAL;
@@ -36,20 +36,42 @@ MyTestCase MyTestCase::ONLY_VAL;
 */
 
 namespace cxxutil { namespace unit {
+    class TestTree;
     class TestCase;
     class TestSuite;
-    class TestModule;
 
     class TestMonitor;
     class TestContext;
 
-    // Test Cases should only exist as singletons
-    // in static memory. Thus, they need not extend
-    // SafeObject.
-    class TestCase {
+    class TestTree {
     private:
         const char * const name;
 
+    protected:
+        TestTree(const char *n);
+
+    public:
+        inline const char *getName() const {
+            return this->name;
+        }
+
+        // NOTE: a suite holds multiple test cases.
+        // A case is just one singular unit test.
+        virtual bool isCase() const = 0;
+        inline bool isSuite() const {
+            return !(this->isCase());
+        }
+
+        virtual void run(TestMonitor *mn) = 0;
+
+        // These only work as expected if this is a 
+        // suite.
+        virtual TestTree * const *getSubTests() const = 0;
+        virtual size_t getSubTestsLen() const = 0;
+    };
+
+    class TestCase : public TestTree {
+    private:
         // NOTE, these are not purely virtual intentionally.
         virtual void attempt(TestContext *tc);
 
@@ -58,71 +80,44 @@ namespace cxxutil { namespace unit {
         virtual void finally();
     protected:
         TestCase(const char *n);
-
-        // NOTE: again, as test cases should only reside
-        // in static memory. There destructors should
-        // never be invoked by the user!
-
     public:
-        inline const char *getName() const {
-            return this->name;
+        inline virtual bool isCase() const override {
+            return true;
         }
 
-        void run(TestMonitor *mn);
+        virtual void run(TestMonitor *mn) override;
+
+        inline virtual TestTree * const *getSubTests() const override {
+            return nullptr;
+        }
+
+        inline virtual size_t getSubTestsLen() const override {
+            return 0;
+        }
     };
 
-    class TestSuite {
+    class TestSuite : public TestTree {
     private:
-        const char * const name;
-
-        TestCase * const * const tests;
-        const size_t testsLen;
-
+        TestTree * const * const subTests;
+        const size_t subTestsLen;
     public:
-       TestSuite(const char *n, TestCase * const *ts, size_t tsLen);
+        // Test suites should NEVER exist in dynamic memory.
+        // They do not extend SafeObject.
+        TestSuite(const char *n, TestTree * const *sts, size_t stsLen);
 
-       // Again, no destructor, none of this information
-       // should reside in dynamic memory/need any sort
-       // of cleanup.
+        inline virtual bool isCase() const override {
+            return false;
+        }
 
-       inline const char *getName() const {
-           return this->name;
-       }
+        virtual void run(TestMonitor *mn) override;
 
-       inline TestCase * const *getTests() const {
-           return this->tests; 
-       }
+        inline virtual TestTree * const *getSubTests() const override {
+            return this->subTests;
+        }
 
-       inline size_t getTestsLen() const {
-           return this->testsLen;
-       }
-
-       void run(TestMonitor *mn);
-    };
-
-    class TestModule {
-    private:
-        const char * const name;
-
-        TestSuite * const * const suites;
-        const size_t suitesLen;
-
-    public:
-       TestModule(const char *n, TestSuite * const *ss, size_t ssLen);
-
-       inline const char *getName() const {
-           return this->name;
-       }
-
-       inline TestSuite * const *getSuites() const {
-           return this->suites;
-       }
-
-       inline size_t getSuitesLen() const {
-           return this->suitesLen;
-       }
-
-       void run(TestMonitor *mn);
+        inline virtual size_t getSubTestsLen() const override {
+            return this->subTestsLen; 
+        }
     };
 
     // NOTE: All objects made dynamically from the below types
@@ -137,21 +132,17 @@ namespace cxxutil { namespace unit {
     class TestMonitor : public core::SafeObject {
         friend class TestCase;
         friend class TestSuite;
-        friend class TestModule;
 
         friend class TestContext;
 
     protected:
         // NOTE: the defualt versions of all these virtual
         // functions will do nothing.
-        virtual void notifyModuleStart(TestModule *mod);
-        virtual void notifyModuleEnd();
+        virtual void notifyCaseStart(TestCase *c);
+        virtual void notifyCaseEnd();
 
         virtual void notifySuiteStart(TestSuite *suite);
         virtual void notifySuiteEnd();
-
-        virtual void notifyTestStart(TestCase *test);
-        virtual void notifyTestEnd();
 
         // NOTE: this will never store the pointer msg!
         // If the string must be stored, it will be copied.

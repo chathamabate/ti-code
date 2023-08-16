@@ -11,7 +11,10 @@
 
 using namespace cxxutil::unit;
 
-TestCase::TestCase(const char *n) : name(n) {
+TestTree::TestTree(const char *n) : name(n) {
+}
+
+TestCase::TestCase(const char *n) : TestTree(n) {
 }
 
 void TestCase::attempt(TestContext *tc) {
@@ -37,7 +40,7 @@ void TestCase::run(TestMonitor *mn) {
         // create our test context and run our test!
         tc = new TestContext(&env, mn);
 
-        mn->notifyTestStart(this);
+        mn->notifyCaseStart(this);
         this->attempt(tc);
     } 
 
@@ -55,37 +58,23 @@ void TestCase::run(TestMonitor *mn) {
         mn->log(FATAL, "Memory issue");
     }
 
-    mn->notifyTestEnd();
+    mn->notifyCaseEnd();
 
     delete tc;
 }
 
-TestSuite::TestSuite(const char *n, TestCase * const *ts, size_t tsLen) 
-    : name(n), tests(ts), testsLen(tsLen) {
+TestSuite::TestSuite(const char *n, TestTree * const *sts, size_t stsLen) 
+    : TestTree(n), subTests(sts), subTestsLen(stsLen) {
 }
 
 void TestSuite::run(TestMonitor *mn) {
     mn->notifySuiteStart(this);
 
-    for (size_t i = 0; i < this->testsLen; i++) {
-        this->tests[i]->run(mn);
+    for (size_t i = 0; i < this->subTestsLen; i++) {
+        this->subTests[i]->run(mn);
     }
 
     mn->notifySuiteEnd();
-}
-
-TestModule::TestModule(const char *n, TestSuite * const *ss, size_t ssLen) 
-    : name(n), suites(ss), suitesLen(ssLen) {
-}
-
-void TestModule::run(TestMonitor *mn) {
-    mn->notifyModuleStart(this);
-
-    for (size_t i = 0; i < this->suitesLen; i++) {
-        this->suites[i]->run(mn);
-    }
-
-    mn->notifyModuleEnd();
 }
 
 TestMonitor::TestMonitor() : core::SafeObject(core::CXX_TEST_CHNL) {
@@ -94,11 +83,11 @@ TestMonitor::TestMonitor() : core::SafeObject(core::CXX_TEST_CHNL) {
 TestMonitor::~TestMonitor() {
 }
 
-void TestMonitor::notifyModuleStart(TestModule *mod) {
-    (void)mod;
+void TestMonitor::notifyCaseStart(TestCase *test) {
+    (void)test;
 }
 
-void TestMonitor::notifyModuleEnd() {
+void TestMonitor::notifyCaseEnd() {
 }
 
 void TestMonitor::notifySuiteStart(TestSuite *suite) {
@@ -108,18 +97,11 @@ void TestMonitor::notifySuiteStart(TestSuite *suite) {
 void TestMonitor::notifySuiteEnd() {
 }
 
-void TestMonitor::notifyTestStart(TestCase *test) {
-    (void)test;
-}
-
-void TestMonitor::notifyTestEnd() {
-}
 
 void TestMonitor::log(log_level_t level, const char *msg) {
     (void)level;
     (void)msg;
 }
-
 
 TestContext::TestContext(jmp_buf *jb, TestMonitor *m) 
     : core::SafeObject(core::CXX_TEST_CHNL) {

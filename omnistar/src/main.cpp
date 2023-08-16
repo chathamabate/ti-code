@@ -29,15 +29,6 @@ using namespace cxxutil;
 
 class MyMonitor : public unit::TestMonitor {
 private:
-    virtual void notifyModuleStart(unit::TestModule *mod) override {
-        os_PutStrFull("M: ");
-        os_PutStrFull(mod->getName());
-        os_NewLine();
-    }
-
-    virtual void notifyModuleEnd() override {
-    }
-
     virtual void notifySuiteStart(unit::TestSuite *suite) override {
         (void)suite;
         /* os_PutStrFull("S: ");
@@ -48,13 +39,13 @@ private:
     virtual void notifySuiteEnd() override {
     }
 
-    virtual void notifyTestStart(unit::TestCase *test) override {
+    virtual void notifyCaseStart(unit::TestCase *c) override {
         os_PutStrFull("T: ");
-        os_PutStrFull(test->getName());
+        os_PutStrFull(c->getName());
         os_NewLine(); 
     }
 
-    virtual void notifyTestEnd() override {
+    virtual void notifyCaseEnd() override {
         os_PutStrFull("Test Ended");
         os_NewLine();
 
@@ -74,11 +65,10 @@ public:
 };
 
 int main(void) {    
-    /*
     os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
-    // gui::TEXT_BLOCK_SUITE.run(m);
+    gui::TEXT_BLOCK_SUITE.run(m);
     gui::SCROLL_TEXT_PANE_SUITE.run(m);
     core::waitClear();
 
@@ -87,7 +77,6 @@ int main(void) {
     core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;
-    */
 
     const gui::scroll_text_pane_info_t stpi = {
         .height = 88,
