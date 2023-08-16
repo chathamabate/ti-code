@@ -24,13 +24,47 @@ namespace cxxutil { namespace gui {
         }
     };
     
-    // These nodes are meant to reside in dynamic memory.
+    // NOTE: a tree of TreePaneNode's is meant to have constant structure.
+    // I make fields constants everywhere it is easy to do so.
     class TreePaneNode : public core::SafeObject {
-    public:
+        // See link() function.
+        friend class TreePaneBranch;
+
+    private: 
+        // NOTE: These are backwards pointers.
+        //
+        // If this node has a parent, it will be stored in "parent",
+        // ind refers to the index of this node's location in the 
+        // parent's children array. (See TreePaneBranch)
+        //
+        // These will not be constants as they will be set after
+        // the node is created.
+        //
+        // If this node has no parent, parent will be NULL, ind will be 0.
+        TreePaneNode *parent;
+        size_t ind;
+
+        // This exists to aid with creating backwards pointers in
+        // the tree. 
+        //
+        // This function will only be used in the constructor of the
+        // TreePaneBranch. This is the only place where nodes should
+        // be linked to their parents.
+        void link(TreePaneNode *p, size_t i);
+
+    protected:
         TreePaneNode(uint8_t memChnl);
         TreePaneNode();
-
+    public:
         virtual ~TreePaneNode();
+
+        inline TreePaneNode *getParent() const {
+            return this->parent;
+        }
+
+        inline size_t getIndex() const {
+            return this->ind;
+        }
 
         virtual tree_label_info_t getTreeLabelInfo() const = 0;
 
@@ -81,7 +115,7 @@ namespace cxxutil { namespace gui {
         core::SafeArray<TreePaneNode *> * const children;
 
         bool expanded;
-    public:
+    protected:
 
         // NOTE: VERY IMPORTANT!!!!
         // 1) The chldn safe array will become "part" of this object. 
@@ -90,8 +124,13 @@ namespace cxxutil { namespace gui {
         //
         // 2) The memory channel of this TreePaneBranch will be the memory
         // channel of the given children array.
+        //
+        // NOTE: The nodes in the given SafeArray must not belong to any other
+        // tree. This will result in undefined behavoir.
         TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn);
-        ~TreePaneBranch();
+
+    public:
+        virtual ~TreePaneBranch();
 
         virtual inline bool isBranch() const override {
             return true;
@@ -115,18 +154,19 @@ namespace cxxutil { namespace gui {
     }; 
 
     class TreePaneLeaf : public TreePaneNode {
-    public:
+    protected:
         TreePaneLeaf(uint8_t memChnl);
         TreePaneLeaf();
 
-        ~TreePaneLeaf();
+    public:
+        virtual ~TreePaneLeaf();
 
         virtual inline bool isBranch() const override {
             return false;
         }
 
         virtual inline void setExpanded(bool e) override {
-            // Do nothing.
+            (void)e;
         }
 
         virtual inline bool isExpanded() const override {
@@ -160,30 +200,29 @@ namespace cxxutil { namespace gui {
 
     // While TreeNode will remain abstract, TreePane will be concrete.
     
+    /*
     class TreePane : Pane {
     private: 
         const tree_pane_info_t * const paneInfo;
 
-        // NOTE: VERY IMPORTANT 
-        // Just like the children array of the TreePaneBranch,
-        // root will be a "part" of the tree pane.
-        //
-        // The root must be built first before given to the pane.
-        // 
-        // BUT, when the TreePane is deleted, the root will be
-        // deleted too! 
+        // NOTE: The root will NOT be deleted when the pane is.
         TreePaneNode * const root;
 
     public:
         // UB when any given pointers are null.
         TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r); 
         TreePane(const tree_pane_info_t *tpi, TreePaneNode *r);
-        ~TreePane();
+        virtual ~TreePane();
 
         virtual void render(uint24_t x, uint8_t y) const override;
         virtual void update(core::KeyManager *km) override;
 
-        virtual uint24_t getWidth() const override;
-        virtual uint8_t getHeight() const override; 
-    };
+        virtual inline uint24_t getWidth() const override {
+            return this->paneInfo->width;
+        }
+
+        virtual inline uint8_t getHeight() const override {
+            return this->paneInfo->height;
+        }
+    }; */
 }}
