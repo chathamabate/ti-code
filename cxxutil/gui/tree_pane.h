@@ -66,14 +66,14 @@ namespace cxxutil { namespace gui {
             return this->ind;
         }
 
-        virtual tree_label_info_t getTreeLabelInfo() const = 0;
+        virtual const tree_label_info_t *getTreeLabelInfo() const = 0;
 
         inline void install() const {
-            this->getTreeLabelInfo().install();
+            this->getTreeLabelInfo()->install();
         }
 
         inline void installInverse() const {
-            this->getTreeLabelInfo().installInverse();
+            this->getTreeLabelInfo()->installInverse();
         }
 
         virtual const char *getLabel() const = 0;
