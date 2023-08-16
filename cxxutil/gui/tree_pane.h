@@ -38,16 +38,60 @@ namespace cxxutil { namespace gui {
             return !(this->isBranch());
         }
 
-        // NOTE: We cannot change the pointers themselves in the array.
-        virtual const core::SafeArray<TreePaneNode *> *getChildren() const = 0; 
+        virtual TreePaneNode * const *getChildren() const = 0;
+        virtual size_t getChildrenLen() const = 0;
     };
 
 
     class TreePaneBranch : public TreePaneNode {
-        // Maybe figure this out big time....
+    private:
+        core::SafeArray<TreePaneNode *> * const children;
+    public:
+
+        // NOTE: VERY IMPORTANT!!!!
+        // 1) The chldn safe array will become "part" of this object. 
+        // That is, when this branch node is deleted, all TreePaneNodes
+        // in children will be deleted AND the array itself will be deleted.
+        //
+        // 2) The memory channel of this TreePaneBranch will be the memory
+        // channel of the given children array.
+        TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn);
+        ~TreePaneBranch();
+
+        virtual inline bool isBranch() const override {
+            return true;
+        }
+
+        virtual inline TreePaneNode * const *getChildren() const override {
+            return this->children->getArr();
+        }
+
+        virtual inline size_t getChildrenLen() const override {
+            return this->children->getLen();
+        }
     }; 
 
     class TreePaneLeaf : public TreePaneNode {
-        // What should really go in here..
+    public:
+        TreePaneLeaf(uint8_t memChnl);
+        TreePaneLeaf();
+
+        ~TreePaneLeaf();
+
+        virtual inline bool isBranch() const override {
+            return false;
+        }
+
+        virtual inline TreePaneNode * const *getChildren() const override {
+            return nullptr;
+        }
+
+        virtual inline size_t getChildrenLen() const override {
+            return 0;
+        }
+    };
+
+    class TreePane : Pane {
+
     };
 }}
