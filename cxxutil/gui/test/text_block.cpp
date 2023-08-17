@@ -228,4 +228,4 @@ TEXT_BLOCK_SUITE_TESTS[TEXT_BLOCK_SUITE_LEN] = {
 static unit::TestSuite TEXT_BLOCK_SUITE_VAL(
         "Text Block Suite", TEXT_BLOCK_SUITE_TESTS, TEXT_BLOCK_SUITE_LEN);
 
-unit::TestTree *cxxutil::gui::TEXT_BLOCK_SUITE = &TEXT_BLOCK_SUITE_VAL;
+unit::TestTree * const cxxutil::gui::TEXT_BLOCK_SUITE = &TEXT_BLOCK_SUITE_VAL;

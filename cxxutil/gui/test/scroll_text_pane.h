@@ -4,5 +4,5 @@
 #include <cxxutil/unit/unit.h>
 
 namespace cxxutil { namespace gui {
-    extern unit::TestTree *SCROLL_TEXT_PANE_SUITE;
+    extern unit::TestTree * const SCROLL_TEXT_PANE_SUITE;
 }}

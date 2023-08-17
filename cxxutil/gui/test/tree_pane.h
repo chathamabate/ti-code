@@ -5,5 +5,5 @@
 #include <cxxutil/unit/unit.h>
 
 namespace cxxutil { namespace gui {
-
+    extern unit::TestTree * const TREE_PANE_NODE_SUITE;
 }}

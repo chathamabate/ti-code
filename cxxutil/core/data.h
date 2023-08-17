@@ -33,12 +33,22 @@ namespace cxxutil { namespace core {
         size_t len;
 
     public:
-        CoreList() : CoreList(CXX_DEF_CHNL) { }
+        CoreList(uint8_t memChnl, size_t cap) 
+            : SafeObject(memChnl) {
 
-        CoreList(uint8_t memChnl) : SafeObject(memChnl) {
-            this->safeArr = new SafeArray<T>(memChnl, 1);
+            size_t actCap = cap;
+            if (cap == 0) {
+                actCap = 1;
+            }
+
+            this->safeArr = new SafeArray<T>(memChnl, actCap);
             this->len = 0;
         }
+
+        CoreList(uint8_t memChnl) : CoreList(memChnl, 1) {
+        }
+
+        CoreList() : CoreList(CXX_DEF_CHNL) { }
 
         ~CoreList() {
             delete this->safeArr;
@@ -92,6 +102,11 @@ namespace cxxutil { namespace core {
 
             *(this->safeArr->getPtrMut(this->len)) = ele;
             this->len++;
+        }
+
+        // Undefined behavoir if len = 0.
+        inline T pop() {
+            return this->safeArr->get(this->len--);
         }
     };
 }} 

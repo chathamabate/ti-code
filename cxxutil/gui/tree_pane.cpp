@@ -50,6 +50,9 @@ TreePaneLeaf::TreePaneLeaf()
     : TreePaneLeaf(core::CXX_DEF_CHNL) {
 }
 
+TreePaneLeaf::~TreePaneLeaf() {
+}
+
 // Tree Pane GUI Stuff.
 
 /*

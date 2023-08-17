@@ -22,6 +22,7 @@
 #include <cxxutil/unit/unit.h>
 
 #include <cxxutil/gui/test/text_block.h>
+#include <cxxutil/gui/test/tree_pane.h>
 #include <cxxutil/gui/test/scroll_text_pane.h>
 
 using namespace cxxutil;
@@ -68,8 +69,7 @@ int main(void) {
     os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
-    gui::TEXT_BLOCK_SUITE->run(m);
-    gui::SCROLL_TEXT_PANE_SUITE->run(m);
+    gui::TREE_PANE_NODE_SUITE->run(m);
     core::waitClear();
 
     delete m;
