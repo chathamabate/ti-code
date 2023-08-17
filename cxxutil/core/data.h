@@ -26,6 +26,8 @@ namespace cxxutil { namespace core {
     // Make a copy of s stored in a safe array.
     SafeArray<char> *strCopySafe(uint8_t memChnl, const char *s);
 
+    // NOTE: Unit library no longer uses CoreList at all!
+    // Consider moving this somewhere else and giving it tests!
     template <typename T>
     class CoreList : public SafeObject {
     private:
@@ -106,7 +108,7 @@ namespace cxxutil { namespace core {
 
         // Undefined behavoir if len = 0.
         inline T pop() {
-            return this->safeArr->get(this->len--);
+            return this->safeArr->get(--(this->len));
         }
     };
 }} 

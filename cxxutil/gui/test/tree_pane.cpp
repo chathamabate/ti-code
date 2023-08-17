@@ -3,6 +3,7 @@
 #include "cxxutil/core/mem.h"
 #include "cxxutil/gui/tree_pane.h"
 #include "cxxutil/unit/unit.h"
+#include "ti/screen.h"
 
 using namespace cxxutil;
 
@@ -29,11 +30,12 @@ class TestBranch final : public gui::TreePaneBranch {
     friend TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
 
 private:
-    const core::SafeArray<char> * const label;
+    char lbl[2];
 
-    TestBranch(const char *l, core::SafeArray<TreePaneNode *> *chldn) 
-        : TreePaneBranch(chldn)
-          , label(core::strCopySafe(chldn->getChnl(), l)) {
+    TestBranch(char l, core::SafeArray<TreePaneNode *> *chldn) 
+        : TreePaneBranch(chldn) {
+        this->lbl[0] = l;
+        this->lbl[1] = '\0';
     }
 
 public:
@@ -43,7 +45,7 @@ public:
     }
 
     virtual inline const char *getLabel() const override {
-        return this->label->getArr();
+        return this->lbl;
     }
 };
 
@@ -51,13 +53,15 @@ class TestLeaf final : public gui::TreePaneLeaf {
     friend TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
 
 private:
-    const core::SafeArray<char> * const label;
+    char lbl[2];
 
-    TestLeaf(uint8_t memChnl, const char *l) 
-        : gui::TreePaneLeaf(memChnl), label(core::strCopySafe(memChnl, l)) {
+    TestLeaf(uint8_t memChnl, char l) 
+        : gui::TreePaneLeaf(memChnl) {
+        this->lbl[0] = l;
+        this->lbl[1] = '\0';
     }
 
-    TestLeaf(const char *l) 
+    TestLeaf(char l) 
         : TestLeaf(cxxutil::core::CXX_DEF_CHNL, l) {
     }
 
@@ -68,11 +72,14 @@ public:
     }
 
     virtual inline const char *getLabel() const override {
-        return this->label->getArr();
+        return this->lbl;
     }
 };
 
 // UB if tStr is null or malformed. Postfix string to tree algo.
+// 
+// String must be non-null and non-empty.
+// See TestCases for example tree building strings.
 static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) { 
     core::CoreList<gui::TreePaneNode *> *stack = 
         new core::CoreList<gui::TreePaneNode *>(memChnl);
@@ -81,10 +88,8 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
     char lah;
     
     while ((lah = *(iter++)) != '\0') {
-        const char lbl[2] = {lah, '\0'};
-
         if ('a' <= lah && lah <= 'z') { // Leaf Node.
-            stack->add(new TestLeaf(memChnl, lbl));
+            stack->add(new TestLeaf(memChnl, lah));
 
             continue;
         }     
@@ -98,7 +103,7 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
             children->set(i, stack->pop());
         }
 
-        gui::TreePaneNode *node = new TestBranch(lbl, children); 
+        gui::TreePaneNode *node = new TestBranch(lah, children); 
 
         stack->add(node);
     } 
@@ -134,13 +139,40 @@ private:
         }
     }
 
+    // NOTE: Consider adding better assertion labeling here.
+
+    void assertExpParents(unit::TestContext *tc, gui::TreePaneNode *r) {
+        if (r->isLeaf()) {
+            return;
+        }
+
+        size_t len = r->getChildrenLen();
+        gui::TreePaneNode * const *children = r->getChildren();
+
+        for (size_t i = 0; i < len; i++) {
+            gui::TreePaneNode *child = children[i];
+
+            this->assertExpParents(tc, child);
+
+            tc->lblAssertEqChar("Parent Label", 
+                    r->getLabel()[0],
+                    child->getParent()->getLabel()[0]);
+
+            tc->lblAssertEqUInt("Parent Ind",
+                    i, 
+                    child->getIndex());
+        }
+    }
+
     virtual void attempt(unit::TestContext *tc) override {
         this->root = createTestTree(1, this->treeStr);
+
+        // First we use a stack to confirm the structure of
+        // the tree matches that of the given string.
         this->stack = new core::CoreList<gui::TreePaneNode *>(1);
 
         this->expandInStack(this->root); 
 
-        // Now do the checks...
         const char *iter = this->treeStr;
         char lah;
 
@@ -163,9 +195,15 @@ private:
             tc->lblAssertTrue("Is BNode", node->isBranch());
             tc->lblAssertEqChar("BNode Lbl", lah, node->getLabel()[0]);
             tc->lblAssertEqUInt("BNode Len", len, node->getChildrenLen());
+
         }
 
         tc->lblAssertFalse("No Nodes Left", this->stack->getLen() > 0);
+
+        // Finally, let's make sure the parent pointers and indeces
+        // are all correct.
+        
+        this->assertExpParents(tc, this->root);
     }
 
     virtual void finally() override {
@@ -179,11 +217,23 @@ public:
 };
 
 static TreeTestCase SIMPLE1("Simple 1", "a");
+static TreeTestCase SIMPLE2("Simple 2", "aA1");
+static TreeTestCase SIMPLE3("Simple 3", "abcA3");
+static TreeTestCase SIMPLE4("Simple 4", "aaA2bB1ccC2A3");
 
-const size_t TREE_PANE_NODE_SUITE_LEN = 1;
+static TreeTestCase BIG1("Big 1", "aA1bbB2cD3jjjJ3tT1pP2S3");
+static TreeTestCase BIG2("Big 2", "uuU2hH1L2patT1N2syyY2S3bB1M1Q4");
+
+const size_t TREE_PANE_NODE_SUITE_LEN = 6;
 static unit::TestTree * const 
 TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
     &SIMPLE1,
+    &SIMPLE2,
+    &SIMPLE3,
+    &SIMPLE4,
+
+    &BIG1,
+    &BIG2,
 };
 
 static unit::TestSuite TREE_PANE_NODE_SUITE_VAL(

@@ -1,5 +1,6 @@
 #pragma once 
 
+#include "ti/screen.h"
 #include <cxxutil/core/mem.h>
 #include <cxxutil/gui/pane.h>
 

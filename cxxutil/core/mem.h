@@ -1,5 +1,6 @@
 #pragma once
 
+#include "ti/screen.h"
 #include <new>
 #include <stdint.h>
 
@@ -29,6 +30,13 @@ namespace core {
             delay(100);
             kb_Scan();
         } while (!kb_IsDown(kb_KeyClear));
+    }
+
+    inline void printWaitClear(const char *msg) {
+        os_PutStrFull(msg);
+        os_NewLine();
+
+        waitClear();
     }
 
     // Memory channel compile time constants.

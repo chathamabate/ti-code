@@ -5,12 +5,12 @@ using namespace cxxutil::gui;
 
 TreePaneNode::TreePaneNode(uint8_t memChnl) 
     : core::SafeObject(memChnl) {
+    this->parent = nullptr;
+    this->ind = 0;
 }
 
 TreePaneNode::TreePaneNode() 
     : TreePaneNode(core::CXX_DEF_CHNL) {    
-    this->parent = nullptr;
-    this->ind = 0;
 }
 
 TreePaneNode::~TreePaneNode() {
