@@ -6,6 +6,8 @@
 #include "cxxutil/unit/unit.h"
 #include "ti/screen.h"
 
+#include <string.h>
+
 using namespace cxxutil;
 
 // NOTE: This demonstrates the design I was going for 
@@ -201,10 +203,12 @@ private:
             }     
 
             char exp, num;
-            
+            bool expanded = false;
+
             exp = *(iter++);
+
             if (exp == '*') {
-                tc->lblAssertTrue("Expanded", node->isExpanded());
+                expanded = true;
                 num = *(iter++);
             } else {
                 num = exp;
@@ -216,7 +220,7 @@ private:
             tc->lblAssertTrue("Is BNode", node->isBranch());
             tc->lblAssertEqChar("BNode Lbl", lbl, node->getLabel()[0]);
             tc->lblAssertEqUInt("BNode Len", len, node->getChildrenLen());
-
+            tc->lblAssertTrue("BNode Exp", expanded == node->isExpanded());
         }
 
         tc->lblAssertFalse("No Nodes Left", this->stack->getLen() > 0);
@@ -257,11 +261,11 @@ private:
         delete this->root;
     }
 
+    virtual void attemptBody(unit::TestContext *tc) = 0;
+
 protected:
     const char * const treeStr;
     gui::TreePaneNode *root;
-
-    virtual void attemptBody(unit::TestContext *tc) = 0;
 
 public:
     FlexibleTreeTestCase(const char *n, const char *tStr) 
@@ -269,23 +273,64 @@ public:
     }
 };
 
-
-class LeftmostTreeTestCase : public FlexibleTreeTestCase {
+class NextUpDownTestCase : public FlexibleTreeTestCase {
 private:
-    static LeftmostTreeTestCase ONLY_VAL;
-    LeftmostTreeTestCase() 
-        : FlexibleTreeTestCase("Leftmost Test", "ukU2hH1L2patT1N2snyY2S3bB1M1Q4") {}
-    
+    const char * const expPath;
+
     virtual void attemptBody(unit::TestContext *tc) override {
-        // ReWrite this!
-        // Need to account for expanded and unexpanded.
+        // Let's rewrite this test bigtime...
+        
+        gui::TreePaneNode *currNode = nullptr;
+        gui::TreePaneNode *nextNode = this->root;   // should never be null.
+
+        const char *charIter = expPath;
+        size_t expPathLen = strlen(this->expPath);
+
+        // Scroll Down path first.
+        while (nextNode) {
+            currNode = nextNode;
+
+            char expLbl = *(charIter++);
+
+            // The path continues after the expected path ends.
+            if (expLbl == '\0') {
+                tc->fatal("NextD Exceed");
+            }
+
+            // Actual path doesn't match expected path.
+            tc->lblAssertEqChar("NextD Miss", expLbl, currNode->getLabel()[0]);
+
+            nextNode = currNode->nextDown();
+        }
+
+        // The path ends before the expected path ends.
+        if (*charIter != '\0') {
+            tc->fatal("NextD Early");
+        }
+
+        // At this point curr the last "nextDown"'d node in the
+        // tree. Now, we must nextUp all the way back to the root.
+
+        nextNode = currNode;
+        currNode = nullptr;
+
+        // Now it's time to scroll back up!
+        size_t i;
+
+        for (i = 0; i < expPathLen && nextNode; i++) {
+            currNode = nextNode; 
+            
+            
+        }
+
     }
 
 public:
-    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+    // The given test string must construct a non-empty tree.
+    NextUpDownTestCase(const char *n, const char *tStr, const char *exp) 
+        : FlexibleTreeTestCase(n, tStr), expPath(exp) {
+    }
 };
-
-LeftmostTreeTestCase LeftmostTreeTestCase::ONLY_VAL;
 
 const size_t TREE_PANE_NODE_SUITE_LEN = 7;
 static unit::TestTree * const 

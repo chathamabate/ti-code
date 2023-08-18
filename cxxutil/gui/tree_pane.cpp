@@ -50,6 +50,8 @@ TreePaneNode *TreePaneNode::nextDown() {
         if (iter->ind < iter->parent->getChildrenLen() - 1) {
             return iter->parent->getChildren()[iter->ind + 1];
         }
+
+        iter = iter->parent;
     }
 
     // We made it all the way to the root!
