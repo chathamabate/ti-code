@@ -2,6 +2,7 @@
 #include "cxxutil/core/data.h"
 #include "cxxutil/core/mem.h"
 #include "cxxutil/gui/tree_pane.h"
+#include "cxxutil/gui/text_block.h"
 #include "cxxutil/unit/unit.h"
 #include "ti/screen.h"
 
@@ -14,14 +15,11 @@ using namespace cxxutil;
 // explicitly, instead there should be a single function
 // which handles the whole tree creation.
 //
-// The constructor of TreePaneBranch specifically is somewhat 
-// dangerous.
-//
 // This way, there is no chance a node belongs to multiple trees.
 
 static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
 
-static const gui::tree_label_info_t TEST_TREE_LABEL_INFO = {
+static const gui::text_color_info_t TEST_TREE_LABEL_INFO = {
     .fgColor = 0,
     .bgColor = 255,
 };
@@ -39,8 +37,7 @@ private:
     }
 
 public:
-    virtual inline const gui::tree_label_info_t *getTreeLabelInfo() const override {
-        // Not really necessary for tests.
+    virtual inline const gui::text_color_info_t *getTreeLabelInfo() const override {
         return &TEST_TREE_LABEL_INFO;
     }
 
@@ -66,8 +63,7 @@ private:
     }
 
 public:
-    virtual inline const gui::tree_label_info_t *getTreeLabelInfo() const override {
-        // Not really necessary for tests.
+    virtual inline const gui::text_color_info_t *getTreeLabelInfo() const override {
         return &TEST_TREE_LABEL_INFO;
     }
 
@@ -109,6 +105,7 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
     } 
 
     gui::TreePaneNode *result = stack->pop();
+    result->declareRoot();
 
     delete stack;
 
@@ -117,7 +114,7 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
 
 // NOTE: this test case basically does the reverse of 
 // how each tree is built, then checks for equivelance.
-class TreeTestCase : public unit::TestCase {
+class TreeStructureTestCase : public unit::TestCase {
 private:
     const char * const treeStr;
 
@@ -141,7 +138,9 @@ private:
 
     // NOTE: Consider adding better assertion labeling here.
 
-    void assertExpParents(unit::TestContext *tc, gui::TreePaneNode *r) {
+    void assertExpParents(unit::TestContext *tc, gui::TreePaneNode *r, size_t d) {
+        tc->lblAssertEqUInt("Depth", d, r->getDepth());
+
         if (r->isLeaf()) {
             return;
         }
@@ -152,7 +151,7 @@ private:
         for (size_t i = 0; i < len; i++) {
             gui::TreePaneNode *child = children[i];
 
-            this->assertExpParents(tc, child);
+            this->assertExpParents(tc, child, d + 1);
 
             tc->lblAssertEqChar("Parent Label", 
                     r->getLabel()[0],
@@ -200,10 +199,10 @@ private:
 
         tc->lblAssertFalse("No Nodes Left", this->stack->getLen() > 0);
 
-        // Finally, let's make sure the parent pointers and indeces
+        // Finally, let's make sure the parent pointers, indeces, and depths
         // are all correct.
         
-        this->assertExpParents(tc, this->root);
+        this->assertExpParents(tc, this->root, 0);
     }
 
     virtual void finally() override {
@@ -211,29 +210,85 @@ private:
         delete root;
     }
 public:
-    TreeTestCase(const char *n, const char *tStr) 
+    TreeStructureTestCase(const char *n, const char *tStr) 
         : unit::TestCase(n), treeStr(tStr)  {
     }
 };
 
-static TreeTestCase SIMPLE1("Simple 1", "a");
-static TreeTestCase SIMPLE2("Simple 2", "aA1");
-static TreeTestCase SIMPLE3("Simple 3", "abcA3");
-static TreeTestCase SIMPLE4("Simple 4", "aaA2bB1ccC2A3");
+// Structure Tests.
+static TreeStructureTestCase STRUCT_SIMPLE1("Structure Simple 1", "a");
+static TreeStructureTestCase STRUCT_SIMPLE2("Structure Simple 2", "aA1");
+static TreeStructureTestCase STRUCT_SIMPLE3("Structure Simple 3", "abcA3");
+static TreeStructureTestCase STRUCT_SIMPLE4("Structure Simple 4", "aaA2bB1ccC2A3");
 
-static TreeTestCase BIG1("Big 1", "aA1bbB2cD3jjjJ3tT1pP2S3");
-static TreeTestCase BIG2("Big 2", "uuU2hH1L2patT1N2syyY2S3bB1M1Q4");
+static TreeStructureTestCase STRUCT_BIG1("Structure Big 1", "aA1bbB2cD3jjjJ3tT1pP2S3");
+static TreeStructureTestCase STRUCT_BIG2("Structure Big 2", "uuU2hH1L2patT1N2syyY2S3bB1M1Q4");
 
-const size_t TREE_PANE_NODE_SUITE_LEN = 6;
+class FlexibleTreeTestCase : public unit::TestCase {
+private:
+    virtual void attempt(unit::TestContext *tc) override {
+        this->root = createTestTree(1, this->treeStr);
+        this->attemptBody(tc);
+    }
+
+    virtual void finally() override {
+        delete this->root;
+    }
+
+protected:
+    const char * const treeStr;
+    gui::TreePaneNode *root;
+
+    virtual void attemptBody(unit::TestContext *tc) = 0;
+
+public:
+    FlexibleTreeTestCase(const char *n, const char *tStr) 
+        : unit::TestCase(n), treeStr(tStr) {
+    }
+};
+
+
+class LeftmostTreeTestCase : public FlexibleTreeTestCase {
+private:
+    static LeftmostTreeTestCase ONLY_VAL;
+    LeftmostTreeTestCase() 
+        : FlexibleTreeTestCase("Leftmost Test", "ukU2hH1L2patT1N2snyY2S3bB1M1Q4") {}
+    
+    virtual void attemptBody(unit::TestContext *tc) override {
+        // ReWrite this!
+        // Need to account for expanded and unexpanded.
+        
+        gui::TreePaneNode *Q = this->root;
+        tc->lblAssertEqChar("Q", 'u', Q->getLeftmost()->getLabel()[0]);
+
+        gui::TreePaneNode *M = Q->getChildren()[0];         
+        tc->lblAssertEqChar("M", 'b', M->getLeftmost()->getLabel()[0]);
+
+        gui::TreePaneNode *p = Q->getChildren()[2];
+        tc->lblAssertEqChar("p", 'p', p->getLeftmost()->getLabel()[0]);
+
+        gui::TreePaneNode *S = Q->getChildren()[1];
+        tc->lblAssertEqChar("S", 'a', S->getLeftmost()->getLabel()[0]);
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+LeftmostTreeTestCase LeftmostTreeTestCase::ONLY_VAL;
+
+const size_t TREE_PANE_NODE_SUITE_LEN = 7;
 static unit::TestTree * const 
 TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
-    &SIMPLE1,
-    &SIMPLE2,
-    &SIMPLE3,
-    &SIMPLE4,
+    &STRUCT_SIMPLE1,
+    &STRUCT_SIMPLE2,
+    &STRUCT_SIMPLE3,
+    &STRUCT_SIMPLE4,
 
-    &BIG1,
-    &BIG2,
+    &STRUCT_BIG1,
+    &STRUCT_BIG2,
+
+    LeftmostTreeTestCase::ONLY,
 };
 
 static unit::TestSuite TREE_PANE_NODE_SUITE_VAL(

@@ -7,6 +7,7 @@ TreePaneNode::TreePaneNode(uint8_t memChnl)
     : core::SafeObject(memChnl) {
     this->parent = nullptr;
     this->ind = 0;
+    this->depth = 0;
 }
 
 TreePaneNode::TreePaneNode() 
@@ -19,6 +20,15 @@ TreePaneNode::~TreePaneNode() {
 void TreePaneNode::link(TreePaneNode *p, size_t i) {
     this->parent = p;
     this->ind = i;
+}
+
+void TreePaneBranch::setDepth(size_t d) {
+    this->depth = d;
+
+    size_t len = this->children->getLen();
+    for (size_t i = 0; i < len; i++) {
+        this->children->get(i)->setDepth(d + 1);
+    }
 }
 
 TreePaneBranch::TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn) 
@@ -42,6 +52,21 @@ TreePaneBranch::~TreePaneBranch() {
     delete this->children;
 }
 
+TreePaneNode *TreePaneBranch::getLeftmostAccessible() {
+    // Iteration is more efficient.
+    TreePaneNode *iter = this;
+
+    while (!(iter->isLeaf() || iter->isMinimized())) {
+        iter = iter->getChildren()[iter->getChildrenLen() - 1];
+    }
+
+    return iter;
+}
+
+void TreePaneLeaf::setDepth(size_t d) {
+    this->depth = d;
+}
+
 TreePaneLeaf::TreePaneLeaf(uint8_t memChnl) 
     : TreePaneNode(memChnl) {
 }
@@ -53,11 +78,16 @@ TreePaneLeaf::TreePaneLeaf()
 TreePaneLeaf::~TreePaneLeaf() {
 }
 
+TreePaneNode *TreePaneLeaf::getLeftmostAccessible() {
+    return this;
+}
+
 // Tree Pane GUI Stuff.
 
-/*
 TreePane::TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r) 
     : Pane(memChnl), paneInfo(tpi), root(r) {
+    this->sel = r;
+    this->selRelY = 0;
 }
 
 TreePane::TreePane(const tree_pane_info_t *tpi, TreePaneNode *r) 
@@ -68,25 +98,18 @@ TreePane::~TreePane() {
 }
 
 void TreePane::render(uint24_t x, uint8_t y) const {
-    // Render time my friend!!!
-    // Honestly, I have no idea how this should be done.
-    //
-    // There could be like slots???
-    // Which nodes are placed into from a stack???
-    // Would be nice if we had a parent pointer ngl...
-    // But then more work would need to go into this all???
-    // But what about focusing... What will happen then???
-    // RN with no text clipping, we don't need the fancy work of the
-    // text scroll pane, most of the work kinda went no where tbh...
-    //
-    // Maybe we hold the index in each???
-    // This might help us???
-    // This will actually be enough...
-    
     (void)x;
     (void)y;
 }
 
 void TreePane::update(core::KeyManager *km) {
     (void)km;
-}*/
+}
+
+void TreePane::scrollDown() {
+
+}
+
+void TreePane::scrollUp() {
+
+}

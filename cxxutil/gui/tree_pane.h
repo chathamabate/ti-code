@@ -3,16 +3,17 @@
 #include "ti/screen.h"
 #include <cxxutil/core/mem.h>
 #include <cxxutil/gui/pane.h>
+#include <cxxutil/gui/text_block.h>
 
 #include <graphx.h>
 
 namespace cxxutil { namespace gui {
-    
-    // NOTE: for now, label info will only contain color.
-    // Unlike text block, all labels will use the same sized font!
-    struct tree_label_info_t {
+
+    // Unlike like the scroll pane, all tree pane
+    // text will have same dimmensions.
+    struct text_color_info_t {
         uint8_t fgColor;
-        uint8_t bgColor;   
+        uint8_t bgColor;
 
         inline void install() const {
             gfx_SetTextFGColor(this->fgColor);
@@ -28,8 +29,9 @@ namespace cxxutil { namespace gui {
     // NOTE: a tree of TreePaneNode's is meant to have constant structure.
     // I make fields constants everywhere it is easy to do so.
     class TreePaneNode : public core::SafeObject {
-        // See link() function.
+        // See link() and setDepth() functions.
         friend class TreePaneBranch;
+        friend class TreePaneLeaf;
 
     private: 
         // NOTE: These are backwards pointers.
@@ -53,9 +55,19 @@ namespace cxxutil { namespace gui {
         // be linked to their parents.
         void link(TreePaneNode *p, size_t i);
 
+        // This is the relative depth of this node.
+        // I really wanted to make this a constant an unexposed,
+        // but it was just too hard to organize.
+        //
+        // This can be set at any time using the declareRoot() 
+        // function.
+        size_t depth;
+        virtual void setDepth(size_t d) = 0;
+
     protected:
         TreePaneNode(uint8_t memChnl);
         TreePaneNode();
+
     public:
         virtual ~TreePaneNode();
 
@@ -67,7 +79,7 @@ namespace cxxutil { namespace gui {
             return this->ind;
         }
 
-        virtual const tree_label_info_t *getTreeLabelInfo() const = 0;
+        virtual const text_color_info_t *getTreeLabelInfo() const = 0;
 
         inline void install() const {
             this->getTreeLabelInfo()->install();
@@ -84,8 +96,15 @@ namespace cxxutil { namespace gui {
             return !(this->isBranch());
         }
 
-        virtual void setExpanded(bool e) = 0;
+        inline void declareRoot() {
+            this->setDepth(0);
+        }
+        
+        inline size_t getDepth() {
+            return this->depth;
+        }
 
+        virtual void setExpanded(bool e) = 0;
         inline void expand() {
             this->setExpanded(true);
         }
@@ -105,6 +124,11 @@ namespace cxxutil { namespace gui {
 
         virtual TreePaneNode * const *getChildren() const = 0;
         virtual size_t getChildrenLen() const = 0;
+
+        // NOTE: higher indeces in children array = more left.
+        // Additionally, this search stops when hitting a leaf
+        // OR an unexpanded branch.
+        virtual TreePaneNode *getLeftmostAccessible() = 0;
     };
 
     // NOTE: TreePaneBranch and TreePaneLeaf will remain abstract.
@@ -113,11 +137,12 @@ namespace cxxutil { namespace gui {
 
     class TreePaneBranch : public TreePaneNode {
     private:
+        virtual void setDepth(size_t d) override;
+
         core::SafeArray<TreePaneNode *> * const children;
 
         bool expanded;
     protected:
-
         // NOTE: VERY IMPORTANT!!!!
         // 1) The chldn safe array will become "part" of this object. 
         // That is, when this branch node is deleted, all TreePaneNodes
@@ -128,8 +153,9 @@ namespace cxxutil { namespace gui {
         //
         // NOTE: The nodes in the given SafeArray must not belong to any other
         // tree. This will result in undefined behavoir.
+        //
+        // The design of these concepts is centered around these truths.
         TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn);
-
     public:
         virtual ~TreePaneBranch();
 
@@ -152,10 +178,14 @@ namespace cxxutil { namespace gui {
         virtual inline size_t getChildrenLen() const override {
             return this->children->getLen();
         }
+
+        virtual TreePaneNode *getLeftmostAccessible() override;
     }; 
 
     class TreePaneLeaf : public TreePaneNode {
     protected:
+        virtual void setDepth(size_t d) override;
+
         TreePaneLeaf(uint8_t memChnl);
         TreePaneLeaf();
 
@@ -181,27 +211,40 @@ namespace cxxutil { namespace gui {
         virtual inline size_t getChildrenLen() const override {
             return 0;
         }
+
+        virtual TreePaneNode *getLeftmostAccessible() override;
     };
+
+    // NOTE: TreePane will be used to display and modify a TreePaneNode.
+    // Each TreePaneNode will take up a single row of the TreePane.
+    //
+    // A TreePaneNode's display style is given to the TreePane by the node.
+    // * Like text block, the default 8x8 font will be used.
+    // * If the height of a Node's scaled text would be larger than the TreePane
+    // itself, the text scale used will be 1.
+    //
+    // Even if a TreePaneNode provides an empty string or null as its label,
+    // its row will still be rendered with the provided height scale.
+    //
+    // The excess of a label will not be wrapped like in TextBlock. 
+    // It'll just be cut off the right side of the TreePane.
+    //
+    // If a node is so deep in the tree that it's label is off screen,
+    // the display will not shift at this time, space will simply be 
+    // left for the node's row.
+    // NOTE: Consider improving this at somepoint.
 
     struct tree_pane_info_t {
         // Pane width and height.
         uint24_t width;
         uint8_t height;
 
-        // label info for the tree pane.
-        // NOTE: all labels will have the same font. 
-        uint8_t lblWidthScale; 
-        uint8_t lblHeightScale;
-        uint8_t lblMonospace;
-
         uint8_t paneBGColor;
-
         uint8_t tabWidth;
     };
 
     // While TreeNode will remain abstract, TreePane will be concrete.
     
-    /*
     class TreePane : Pane {
     private: 
         const tree_pane_info_t * const paneInfo;
@@ -209,6 +252,11 @@ namespace cxxutil { namespace gui {
         // NOTE: The root will NOT be deleted when the pane is.
         TreePaneNode * const root;
 
+        // NOTE: this will be different from the TextBlock.
+        // All rendering will occur relative to the selected line!
+        TreePaneNode *sel;
+        uint8_t selRelY;
+        
     public:
         // UB when any given pointers are null.
         TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r); 
@@ -216,6 +264,7 @@ namespace cxxutil { namespace gui {
         virtual ~TreePane();
 
         virtual void render(uint24_t x, uint8_t y) const override;
+
         virtual void update(core::KeyManager *km) override;
 
         virtual inline uint24_t getWidth() const override {
@@ -225,5 +274,12 @@ namespace cxxutil { namespace gui {
         virtual inline uint8_t getHeight() const override {
             return this->paneInfo->height;
         }
-    }; */
+
+        // NOTE: these below functions help traversing tree based on how it
+        // is expanded.
+
+        // Move the selected line up and down.
+        void scrollDown();
+        void scrollUp();
+    }; 
 }}
