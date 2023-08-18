@@ -81,16 +81,27 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
         new core::CoreList<gui::TreePaneNode *>(memChnl);
 
     const char *iter = tStr;
-    char lah;
     
-    while ((lah = *(iter++)) != '\0') {
-        if ('a' <= lah && lah <= 'z') { // Leaf Node.
-            stack->add(new TestLeaf(memChnl, lah));
+    while (*iter != '\0') {
+        char lbl = *(iter++);
+        if ('a' <= lbl && lbl <= 'z') { // Leaf Node.
+            stack->add(new TestLeaf(memChnl, lbl));
 
             continue;
         }     
-        
-        size_t len = *(iter++) - '0';
+
+        char exp, num;
+        bool expanded = false;
+
+        exp = *(iter++); 
+        if (exp == '*') {
+            expanded = true;
+            num = *(iter++);
+        } else {
+            num = exp;
+        }
+
+        size_t len = num - '0';
 
         core::SafeArray<gui::TreePaneNode *> *children = 
             new core::SafeArray<gui::TreePaneNode *>(memChnl, len);
@@ -99,7 +110,8 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
             children->set(i, stack->pop());
         }
 
-        gui::TreePaneNode *node = new TestBranch(lah, children); 
+        gui::TreePaneNode *node = new TestBranch(lbl, children); 
+        node->setExpanded(expanded);
 
         stack->add(node);
     } 
@@ -173,26 +185,36 @@ private:
         this->expandInStack(this->root); 
 
         const char *iter = this->treeStr;
-        char lah;
 
-        while ((lah = *(iter++)) != '\0') {
+        while (*iter != '\0') {
             tc->lblAssertTrue("Nodes Left", this->stack->getLen() > 0);
-
             gui::TreePaneNode *node = this->stack->pop();
 
-            if ('a' <= lah && lah <= 'z') { 
+            char lbl = *(iter++);
+
+            if ('a' <= lbl && lbl <= 'z') { 
                 tc->lblAssertTrue("Is LNode", node->isLeaf());
-                tc->lblAssertEqChar("LNode Lbl", lah, node->getLabel()[0]);
+                tc->lblAssertEqChar("LNode Lbl", lbl, node->getLabel()[0]);
                 tc->lblAssertEqUInt("LNode Len", 0, node->getChildrenLen());
 
                 continue;
             }     
 
+            char exp, num;
+            
+            exp = *(iter++);
+            if (exp == '*') {
+                tc->lblAssertTrue("Expanded", node->isExpanded());
+                num = *(iter++);
+            } else {
+                num = exp;
+            }
+
             // Branch node test.
-            size_t len = *(iter++) - '0';
+            size_t len = num - '0';
 
             tc->lblAssertTrue("Is BNode", node->isBranch());
-            tc->lblAssertEqChar("BNode Lbl", lah, node->getLabel()[0]);
+            tc->lblAssertEqChar("BNode Lbl", lbl, node->getLabel()[0]);
             tc->lblAssertEqUInt("BNode Len", len, node->getChildrenLen());
 
         }
@@ -217,12 +239,12 @@ public:
 
 // Structure Tests.
 static TreeStructureTestCase STRUCT_SIMPLE1("Structure Simple 1", "a");
-static TreeStructureTestCase STRUCT_SIMPLE2("Structure Simple 2", "aA1");
-static TreeStructureTestCase STRUCT_SIMPLE3("Structure Simple 3", "abcA3");
-static TreeStructureTestCase STRUCT_SIMPLE4("Structure Simple 4", "aaA2bB1ccC2A3");
+static TreeStructureTestCase STRUCT_SIMPLE2("Structure Simple 2", "aA*1");
+static TreeStructureTestCase STRUCT_SIMPLE3("Structure Simple 3", "abcA*3");
+static TreeStructureTestCase STRUCT_SIMPLE4("Structure Simple 4", "aaA2bB*1ccC2A*3");
 
-static TreeStructureTestCase STRUCT_BIG1("Structure Big 1", "aA1bbB2cD3jjjJ3tT1pP2S3");
-static TreeStructureTestCase STRUCT_BIG2("Structure Big 2", "uuU2hH1L2patT1N2syyY2S3bB1M1Q4");
+static TreeStructureTestCase STRUCT_BIG1("Structure Big 1", "aA1bbB*2cD3jjjJ3tT1pP2S*3");
+static TreeStructureTestCase STRUCT_BIG2("Structure Big 2", "uuU*2hH1L2patT*1N*2syyY2S3bB1M1Q4");
 
 class FlexibleTreeTestCase : public unit::TestCase {
 private:
