@@ -257,18 +257,6 @@ private:
     virtual void attemptBody(unit::TestContext *tc) override {
         // ReWrite this!
         // Need to account for expanded and unexpanded.
-        
-        gui::TreePaneNode *Q = this->root;
-        tc->lblAssertEqChar("Q", 'u', Q->getLeftmost()->getLabel()[0]);
-
-        gui::TreePaneNode *M = Q->getChildren()[0];         
-        tc->lblAssertEqChar("M", 'b', M->getLeftmost()->getLabel()[0]);
-
-        gui::TreePaneNode *p = Q->getChildren()[2];
-        tc->lblAssertEqChar("p", 'p', p->getLeftmost()->getLabel()[0]);
-
-        gui::TreePaneNode *S = Q->getChildren()[1];
-        tc->lblAssertEqChar("S", 'a', S->getLeftmost()->getLabel()[0]);
     }
 
 public:

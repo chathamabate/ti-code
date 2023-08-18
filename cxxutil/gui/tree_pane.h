@@ -125,10 +125,17 @@ namespace cxxutil { namespace gui {
         virtual TreePaneNode * const *getChildren() const = 0;
         virtual size_t getChildrenLen() const = 0;
 
-        // NOTE: higher indeces in children array = more left.
-        // Additionally, this search stops when hitting a leaf
-        // OR an unexpanded branch.
-        virtual TreePaneNode *getLeftmostAccessible() = 0;
+        // Finds the next node above or below this node as it'd
+        // be rendered. 
+        //
+        // Returns null if there are no where to go up or down.
+        //
+        // This assumes that this node is "reachable".
+        // This means the path from the root of this node's tree
+        // to this node only contains expanded nodes.
+        // (excluding this node)
+        TreePaneNode *nextUp(); 
+        TreePaneNode *nextDown(); 
     };
 
     // NOTE: TreePaneBranch and TreePaneLeaf will remain abstract.
@@ -155,6 +162,8 @@ namespace cxxutil { namespace gui {
         // tree. This will result in undefined behavoir.
         //
         // The design of these concepts is centered around these truths.
+        //
+        // NOTE: Undefined Behavoir if chldn is empty!
         TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn);
     public:
         virtual ~TreePaneBranch();
@@ -178,8 +187,6 @@ namespace cxxutil { namespace gui {
         virtual inline size_t getChildrenLen() const override {
             return this->children->getLen();
         }
-
-        virtual TreePaneNode *getLeftmostAccessible() override;
     }; 
 
     class TreePaneLeaf : public TreePaneNode {
@@ -211,8 +218,6 @@ namespace cxxutil { namespace gui {
         virtual inline size_t getChildrenLen() const override {
             return 0;
         }
-
-        virtual TreePaneNode *getLeftmostAccessible() override;
     };
 
     // NOTE: TreePane will be used to display and modify a TreePaneNode.

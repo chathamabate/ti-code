@@ -22,6 +22,40 @@ void TreePaneNode::link(TreePaneNode *p, size_t i) {
     this->ind = i;
 }
 
+TreePaneNode *TreePaneNode::nextUp() {
+    if (this->ind == 0) {
+        return this->parent;
+    }
+
+    // It is assumed that parent must be expanded.
+    TreePaneNode *iter = 
+        this->parent->getChildren()[this->ind - 1];
+
+    while (!(iter->isLeaf() || iter->isMinimized())) {
+        iter = iter->getChildren()[iter->getChildrenLen() - 1];
+    }
+
+    return iter;
+}
+
+TreePaneNode *TreePaneNode::nextDown() {
+    if (this->isBranch() && this->isExpanded()) {
+        return this->getChildren()[0];
+    }
+
+    TreePaneNode *iter = this;
+
+    while (iter->parent) {
+        // If the iterator is not the leftmost child.
+        if (iter->ind < iter->parent->getChildrenLen() - 1) {
+            return iter->parent->getChildren()[iter->ind + 1];
+        }
+    }
+
+    // We made it all the way to the root!
+    return nullptr;
+}
+
 void TreePaneBranch::setDepth(size_t d) {
     this->depth = d;
 
@@ -52,17 +86,6 @@ TreePaneBranch::~TreePaneBranch() {
     delete this->children;
 }
 
-TreePaneNode *TreePaneBranch::getLeftmostAccessible() {
-    // Iteration is more efficient.
-    TreePaneNode *iter = this;
-
-    while (!(iter->isLeaf() || iter->isMinimized())) {
-        iter = iter->getChildren()[iter->getChildrenLen() - 1];
-    }
-
-    return iter;
-}
-
 void TreePaneLeaf::setDepth(size_t d) {
     this->depth = d;
 }
@@ -76,10 +99,6 @@ TreePaneLeaf::TreePaneLeaf()
 }
 
 TreePaneLeaf::~TreePaneLeaf() {
-}
-
-TreePaneNode *TreePaneLeaf::getLeftmostAccessible() {
-    return this;
 }
 
 // Tree Pane GUI Stuff.
