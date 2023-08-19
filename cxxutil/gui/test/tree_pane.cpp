@@ -278,24 +278,22 @@ private:
     const char * const expPath;
 
     virtual void attemptBody(unit::TestContext *tc) override {
-        // Let's rewrite this test bigtime...
-        
         gui::TreePaneNode *currNode = nullptr;
         gui::TreePaneNode *nextNode = this->root;   // should never be null.
 
-        const char *charIter = expPath;
-        size_t expPathLen = strlen(this->expPath);
+        // NOTE: the given string will actually be read in reverse
+        // to make specifing tests easier. SEE test cases.
+        const char *charIter = this->expPath + strlen(this->expPath); 
 
         // Scroll Down path first.
         while (nextNode) {
             currNode = nextNode;
 
-            char expLbl = *(charIter++);
-
-            // The path continues after the expected path ends.
-            if (expLbl == '\0') {
+            if (--charIter < this->expPath) {
                 tc->fatal("NextD Exceed");
             }
+
+            char expLbl = *charIter;
 
             // Actual path doesn't match expected path.
             tc->lblAssertEqChar("NextD Miss", expLbl, currNode->getLabel()[0]);
@@ -304,7 +302,7 @@ private:
         }
 
         // The path ends before the expected path ends.
-        if (*charIter != '\0') {
+        if (charIter != this->expPath) {
             tc->fatal("NextD Early");
         }
 
@@ -313,16 +311,24 @@ private:
 
         nextNode = currNode;
         currNode = nullptr;
+        
+        while (nextNode) {
+            currNode = nextNode;
 
-        // Now it's time to scroll back up!
-        size_t i;
+            char expLbl = *(charIter++);
 
-        for (i = 0; i < expPathLen && nextNode; i++) {
-            currNode = nextNode; 
-            
-            
+            if (expLbl == '\0') {
+                tc->fatal("NextU Exceed");
+            }
+
+            tc->lblAssertEqChar("NextU Miss", expLbl, currNode->getLabel()[0]);
+
+            nextNode = currNode->nextUp();
         }
 
+        if (*charIter != '\0') {
+            tc->fatal("NextU Early");
+        }
     }
 
 public:
@@ -332,7 +338,16 @@ public:
     }
 };
 
-const size_t TREE_PANE_NODE_SUITE_LEN = 7;
+static NextUpDownTestCase UD_SIMPLE1("UD Simple 1", "a", "a");
+static NextUpDownTestCase UD_SIMPLE2("UD Simple 2", "aA*1", "aA");
+static NextUpDownTestCase UD_SIMPLE3("UD Simple 3", "abA*2", "abA");
+static NextUpDownTestCase UD_SIMPLE4("UD Simple 4", "abA2", "A");
+static NextUpDownTestCase UD_SIMPLE5("UD Simple 5", "abA*2cdD*2eE1F*3", "abAcdDEF");
+
+static NextUpDownTestCase UD_BIG1("UD Big 1", 
+        "abA*2lstK3M*1P*2nD*1plQ1S*2Z*3", "abAKMPnDpQSZ");
+
+const size_t TREE_PANE_NODE_SUITE_LEN = 12;
 static unit::TestTree * const 
 TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
     &STRUCT_SIMPLE1,
@@ -343,7 +358,13 @@ TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
     &STRUCT_BIG1,
     &STRUCT_BIG2,
 
-    LeftmostTreeTestCase::ONLY,
+    &UD_SIMPLE1,
+    &UD_SIMPLE2,
+    &UD_SIMPLE3,
+    &UD_SIMPLE4,
+    &UD_SIMPLE5,
+
+    &UD_BIG1,
 };
 
 static unit::TestSuite TREE_PANE_NODE_SUITE_VAL(
