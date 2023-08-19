@@ -309,12 +309,8 @@ private:
         // At this point curr the last "nextDown"'d node in the
         // tree. Now, we must nextUp all the way back to the root.
 
-        nextNode = currNode;
-        currNode = nullptr;
         
-        while (nextNode) {
-            currNode = nextNode;
-
+        while (currNode) {
             char expLbl = *(charIter++);
 
             if (expLbl == '\0') {
@@ -323,7 +319,7 @@ private:
 
             tc->lblAssertEqChar("NextU Miss", expLbl, currNode->getLabel()[0]);
 
-            nextNode = currNode->nextUp();
+            currNode = currNode->nextUp();
         }
 
         if (*charIter != '\0') {
@@ -347,9 +343,31 @@ static NextUpDownTestCase UD_SIMPLE5("UD Simple 5", "abA*2cdD*2eE1F*3", "abAcdDE
 static NextUpDownTestCase UD_BIG1("UD Big 1", 
         "abA*2lstK3M*1P*2nD*1plQ1S*2Z*3", "abAKMPnDpQSZ");
 
-const size_t TREE_PANE_NODE_SUITE_LEN = 12;
+class ReachableTreeTestCase : public FlexibleTreeTestCase {
+private:
+    const size_t expReachable;
+
+    virtual void attemptBody(unit::TestContext *tc) override  {
+        tc->assertEqUInt(this->expReachable, this->root->getNumReachable());
+    }
+public:
+    ReachableTreeTestCase(const char *n, const char *tStr, size_t r) 
+        : FlexibleTreeTestCase(n, tStr), expReachable(r) {
+    }
+};
+
+static ReachableTreeTestCase R_SIMPLE1("R Simple 1", "a", 1);
+static ReachableTreeTestCase R_SIMPLE2("R Simple 2", "aA1", 1);
+static ReachableTreeTestCase R_SIMPLE3("R Simple 3", "aA*1", 2);
+static ReachableTreeTestCase R_SIMPLE4("R Simple 4", "aaA*2", 3);
+static ReachableTreeTestCase R_SIMPLE5("R Simple 5", "aaA2bB*1cD*3", 5);
+
+const size_t TREE_PANE_NODE_SUITE_LEN = 17;
 static unit::TestTree * const 
 TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
+    // NOTE: consider making this separate test trees later.
+    
+    // Structure Tests.
     &STRUCT_SIMPLE1,
     &STRUCT_SIMPLE2,
     &STRUCT_SIMPLE3,
@@ -358,6 +376,7 @@ TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
     &STRUCT_BIG1,
     &STRUCT_BIG2,
 
+    // nextUp/nextDown tests.
     &UD_SIMPLE1,
     &UD_SIMPLE2,
     &UD_SIMPLE3,
@@ -365,6 +384,13 @@ TREE_PANE_NODE_SUITE_TESTS[TREE_PANE_NODE_SUITE_LEN] = {
     &UD_SIMPLE5,
 
     &UD_BIG1,
+
+    // Num Reachable tests.
+    &R_SIMPLE1,
+    &R_SIMPLE2,
+    &R_SIMPLE3,
+    &R_SIMPLE4,
+    &R_SIMPLE5,
 };
 
 static unit::TestSuite TREE_PANE_NODE_SUITE_VAL(

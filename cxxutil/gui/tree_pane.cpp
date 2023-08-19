@@ -88,6 +88,22 @@ TreePaneBranch::~TreePaneBranch() {
     delete this->children;
 }
 
+size_t TreePaneBranch::getNumReachable() const {
+    // NOTE: consider making this non-recursive to save
+    // stack space.
+    if (this->isMinimized()) {
+        return 1;
+    }
+    
+    size_t reachable = 1;      
+
+    for (size_t i = 0; i < this->children->getLen(); i++) {
+        reachable += this->children->get(i)->getNumReachable();
+    }
+
+    return reachable;
+}
+
 void TreePaneLeaf::setDepth(size_t d) {
     this->depth = d;
 }

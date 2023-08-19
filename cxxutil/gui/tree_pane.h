@@ -125,6 +125,13 @@ namespace cxxutil { namespace gui {
         virtual TreePaneNode * const *getChildren() const = 0;
         virtual size_t getChildrenLen() const = 0;
 
+        // Get the number of nodes which are "reachable" from this node.
+        // NOTE: this is not the traditional definition.
+        //
+        // Reachable(x) = 1 if isLeaf(x) or isMinimized(x)
+        //                otherwise 1 + sum(reachable(c) forall children c)
+        virtual size_t getNumReachable() const = 0;
+
         // Finds the next node above or below this node as it'd
         // be rendered. 
         //
@@ -187,6 +194,8 @@ namespace cxxutil { namespace gui {
         virtual inline size_t getChildrenLen() const override {
             return this->children->getLen();
         }
+
+        virtual size_t getNumReachable() const override;
     }; 
 
     class TreePaneLeaf : public TreePaneNode {
@@ -217,6 +226,10 @@ namespace cxxutil { namespace gui {
 
         virtual inline size_t getChildrenLen() const override {
             return 0;
+        }
+
+        virtual inline size_t getNumReachable() const override {
+            return 1;
         }
     };
 
