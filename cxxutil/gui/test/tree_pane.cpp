@@ -10,6 +10,40 @@
 
 using namespace cxxutil;
 
+class LetterState : public core::SafeObject {
+private:
+    static const gui::text_color_info_t LS_INFO;
+
+    char lbl[2];
+public:
+    LetterState(uint8_t memChnl, char l) 
+        : core::SafeObject(memChnl) {
+        lbl[0] = l;
+        lbl[1] = '\0';
+    }
+
+    // Custom methods.
+    
+    inline char getChar() const {
+        return this->lbl[0];
+    }
+
+    // Required methods.
+    
+    inline const char *getLabel() const {
+        return this->lbl;
+    }
+
+    inline const gui::text_color_info_t *getLabelInfo() const {
+        return &(LetterState::LS_INFO);
+    }
+};
+
+const gui::text_color_info_t LetterState::LS_INFO = {
+    .fgColor = 0,
+    .bgColor = 255,
+};
+
 // NOTE: This demonstrates the design I was going for 
 // with TreePaneNodes.
 //
@@ -19,75 +53,25 @@ using namespace cxxutil;
 //
 // This way, there is no chance a node belongs to multiple trees.
 
-static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
-
-static const gui::text_color_info_t TEST_TREE_LABEL_INFO = {
-    .fgColor = 0,
-    .bgColor = 255,
-};
-
-class TestBranch final : public gui::TreePaneBranch {
-    friend TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
-
-private:
-    char lbl[2];
-
-    TestBranch(char l, core::SafeArray<TreePaneNode *> *chldn) 
-        : TreePaneBranch(chldn) {
-        this->lbl[0] = l;
-        this->lbl[1] = '\0';
-    }
-
-public:
-    virtual inline const gui::text_color_info_t *getTreeLabelInfo() const override {
-        return &TEST_TREE_LABEL_INFO;
-    }
-
-    virtual inline const char *getLabel() const override {
-        return this->lbl;
-    }
-};
-
-class TestLeaf final : public gui::TreePaneLeaf {
-    friend TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr);
-
-private:
-    char lbl[2];
-
-    TestLeaf(uint8_t memChnl, char l) 
-        : gui::TreePaneLeaf(memChnl) {
-        this->lbl[0] = l;
-        this->lbl[1] = '\0';
-    }
-
-    TestLeaf(char l) 
-        : TestLeaf(cxxutil::core::CXX_DEF_CHNL, l) {
-    }
-
-public:
-    virtual inline const gui::text_color_info_t *getTreeLabelInfo() const override {
-        return &TEST_TREE_LABEL_INFO;
-    }
-
-    virtual inline const char *getLabel() const override {
-        return this->lbl;
-    }
-};
+static gui::TreePaneNode<LetterState> *createTestTree(uint8_t memChnl, const char *tStr);
 
 // UB if tStr is null or malformed. Postfix string to tree algo.
 // 
 // String must be non-null and non-empty.
 // See TestCases for example tree building strings.
-static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) { 
-    core::CoreList<gui::TreePaneNode *> *stack = 
-        new core::CoreList<gui::TreePaneNode *>(memChnl);
+static gui::TreePaneNode<LetterState> *createTestTree(uint8_t memChnl, const char *tStr) { 
+    core::CoreList<gui::TreePaneNode<LetterState> *> *stack = 
+        new core::CoreList<gui::TreePaneNode<LetterState> *>(memChnl);
 
     const char *iter = tStr;
     
     while (*iter != '\0') {
         char lbl = *(iter++);
+        LetterState *ls = new LetterState(memChnl, lbl);
+
         if ('a' <= lbl && lbl <= 'z') { // Leaf Node.
-            stack->add(new TestLeaf(memChnl, lbl));
+                                        
+            stack->add(new gui::TreePaneLeaf<LetterState>(memChnl, ls));
 
             continue;
         }     
@@ -105,20 +89,22 @@ static gui::TreePaneNode *createTestTree(uint8_t memChnl, const char *tStr) {
 
         size_t len = num - '0';
 
-        core::SafeArray<gui::TreePaneNode *> *children = 
-            new core::SafeArray<gui::TreePaneNode *>(memChnl, len);
+        core::SafeArray<gui::TreePaneNode<LetterState> *> *children = 
+            new core::SafeArray<gui::TreePaneNode<LetterState> *>(memChnl, len);
 
         for (size_t i = 0; i < len; i++) {
             children->set(i, stack->pop());
         }
 
-        gui::TreePaneNode *node = new TestBranch(lbl, children); 
+        gui::TreePaneNode<LetterState> *node = 
+            new gui::TreePaneBranch<LetterState>(ls, children); 
+
         node->setExpanded(expanded);
 
         stack->add(node);
     } 
 
-    gui::TreePaneNode *result = stack->pop();
+    gui::TreePaneNode<LetterState> *result = stack->pop();
     result->declareRoot();
 
     delete stack;
@@ -132,10 +118,10 @@ class TreeStructureTestCase : public unit::TestCase {
 private:
     const char * const treeStr;
 
-    gui::TreePaneNode *root;
-    core::CoreList<gui::TreePaneNode *> *stack;
+    gui::TreePaneNode<LetterState> *root;
+    core::CoreList<gui::TreePaneNode<LetterState> *> *stack;
 
-    void expandInStack(gui::TreePaneNode *r) {
+    void expandInStack(gui::TreePaneNode<LetterState> *r) {
         stack->add(r);
         
         if (r->isLeaf()) {
@@ -143,7 +129,7 @@ private:
         }
 
         size_t len = r->getChildrenLen();
-        gui::TreePaneNode * const *children = r->getChildren();
+        gui::TreePaneNode<LetterState> * const *children = r->getChildren();
 
         for (size_t i = 0; i < len; i++) {
             this->expandInStack(children[i]);
@@ -152,7 +138,8 @@ private:
 
     // NOTE: Consider adding better assertion labeling here.
 
-    void assertExpParents(unit::TestContext *tc, gui::TreePaneNode *r, size_t d) {
+    void assertExpParents(unit::TestContext *tc, 
+            gui::TreePaneNode<LetterState> *r, size_t d) {
         tc->lblAssertEqUInt("Depth", d, r->getDepth());
 
         if (r->isLeaf()) {
@@ -160,16 +147,16 @@ private:
         }
 
         size_t len = r->getChildrenLen();
-        gui::TreePaneNode * const *children = r->getChildren();
+        gui::TreePaneNode<LetterState> * const *children = r->getChildren();
 
         for (size_t i = 0; i < len; i++) {
-            gui::TreePaneNode *child = children[i];
+            gui::TreePaneNode<LetterState> *child = children[i];
 
             this->assertExpParents(tc, child, d + 1);
 
             tc->lblAssertEqChar("Parent Label", 
-                    r->getLabel()[0],
-                    child->getParent()->getLabel()[0]);
+                    r->getState()->getChar(),
+                    child->getParent()->getState()->getChar());
 
             tc->lblAssertEqUInt("Parent Ind",
                     i, 
@@ -182,7 +169,7 @@ private:
 
         // First we use a stack to confirm the structure of
         // the tree matches that of the given string.
-        this->stack = new core::CoreList<gui::TreePaneNode *>(1);
+        this->stack = new core::CoreList<gui::TreePaneNode<LetterState> *>(1);
 
         this->expandInStack(this->root); 
 
@@ -190,13 +177,13 @@ private:
 
         while (*iter != '\0') {
             tc->lblAssertTrue("Nodes Left", this->stack->getLen() > 0);
-            gui::TreePaneNode *node = this->stack->pop();
+            gui::TreePaneNode<LetterState> *node = this->stack->pop();
 
             char lbl = *(iter++);
 
             if ('a' <= lbl && lbl <= 'z') { 
                 tc->lblAssertTrue("Is LNode", node->isLeaf());
-                tc->lblAssertEqChar("LNode Lbl", lbl, node->getLabel()[0]);
+                tc->lblAssertEqChar("LNode Lbl", lbl, node->getState()->getChar());
                 tc->lblAssertEqUInt("LNode Len", 0, node->getChildrenLen());
 
                 continue;
@@ -218,7 +205,7 @@ private:
             size_t len = num - '0';
 
             tc->lblAssertTrue("Is BNode", node->isBranch());
-            tc->lblAssertEqChar("BNode Lbl", lbl, node->getLabel()[0]);
+            tc->lblAssertEqChar("BNode Lbl", lbl, node->getState()->getChar());
             tc->lblAssertEqUInt("BNode Len", len, node->getChildrenLen());
             tc->lblAssertTrue("BNode Exp", expanded == node->isExpanded());
         }
@@ -265,7 +252,7 @@ private:
 
 protected:
     const char * const treeStr;
-    gui::TreePaneNode *root;
+    gui::TreePaneNode<LetterState> *root;
 
 public:
     FlexibleTreeTestCase(const char *n, const char *tStr) 
@@ -278,8 +265,8 @@ private:
     const char * const expPath;
 
     virtual void attemptBody(unit::TestContext *tc) override {
-        gui::TreePaneNode *currNode = nullptr;
-        gui::TreePaneNode *nextNode = this->root;   // should never be null.
+        gui::TreePaneNode<LetterState> *currNode = nullptr;
+        gui::TreePaneNode<LetterState> *nextNode = this->root;   // should never be null.
 
         // NOTE: the given string will actually be read in reverse
         // to make specifing tests easier. SEE test cases.
@@ -296,7 +283,8 @@ private:
             char expLbl = *charIter;
 
             // Actual path doesn't match expected path.
-            tc->lblAssertEqChar("NextD Miss", expLbl, currNode->getLabel()[0]);
+            tc->lblAssertEqChar("NextD Miss", expLbl, 
+                    currNode->getState()->getChar());
 
             nextNode = currNode->nextDown();
         }
@@ -317,7 +305,8 @@ private:
                 tc->fatal("NextU Exceed");
             }
 
-            tc->lblAssertEqChar("NextU Miss", expLbl, currNode->getLabel()[0]);
+            tc->lblAssertEqChar("NextU Miss", expLbl, 
+                    currNode->getState()->getChar());
 
             currNode = currNode->nextUp();
         }
@@ -404,7 +393,7 @@ class FlexibleTreePaneTestCase : public unit::TestCase {
 private:
     virtual void attempt(unit::TestContext *tc) override {
         this->root = createTestTree(1, this->treeStr);
-        this->pane = new gui::TreePane(1, this->treePaneInfo, this->root);
+        this->pane = new gui::TreePane<LetterState>(1, this->treePaneInfo, this->root);
 
         this->attemptBody(tc);
     }
@@ -420,8 +409,8 @@ protected:
     const char * const treeStr;
     const gui::tree_pane_info_t * const treePaneInfo;
 
-    gui::TreePaneNode *root;
-    gui::TreePane *pane;
+    gui::TreePaneNode<LetterState> *root;
+    gui::TreePane<LetterState> *pane;
 
 public:
     FlexibleTreePaneTestCase(const char *n, const gui::tree_pane_info_t *tpi, const char *tStr) 

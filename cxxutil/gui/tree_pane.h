@@ -25,13 +25,24 @@ namespace cxxutil { namespace gui {
             gfx_SetTextBGColor(this->fgColor);
         }
     };
+
+    // In the below classes type T MUST implement 
+    // the following functions!
+    //
+    // const char *getLabel() const;
+    // const text_color_info_t *getLabelInfo() const;
+    // 
+    template<typename T> class TreePaneNode;
+    template<typename T> class TreePaneBranch;
+    template<typename T> class TreePaneLeaf;
     
     // NOTE: a tree of TreePaneNode's is meant to have constant structure.
     // I make fields constants everywhere it is easy to do so.
+    template<typename T>
     class TreePaneNode : public core::SafeObject {
         // See link() and setDepth() functions.
-        friend class TreePaneBranch;
-        friend class TreePaneLeaf;
+        friend class TreePaneBranch<T>;
+        friend class TreePaneLeaf<T>;
 
     private: 
         // NOTE: These are backwards pointers.
@@ -53,7 +64,10 @@ namespace cxxutil { namespace gui {
         // This function will only be used in the constructor of the
         // TreePaneBranch. This is the only place where nodes should
         // be linked to their parents.
-        void link(TreePaneNode *p, size_t i);
+        void link(TreePaneNode *p, size_t i) {
+            this->parent = p;
+            this->ind = i;
+        }
 
         // This is the relative depth of this node.
         // I really wanted to make this a constant an unexposed,
@@ -64,12 +78,31 @@ namespace cxxutil { namespace gui {
         size_t depth;
         virtual void setDepth(size_t d) = 0;
 
+        // Lastly, every node will hold an arbitrary state.
+        // NOTE: JUST KNOW that when the state is given to this node
+        // it becomes "part" of the node.
+        // When this node is deleted, so is the state.
+        T * const state;
+
     protected:
-        TreePaneNode(uint8_t memChnl);
-        TreePaneNode();
+        TreePaneNode(uint8_t memChnl, T *s) 
+            : core::SafeObject(memChnl), state(s)  {
+            this->parent = nullptr;
+            this->ind = 0;
+            this->depth = 0;
+        }
+
+        TreePaneNode(T *s) : TreePaneNode(core::CXX_DEF_CHNL, s) {
+        }
 
     public:
-        virtual ~TreePaneNode();
+        virtual ~TreePaneNode() {
+            delete this->state;
+        }
+
+        inline T *getState() {
+            return this->state;
+        }
 
         inline TreePaneNode *getParent() const {
             return this->parent;
@@ -78,18 +111,6 @@ namespace cxxutil { namespace gui {
         inline size_t getIndex() const {
             return this->ind;
         }
-
-        virtual const text_color_info_t *getTreeLabelInfo() const = 0;
-
-        inline void install() const {
-            this->getTreeLabelInfo()->install();
-        }
-
-        inline void installInverse() const {
-            this->getTreeLabelInfo()->installInverse();
-        }
-
-        virtual const char *getLabel() const = 0;
 
         virtual bool isBranch() const = 0;
         inline bool isLeaf() const {
@@ -141,22 +162,64 @@ namespace cxxutil { namespace gui {
         // This means the path from the root of this node's tree
         // to this node only contains expanded nodes.
         // (excluding this node)
-        TreePaneNode *nextUp(); 
-        TreePaneNode *nextDown(); 
+        TreePaneNode *nextUp() {
+            if (this->ind == 0) {
+                return this->parent;
+            }
+
+            // It is assumed that parent must be expanded.
+            TreePaneNode *iter = 
+                this->parent->getChildren()[this->ind - 1];
+
+            while (!(iter->isLeaf() || iter->isMinimized())) {
+                iter = iter->getChildren()[iter->getChildrenLen() - 1];
+            }
+
+            return iter;
+        }
+
+        TreePaneNode *nextDown() {
+            if (this->isBranch() && this->isExpanded()) {
+                return this->getChildren()[0];
+            }
+
+            TreePaneNode *iter = this;
+
+            while (iter->parent) {
+                // If the iterator is not the leftmost child.
+                if (iter->ind < iter->parent->getChildrenLen() - 1) {
+                    return iter->parent->getChildren()[iter->ind + 1];
+                }
+
+                iter = iter->parent;
+            }
+
+            // We made it all the way to the root!
+            return nullptr;
+        }
     };
 
     // NOTE: TreePaneBranch and TreePaneLeaf will remain abstract.
     // This way, the user can define how label text and styling is 
     // retrieved.
 
-    class TreePaneBranch : public TreePaneNode {
+    template<typename T>
+    class TreePaneBranch : public TreePaneNode<T> {
     private:
-        virtual void setDepth(size_t d) override;
+        virtual void setDepth(size_t d) override {
+            this->depth = d;
 
-        core::SafeArray<TreePaneNode *> * const children;
+            size_t len = this->children->getLen();
+            for (size_t i = 0; i < len; i++) {
+                this->children->get(i)->setDepth(d + 1);
+            }
+        }
+
+        core::SafeArray<TreePaneNode<T> *> * const children;
 
         bool expanded;
-    protected:
+
+    public:
         // NOTE: VERY IMPORTANT!!!!
         // 1) The chldn safe array will become "part" of this object. 
         // That is, when this branch node is deleted, all TreePaneNodes
@@ -171,9 +234,26 @@ namespace cxxutil { namespace gui {
         // The design of these concepts is centered around these truths.
         //
         // NOTE: Undefined Behavoir if chldn is empty!
-        TreePaneBranch(core::SafeArray<TreePaneNode *> *chldn);
-    public:
-        virtual ~TreePaneBranch();
+        TreePaneBranch(T *s, core::SafeArray<TreePaneNode<T> *> *chldn) 
+            : TreePaneNode<T>(chldn->getChnl(), s), children(chldn) {
+            size_t len = this->children->getLen();
+
+            // NOTE: This is the ONLY place where we link parents!
+            for (size_t i = 0; i < len; i++) {
+                this->children->get(i)->link(this, i);
+            }
+
+            this->expanded = false;
+        }
+
+        virtual ~TreePaneBranch() {
+            size_t len = this->children->getLen(); 
+            for (size_t i = 0; i < len; i++) {
+                delete this->children->get(i);
+            }
+
+            delete this->children;
+        }
 
         virtual inline bool isBranch() const override {
             return true;
@@ -187,7 +267,7 @@ namespace cxxutil { namespace gui {
             return this->expanded;
         }
 
-        virtual inline TreePaneNode * const *getChildren() const override {
+        virtual inline TreePaneNode<T> * const *getChildren() const override {
             return this->children->getArr();
         }
 
@@ -195,18 +275,41 @@ namespace cxxutil { namespace gui {
             return this->children->getLen();
         }
 
-        virtual size_t getNumReachable() const override;
+        virtual size_t getNumReachable() const override {
+            // NOTE: consider making this non-recursive to save
+            // stack space.
+            if (this->isMinimized()) {
+                return 1;
+            }
+            
+            size_t reachable = 1;      
+
+            for (size_t i = 0; i < this->children->getLen(); i++) {
+                reachable += this->children->get(i)->getNumReachable();
+            }
+
+            return reachable;
+        }
     }; 
 
-    class TreePaneLeaf : public TreePaneNode {
-    protected:
-        virtual void setDepth(size_t d) override;
-
-        TreePaneLeaf(uint8_t memChnl);
-        TreePaneLeaf();
+    template<typename T>
+    class TreePaneLeaf : public TreePaneNode<T> {
+    private:
+        virtual void setDepth(size_t d) override {
+            this->depth = d;
+        }
 
     public:
-        virtual ~TreePaneLeaf();
+        TreePaneLeaf(uint8_t memChnl, T *s) 
+            : TreePaneNode<T>(memChnl, s) {
+        }
+
+        TreePaneLeaf(T *s) 
+            : TreePaneLeaf<T>(core::CXX_DEF_CHNL, s) {
+        }
+
+        virtual ~TreePaneLeaf() {
+        }
 
         virtual inline bool isBranch() const override {
             return false;
@@ -220,7 +323,7 @@ namespace cxxutil { namespace gui {
             return false;
         }
 
-        virtual inline TreePaneNode * const *getChildren() const override {
+        virtual inline TreePaneNode<T> * const *getChildren() const override {
             return nullptr;
         }
 
@@ -270,18 +373,17 @@ namespace cxxutil { namespace gui {
         uint8_t tabWidth;
     };
 
-    // While TreeNode will remain abstract, TreePane will be concrete.
-    
+    template<typename T>
     class TreePane : public Pane {
     private: 
         const tree_pane_info_t * const paneInfo;
 
         // NOTE: The root will NOT be deleted when the pane is.
-        TreePaneNode * const root;
+        TreePaneNode<T> * const root;
 
         // NOTE: this will be different from the TextBlock.
         // All rendering will occur relative to the selected line!
-        TreePaneNode *sel;
+        TreePaneNode<T> *sel;
 
         // This will never be greater than height - (8*heightScale)
         uint8_t selRelY;
@@ -297,15 +399,80 @@ namespace cxxutil { namespace gui {
 
         // x and y should be the top left corner of the node's row.
         // This will NOT install any text colors.
-        void renderNode(uint24_t x, uint8_t y, TreePaneNode *node) const;
+        void renderNode(uint24_t x, uint8_t y, TreePaneNode<T> *node) const {
+        }
     public:
         // UB when any given pointers are null.
-        TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r); 
-        TreePane(const tree_pane_info_t *tpi, TreePaneNode *r);
-        virtual ~TreePane();
+        TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode<T> *r) 
+            : Pane(memChnl), paneInfo(tpi), root(r) {
+            this->sel = r;
+            this->selRelY = 0;
+            this->selRowInd = 0;
+            this->totalRows = r->getNumReachable();
+        }
 
-        virtual void render(uint24_t x, uint8_t y) const override;
-        virtual void update(core::KeyManager *km) override;
+        TreePane(const tree_pane_info_t *tpi, TreePaneNode<T> *r) 
+            : TreePane(core::CXX_DEF_CHNL, tpi, r) {
+        }
+
+        virtual ~TreePane() {
+        }
+
+        virtual void render(uint24_t x, uint8_t y) const override {
+            const tree_pane_info_t * const pi = this->paneInfo;
+
+            gfx_SetColor(pi->paneBGColor);
+            gfx_FillRectangle(x, y, pi->rowWidth, pi->height);
+
+            gfx_SetColor(pi->scrollBarBGColor);
+            gfx_FillRectangle(x + pi->rowWidth, y, 
+                    pi->scrollBarWidth, pi->height);
+
+            const uint8_t rowHeight = 8 * pi->lblHeightScale;
+
+            // First render selected row.
+            this->sel->getState()->getLabelInfo()->installInverse();
+            this->renderNode(x, this->selRelY, this->sel);
+
+            // Next we render up to the top of the pane.
+            // NOTE: it is gauranteed there exist lines
+            // up to the top left corner of the pane.
+            
+            TreePaneNode<T> *iter = this->sel;
+            uint8_t iterRelY = this->selRelY;    
+            
+            while (iterRelY >= pi->lblVertSpace + rowHeight) {
+                iterRelY -= pi->lblVertSpace + rowHeight;
+
+                iter = iter->nextUp();
+
+                iter->getState()->getLabelInfo()->install();
+                this->renderNode(x, iterRelY, iter);
+            }
+            
+            iter = this->sel;
+            iterRelY = this->selRelY;    
+
+            while (pi->height - iterRelY >= pi->lblVertSpace + rowHeight) {
+                iterRelY += pi->lblVertSpace + rowHeight;
+
+                iter = iter->nextDown();
+
+                if (!iter) {
+                    break;
+                }
+
+                iter->getState()->getLabelInfo()->install();
+                this->renderNode(x, iterRelY, iter);
+
+                iter = iter->nextDown();
+            }
+
+            // Finally time to render scroll bar.
+        }
+
+        virtual void update(core::KeyManager *km) override {
+        }
 
         virtual inline uint24_t getWidth() const override {
             return this->paneInfo->rowWidth + 
@@ -339,10 +506,60 @@ namespace cxxutil { namespace gui {
         }
 
         // Move the selected line up and down.
-        void scrollDown();
-        void scrollUp();
+        void scrollDown() {
+            TreePaneNode<T> *next = this->sel->nextDown();
+
+            if (!next) {
+                return; // No where to go!
+            }
+
+            this->sel = next;
+            this->selRowInd++;
+
+            const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
+            const tree_pane_info_t * const pi = this->paneInfo;
+
+            // Not enough pane space.
+            if (pi->height - this->selRelY < pi->lblVertSpace + (2*rowHeight)) {
+                this->selRelY = pi->height - rowHeight;
+            } else {
+                this->selRelY += pi->lblVertSpace + rowHeight;
+            }
+        }
+
+        void scrollUp() {
+            TreePaneNode<T> *next = this->sel->nextUp();
+
+            if (!next) {
+                return; // No where to go!
+            }
+
+            this->sel = next;
+            this->selRowInd--;
+
+            const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
+            const tree_pane_info_t * const pi = this->paneInfo;
+
+            if (this->selRelY < pi->lblVertSpace + rowHeight) {
+                this->selRelY = 0;
+            } else {
+                this->selRelY -= pi->lblVertSpace + rowHeight;
+            }
+        }
 
         // Toggle expand/minimize of the selected node.
-        void toggle();
+        void toggle() {
+            if (this->sel->isExpanded()) {
+                size_t reachableChildren = this->sel->getNumReachable() - 1;
+                this->totalRows -= reachableChildren;
+
+                this->sel->minimize();
+            } else {
+                this->sel->expand();
+
+                size_t reachableChildren = this->sel->getNumReachable() - 1;
+                this->totalRows += reachableChildren;
+            }
+        }
     }; 
 }}
