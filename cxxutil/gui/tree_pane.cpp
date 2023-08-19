@@ -129,6 +129,10 @@ TreePane::TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r
 
 TreePane::TreePane(const tree_pane_info_t *tpi, TreePaneNode *r) 
     : TreePane(core::CXX_DEF_CHNL, tpi, r) {
+    this->sel = r;
+    this->selRelY = 0;
+    this->selRowInd = 0;
+    this->totalRows = r->getNumReachable();
 }
 
 TreePane::~TreePane() {
@@ -151,6 +155,7 @@ void TreePane::scrollDown() {
     }
 
     this->sel = next;
+    this->selRowInd++;
 
     const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
     const tree_pane_info_t * const pi = this->paneInfo;
@@ -174,6 +179,7 @@ void TreePane::scrollUp() {
     }
 
     this->sel = next;
+    this->selRowInd--;
 
     const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
     const tree_pane_info_t * const pi = this->paneInfo;
@@ -186,5 +192,17 @@ void TreePane::scrollUp() {
 }
 
 void TreePane::toggle() {
+    if (this->sel->isExpanded()) {
+        size_t reachableChildren = this->sel->getNumReachable() - 1;
+        this->totalRows -= reachableChildren;
 
+        this->sel->minimize();
+    } else {
+        this->sel->expand();
+
+        size_t reachableChildren = this->sel->getNumReachable() - 1;
+        this->totalRows += reachableChildren;
+    }
 }
+
+
