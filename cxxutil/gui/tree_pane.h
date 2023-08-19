@@ -263,6 +263,8 @@ namespace cxxutil { namespace gui {
 
         uint8_t lblVertSpace; // Spacing between rows.
 
+        // NOTE: 8 * height scale cannot be greater than the height
+        // of the pane. In this case, UB.
         uint8_t lblWidthScale;
         uint8_t lblHeightScale;
 
@@ -272,7 +274,7 @@ namespace cxxutil { namespace gui {
 
     // While TreeNode will remain abstract, TreePane will be concrete.
     
-    class TreePane : Pane {
+    class TreePane : public Pane {
     private: 
         const tree_pane_info_t * const paneInfo;
 
@@ -312,8 +314,27 @@ namespace cxxutil { namespace gui {
             return this->paneInfo->height;
         }
 
+        // These three getters are primarily exposed to aid with testing.
+
+        inline uint8_t getSelectedRowRelY() const {
+            return this->selRelY;
+        }
+
+        inline size_t getSelectedRowInd() const {
+            return this->selRowInd;
+        }
+
+        inline size_t getTotalRows() const {
+            return this->totalRows;
+        }
+
         // NOTE: these below functions help traversing tree based on how it
         // it is expanded.
+        
+        inline void gotoTop() {
+            this->sel = this->root;
+            this->selRelY = 0;
+        }
 
         // Move the selected line up and down.
         void scrollDown();

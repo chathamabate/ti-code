@@ -69,7 +69,7 @@ int main(void) {
     os_ClrHome();
     
     MyMonitor *m = new MyMonitor();
-    gui::TREE_PANE_NODE_SUITE->run(m);
+    gui::TREE_PANE_SUITE->run(m);
     core::waitClear();
 
     delete m;

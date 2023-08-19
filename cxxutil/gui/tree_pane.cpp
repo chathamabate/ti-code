@@ -125,20 +125,19 @@ TreePane::TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r
     : Pane(memChnl), paneInfo(tpi), root(r) {
     this->sel = r;
     this->selRelY = 0;
+    this->selRowInd = 0;
+    this->totalRows = r->getNumReachable();
 }
 
 TreePane::TreePane(const tree_pane_info_t *tpi, TreePaneNode *r) 
     : TreePane(core::CXX_DEF_CHNL, tpi, r) {
-    this->sel = r;
-    this->selRelY = 0;
-    this->selRowInd = 0;
-    this->totalRows = r->getNumReachable();
 }
 
 TreePane::~TreePane() {
 }
 
 void TreePane::render(uint24_t x, uint8_t y) const {
+    // Time for rendering!!!!
     (void)x;
     (void)y;
 }

@@ -398,3 +398,129 @@ static unit::TestSuite TREE_PANE_NODE_SUITE_VAL(
 
 unit::TestTree * const gui::TREE_PANE_NODE_SUITE = &TREE_PANE_NODE_SUITE_VAL;
 
+// Now time for TreePane UI tests.
+
+class FlexibleTreePaneTestCase : public unit::TestCase {
+private:
+    virtual void attempt(unit::TestContext *tc) override {
+        this->root = createTestTree(1, this->treeStr);
+        this->pane = new gui::TreePane(1, this->treePaneInfo, this->root);
+
+        this->attemptBody(tc);
+    }
+
+    virtual void finally() override {
+        delete this->pane;
+        delete this->root;
+    }
+
+    virtual void attemptBody(unit::TestContext *tc) = 0;
+
+protected:
+    const char * const treeStr;
+    const gui::tree_pane_info_t * const treePaneInfo;
+
+    gui::TreePaneNode *root;
+    gui::TreePane *pane;
+
+public:
+    FlexibleTreePaneTestCase(const char *n, const gui::tree_pane_info_t *tpi, const char *tStr) 
+        : unit::TestCase(n), treeStr(tStr), treePaneInfo(tpi) {
+    }
+};
+
+static const gui::tree_pane_info_t TPI1 = {
+    .height = 30, // A little more than three rows.
+    .lblVertSpace = 2,
+    .lblHeightScale = 1,
+};
+
+class TreePaneTestCase1 : public FlexibleTreePaneTestCase {
+private:
+    static TreePaneTestCase1 ONLY_VAL;
+    TreePaneTestCase1() : FlexibleTreePaneTestCase("TreePane 1", 
+            &TPI1, "abcA3dD*1E*2") {}
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+        tc->lblAssertEqUInt("4L.0", 4, this->pane->getTotalRows());
+        
+        this->pane->scrollDown(); 
+
+        tc->lblAssertEqUInt("4L.1 RI", 1, this->pane->getSelectedRowInd());
+        tc->lblAssertEqUInt("4L.1 RrY", 10, this->pane->getSelectedRowRelY());
+        
+        this->pane->scrollDown();
+        this->pane->scrollDown();
+
+        tc->lblAssertEqUInt("4L.2 RI", 3, this->pane->getSelectedRowInd());
+        tc->lblAssertEqUInt("4L.2 RrY", 30 - 8, this->pane->getSelectedRowRelY());
+
+        this->pane->toggle();
+
+        tc->lblAssertEqUInt("7L.0", 7, this->pane->getTotalRows());
+
+        this->pane->scrollUp();
+
+        tc->lblAssertEqUInt("7L.1 RI", 2, this->pane->getSelectedRowInd());
+        tc->lblAssertEqUInt("7L.1 RrY", 30 - 18, this->pane->getSelectedRowRelY());
+
+        this->pane->scrollUp();
+        this->pane->toggle();
+
+        tc->lblAssertEqUInt("6L.0", 6, this->pane->getTotalRows());
+
+        this->pane->scrollUp();
+        tc->lblAssertEqUInt("6L.1 RrY", 0, this->pane->getSelectedRowRelY());
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+TreePaneTestCase1 TreePaneTestCase1::ONLY_VAL;
+
+static gui::tree_pane_info_t TPI2 = {
+    .height = 8, // Only space for one row.
+                 
+    .lblVertSpace = 2,
+    .lblHeightScale = 1,
+};
+
+class TreePaneTestCase2 : public FlexibleTreePaneTestCase {
+private:
+    static TreePaneTestCase2 ONLY_VAL;
+    TreePaneTestCase2() : FlexibleTreePaneTestCase("TreePane 2", 
+            &TPI2, "abcA*3") {}
+
+    virtual void attemptBody(unit::TestContext *tc) override {
+        this->pane->scrollDown();
+        tc->lblAssertEqUInt("4L.0", 0, this->pane->getSelectedRowRelY());
+
+        this->pane->scrollDown();
+        this->pane->scrollDown();
+        tc->lblAssertEqUInt("4L.1", 0, this->pane->getSelectedRowRelY());
+
+        this->pane->scrollUp();
+        tc->lblAssertEqUInt("4L.2", 0, this->pane->getSelectedRowRelY());
+
+        this->pane->scrollUp();
+        this->pane->scrollUp();
+        tc->lblAssertEqUInt("4L.3", 0, this->pane->getSelectedRowRelY());
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+TreePaneTestCase2 TreePaneTestCase2::ONLY_VAL;
+
+static const size_t TREE_PANE_SUITE_LEN = 2;
+static unit::TestTree *TREE_PANE_SUITE_TESTS[TREE_PANE_SUITE_LEN] = {
+    TreePaneTestCase1::ONLY,
+    TreePaneTestCase2::ONLY,
+};
+
+static unit::TestSuite TREE_PANE_SUITE_VAL("Tree Pane Suite", 
+        TREE_PANE_SUITE_TESTS, TREE_PANE_SUITE_LEN);
+
+unit::TestTree * const gui::TREE_PANE_SUITE = &TREE_PANE_SUITE_VAL;
