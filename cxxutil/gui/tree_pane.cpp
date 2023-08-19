@@ -1,5 +1,6 @@
 #include "./tree_pane.h"
 #include "cxxutil/core/mem.h"
+#include "graphx.h"
 
 using namespace cxxutil::gui;
 
@@ -121,6 +122,10 @@ TreePaneLeaf::~TreePaneLeaf() {
 
 // Tree Pane GUI Stuff.
 
+void TreePane::renderNode(uint24_t x, uint8_t y, TreePaneNode *node) const {
+
+}
+
 TreePane::TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r) 
     : Pane(memChnl), paneInfo(tpi), root(r) {
     this->sel = r;
@@ -137,9 +142,56 @@ TreePane::~TreePane() {
 }
 
 void TreePane::render(uint24_t x, uint8_t y) const {
-    // Time for rendering!!!!
-    (void)x;
-    (void)y;
+    const tree_pane_info_t * const pi = this->paneInfo;
+
+    gfx_SetColor(pi->paneBGColor);
+    gfx_FillRectangle(x, y, pi->rowWidth, pi->height);
+
+    gfx_SetColor(pi->scrollBarBGColor);
+    gfx_FillRectangle(x + pi->rowWidth, y, 
+            pi->scrollBarWidth, pi->height);
+
+    const uint8_t rowHeight = 8 * pi->lblHeightScale;
+
+    // First render selected row.
+    this->sel->installInverse();
+    this->renderNode(x, this->selRelY, this->sel);
+
+    // Next we render up to the top of the pane.
+    // NOTE: it is gauranteed there exist lines
+    // up to the top left corner of the pane.
+    
+    TreePaneNode *iter = this->sel;
+    uint8_t iterRelY = this->selRelY;    
+    
+    while (iterRelY >= pi->lblVertSpace + rowHeight) {
+        iterRelY -= pi->lblVertSpace + rowHeight;
+
+        iter = iter->nextUp();
+
+        iter->install();
+        this->renderNode(x, iterRelY, iter);
+    }
+    
+    iter = this->sel;
+    iterRelY = this->selRelY;    
+
+    while (pi->height - iterRelY >= pi->lblVertSpace + rowHeight) {
+        iterRelY += pi->lblVertSpace + rowHeight;
+
+        iter = iter->nextDown();
+
+        if (!iter) {
+            break;
+        }
+
+        iter->install();
+        this->renderNode(x, iterRelY, iter);
+
+        iter = iter->nextDown();
+    }
+
+    // Finally time to render scroll bar.
 }
 
 void TreePane::update(core::KeyManager *km) {
@@ -159,14 +211,13 @@ void TreePane::scrollDown() {
     const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
     const tree_pane_info_t * const pi = this->paneInfo;
 
-    // Convert to unit24_t to prevent wrap around.
-    uint24_t nextSelRelY = this->selRelY;
-    nextSelRelY += rowHeight + pi->lblVertSpace;
+    // TODO: fix this shit.
 
-    if (nextSelRelY + rowHeight > pi->height) {
+    // Not enough pane space.
+    if (pi->height - this->selRelY < pi->lblVertSpace + (2*rowHeight)) {
         this->selRelY = pi->height - rowHeight;
     } else {
-        this->selRelY = nextSelRelY;
+        this->selRelY += pi->lblVertSpace + rowHeight;
     }
 }
 

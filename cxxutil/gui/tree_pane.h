@@ -238,8 +238,6 @@ namespace cxxutil { namespace gui {
     //
     // A TreePaneNode's display style is given to the TreePane by the node.
     // * Like text block, the default 8x8 font will be used.
-    // * If the height of a Node's scaled text would be larger than the TreePane
-    // itself, the text scale used will be 1.
     //
     // Even if a TreePaneNode provides an empty string or null as its label,
     // its row will still be rendered with the provided height scale.
@@ -296,6 +294,10 @@ namespace cxxutil { namespace gui {
         // The total number of rows in the whole pane. 
         // (Regardless of what is rendered)
         size_t totalRows;
+
+        // x and y should be the top left corner of the node's row.
+        // This will NOT install any text colors.
+        void renderNode(uint24_t x, uint8_t y, TreePaneNode *node) const;
     public:
         // UB when any given pointers are null.
         TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r); 
