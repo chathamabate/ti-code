@@ -144,9 +144,47 @@ void TreePane::update(core::KeyManager *km) {
 }
 
 void TreePane::scrollDown() {
+    TreePaneNode *next = this->sel->nextDown();
 
+    if (!next) {
+        return; // No where to go!
+    }
+
+    this->sel = next;
+
+    const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
+    const tree_pane_info_t * const pi = this->paneInfo;
+
+    // Convert to unit24_t to prevent wrap around.
+    uint24_t nextSelRelY = this->selRelY;
+    nextSelRelY += rowHeight + pi->lblVertSpace;
+
+    if (nextSelRelY + rowHeight > pi->height) {
+        this->selRelY = pi->height - rowHeight;
+    } else {
+        this->selRelY = nextSelRelY;
+    }
 }
 
 void TreePane::scrollUp() {
+    TreePaneNode *next = this->sel->nextUp();
+
+    if (!next) {
+        return; // No where to go!
+    }
+
+    this->sel = next;
+
+    const uint8_t rowHeight = 8 * this->paneInfo->lblHeightScale;
+    const tree_pane_info_t * const pi = this->paneInfo;
+
+    if (this->selRelY < pi->lblVertSpace + rowHeight) {
+        this->selRelY = 0;
+    } else {
+        this->selRelY -= pi->lblVertSpace + rowHeight;
+    }
+}
+
+void TreePane::toggle() {
 
 }

@@ -254,8 +254,17 @@ namespace cxxutil { namespace gui {
 
     struct tree_pane_info_t {
         // Pane width and height.
-        uint24_t width;
+        uint8_t scrollBarWidth;
+        uint8_t scrollBarFGColor;
+        uint8_t scrollBarBGColor;
+
+        uint24_t rowWidth;
         uint8_t height;
+
+        uint8_t lblVertSpace; // Spacing between rows.
+
+        uint8_t lblWidthScale;
+        uint8_t lblHeightScale;
 
         uint8_t paneBGColor;
         uint8_t tabWidth;
@@ -273,8 +282,18 @@ namespace cxxutil { namespace gui {
         // NOTE: this will be different from the TextBlock.
         // All rendering will occur relative to the selected line!
         TreePaneNode *sel;
+
+        // This will never be greater than height - (8*heightScale)
         uint8_t selRelY;
+
+        // NOTE: these fields are used for rendering the scrollbar.
         
+        // The 0-indexed row number of the current selection.
+        size_t selRowInd;
+
+        // The total number of rows in the whole pane. 
+        // (Regardless of what is rendered)
+        size_t totalRows;
     public:
         // UB when any given pointers are null.
         TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode *r); 
@@ -282,11 +301,11 @@ namespace cxxutil { namespace gui {
         virtual ~TreePane();
 
         virtual void render(uint24_t x, uint8_t y) const override;
-
         virtual void update(core::KeyManager *km) override;
 
         virtual inline uint24_t getWidth() const override {
-            return this->paneInfo->width;
+            return this->paneInfo->rowWidth + 
+                this->paneInfo->scrollBarWidth;
         }
 
         virtual inline uint8_t getHeight() const override {
@@ -294,10 +313,13 @@ namespace cxxutil { namespace gui {
         }
 
         // NOTE: these below functions help traversing tree based on how it
-        // is expanded.
+        // it is expanded.
 
         // Move the selected line up and down.
         void scrollDown();
         void scrollUp();
+
+        // Toggle expand/minimize of the selected node.
+        void toggle();
     }; 
 }}
