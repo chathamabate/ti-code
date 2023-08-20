@@ -400,6 +400,22 @@ namespace cxxutil { namespace gui {
         // x and y should be the top left corner of the node's row.
         // This will NOT install any text colors.
         void renderNode(uint24_t x, uint8_t y, TreePaneNode<T> *node) const {
+            uint24_t relX = node->getDepth() * this->paneInfo->tabWidth; 
+
+            gfx_SetTextXY(x + relX, y);
+
+            const char *lbl = node->getState()->getLabel();
+
+            char currChar = *lbl;
+            uint8_t currCharWidth = gfx_GetCharWidth(currChar);
+            
+            while (currChar != '\0' && relX + currCharWidth <= this->paneInfo->rowWidth) {
+                gfx_PrintChar(currChar); 
+                relX += currCharWidth;
+
+                currChar = *(++lbl);
+                currCharWidth = gfx_GetCharWidth(currChar);
+            } 
         }
     public:
         // UB when any given pointers are null.
@@ -428,11 +444,13 @@ namespace cxxutil { namespace gui {
             gfx_FillRectangle(x + pi->rowWidth, y, 
                     pi->scrollBarWidth, pi->height);
 
+            gfx_SetTextScale(pi->lblWidthScale, pi->lblHeightScale);
+
             const uint8_t rowHeight = 8 * pi->lblHeightScale;
 
             // First render selected row.
             this->sel->getState()->getLabelInfo()->installInverse();
-            this->renderNode(x, this->selRelY, this->sel);
+            this->renderNode(x, y + this->selRelY, this->sel);
 
             // Next we render up to the top of the pane.
             // NOTE: it is gauranteed there exist lines
@@ -447,14 +465,14 @@ namespace cxxutil { namespace gui {
                 iter = iter->nextUp();
 
                 iter->getState()->getLabelInfo()->install();
-                this->renderNode(x, iterRelY, iter);
+                this->renderNode(x, y + iterRelY, iter);
             }
             
             iter = this->sel;
             iterRelY = this->selRelY;    
 
-            while (pi->height - iterRelY >= pi->lblVertSpace + rowHeight) {
-                iterRelY += pi->lblVertSpace + rowHeight;
+            while (pi->height - iterRelY >= pi->lblVertSpace + (2*rowHeight)) {
+                iterRelY += rowHeight + pi->lblVertSpace;
 
                 iter = iter->nextDown();
 
@@ -463,12 +481,14 @@ namespace cxxutil { namespace gui {
                 }
 
                 iter->getState()->getLabelInfo()->install();
-                this->renderNode(x, iterRelY, iter);
-
-                iter = iter->nextDown();
+                this->renderNode(x, y + iterRelY, iter);
             }
 
             // Finally time to render scroll bar.
+            // Should there be special rendering for branches vs. leaves??
+            // I think so!
+
+            
         }
 
         virtual void update(core::KeyManager *km) override {

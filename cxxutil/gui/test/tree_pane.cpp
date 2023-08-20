@@ -1,9 +1,11 @@
 #include "./tree_pane.h"
 #include "cxxutil/core/data.h"
+#include "cxxutil/core/input.h"
 #include "cxxutil/core/mem.h"
 #include "cxxutil/gui/tree_pane.h"
 #include "cxxutil/gui/text_block.h"
 #include "cxxutil/unit/unit.h"
+#include "graphx.h"
 #include "ti/screen.h"
 
 #include <string.h>
@@ -14,12 +16,12 @@ class LetterState : public core::SafeObject {
 private:
     static const gui::text_color_info_t LS_INFO;
 
-    char lbl[2];
+    char lbl[7];
 public:
     LetterState(uint8_t memChnl, char l) 
-        : core::SafeObject(memChnl) {
-        lbl[0] = l;
-        lbl[1] = '\0';
+        : core::SafeObject(memChnl), lbl("Lbl: ") {
+        lbl[5] = l;
+        lbl[6] = '\0';
     }
 
     // Custom methods.
@@ -513,3 +515,66 @@ static unit::TestSuite TREE_PANE_SUITE_VAL("Tree Pane Suite",
         TREE_PANE_SUITE_TESTS, TREE_PANE_SUITE_LEN);
 
 unit::TestTree * const gui::TREE_PANE_SUITE = &TREE_PANE_SUITE_VAL;
+
+static const gui::tree_pane_info_t TPANE_INFO = {
+    .scrollBarWidth = 8,
+
+    .scrollBarFGColor = 24, 
+    .scrollBarBGColor = 223,
+
+    .rowWidth = 160,
+    .height = 160,
+
+    .lblVertSpace = 2,
+    .lblWidthScale = 1,
+    .lblHeightScale = 2,
+
+    .paneBGColor = 247,
+    .tabWidth = 10,
+};
+
+void gui::TreePaneGUITest() {
+    core::KeyManager *km = new core::KeyManager(1);
+    km->setRepeatDelay(5);
+    km->setFocusedKeys(
+            (core::cxx_key_t[]){
+            core::CXX_KEY_Clear, core::CXX_KEY_8, 
+            core::CXX_KEY_5, core::CXX_KEY_Enter}, 4);
+
+    TreePaneNode<LetterState> *root = createTestTree(1, 
+            "abA*2lstK3M*1P*2nD*1plQ1S*2Z*3");
+    TreePane<LetterState> *pane = 
+        new TreePane<LetterState>(1, &TPANE_INFO, root);
+
+    gfx_Begin();
+    gfx_SetDrawBuffer();
+
+    while (!km->isKeyDown(core::CXX_KEY_Clear)) {
+        km->scanFocusedKeys();
+
+        if (km->isKeyPressed(core::CXX_KEY_8)) {
+            pane->scrollUp();
+        } 
+        
+        if (km->isKeyPressed(core::CXX_KEY_5)) {
+            pane->scrollDown();
+        } 
+        
+        if (km->isKeyPressed(core::CXX_KEY_Enter)) {
+            pane->toggle();
+        }
+
+        pane->render(50, (GFX_LCD_HEIGHT - 160) / 2);
+
+        gfx_BlitBuffer();
+        delay(100);    
+    }
+
+    gfx_End();
+
+    delete pane;
+    delete root;
+    delete km;
+
+    core::MemoryTracker::ONLY->checkMemLeaks();
+}

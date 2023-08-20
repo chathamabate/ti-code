@@ -67,6 +67,10 @@ public:
 
 int main(void) {    
     os_ClrHome();
+
+    gui::runGui();
+
+    return 0;
     
     MyMonitor *m = new MyMonitor();
     gui::TREE_PANE_NODE_SUITE->run(m);
