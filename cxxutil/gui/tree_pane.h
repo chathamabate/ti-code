@@ -370,6 +370,7 @@ namespace cxxutil { namespace gui {
         uint8_t lblHeightScale;
 
         uint8_t paneBGColor;
+        uint8_t selRowBGColor;
         uint8_t tabWidth;
     };
 
@@ -400,8 +401,9 @@ namespace cxxutil { namespace gui {
         // x and y should be the top left corner of the node's row.
         // This will NOT install any text colors.
         void renderNode(uint24_t x, uint8_t y, TreePaneNode<T> *node) const {
-            uint24_t relX = node->getDepth() * this->paneInfo->tabWidth; 
+            node->getState()->getLabelInfo()->install();
 
+            uint24_t relX = node->getDepth() * this->paneInfo->tabWidth; 
             gfx_SetTextXY(x + relX, y);
 
             const char *lbl = node->getState()->getLabel();
@@ -488,7 +490,11 @@ namespace cxxutil { namespace gui {
             const uint8_t rowHeight = 8 * pi->lblHeightScale;
 
             // First render selected row.
-            this->sel->getState()->getLabelInfo()->installInverse();
+            gfx_SetColor(pi->selRowBGColor);
+
+            // TODO fix this shit...
+            gfx_FillRectangle(x, y + this->selRelY - pi->lblVertSpace, pi->rowWidth, rowHeight + (2*pi->lblVertSpace));
+
             this->renderNode(x, y + this->selRelY, this->sel);
 
             // Next we render up to the top of the pane.
@@ -503,7 +509,6 @@ namespace cxxutil { namespace gui {
 
                 iter = iter->nextUp();
 
-                iter->getState()->getLabelInfo()->install();
                 this->renderNode(x, y + iterRelY, iter);
             }
             
@@ -519,7 +524,6 @@ namespace cxxutil { namespace gui {
                     break;
                 }
 
-                iter->getState()->getLabelInfo()->install();
                 this->renderNode(x, y + iterRelY, iter);
             }
 

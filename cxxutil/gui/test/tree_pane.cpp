@@ -530,6 +530,7 @@ static const gui::tree_pane_info_t TPANE_INFO = {
     .lblHeightScale = 2,
 
     .paneBGColor = 247,
+    .selRowBGColor = 223,
     .tabWidth = 10,
 };
 
