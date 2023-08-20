@@ -417,6 +417,49 @@ namespace cxxutil { namespace gui {
                 currCharWidth = gfx_GetCharWidth(currChar);
             } 
         }
+
+        // x and y are the top left corner of the entire pane.
+        void renderScrollBar(uint24_t x, uint8_t y) const {
+            const tree_pane_info_t * const pi = this->paneInfo;
+
+            gfx_SetColor(pi->scrollBarBGColor);
+            gfx_FillRectangle(x + pi->rowWidth, y, 
+                    pi->scrollBarWidth, pi->height);
+
+            if (!(this->isInFocus())) {
+                return;
+            }
+
+            // Height of a row containing the following vertical space.
+            const uint24_t fullRowHeight = pi->lblVertSpace + (pi->lblHeightScale * 8);
+
+            uint24_t totalViewHeight = (this->selRowInd * fullRowHeight) - this->selRelY;
+
+            uint24_t totalHeight = (this->totalRows * fullRowHeight) - pi->lblVertSpace;
+
+            // In this case "total height" can be extended depending
+            // on where the view is.
+            if (totalViewHeight + pi->height > totalHeight) {
+                totalHeight = totalViewHeight + pi->height;
+            }
+
+            // NOTE: it is impossible here for totalHeight to 
+            // be less than pi->height.
+            if (totalHeight == pi->height) {
+                return;
+            }
+
+            uint8_t scrollBarRelY = (totalViewHeight * pi->height) / totalHeight;
+
+            uint8_t scrollBarHeight = (totalHeight - totalViewHeight) > pi->height 
+                ? (pi->height * pi->height) / totalHeight
+                : pi->height - scrollBarRelY;
+            
+            gfx_SetColor(pi->scrollBarFGColor);
+
+            gfx_FillRectangle(x + pi->rowWidth, y + scrollBarRelY, 
+                    pi->scrollBarWidth, scrollBarHeight);
+        }
     public:
         // UB when any given pointers are null.
         TreePane(uint8_t memChnl, const tree_pane_info_t *tpi, TreePaneNode<T> *r) 
@@ -439,10 +482,6 @@ namespace cxxutil { namespace gui {
 
             gfx_SetColor(pi->paneBGColor);
             gfx_FillRectangle(x, y, pi->rowWidth, pi->height);
-
-            gfx_SetColor(pi->scrollBarBGColor);
-            gfx_FillRectangle(x + pi->rowWidth, y, 
-                    pi->scrollBarWidth, pi->height);
 
             gfx_SetTextScale(pi->lblWidthScale, pi->lblHeightScale);
 
@@ -484,11 +523,7 @@ namespace cxxutil { namespace gui {
                 this->renderNode(x, y + iterRelY, iter);
             }
 
-            // Finally time to render scroll bar.
-            // Should there be special rendering for branches vs. leaves??
-            // I think so!
-
-            
+            this->renderScrollBar(x, y);
         }
 
         virtual void update(core::KeyManager *km) override {

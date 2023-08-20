@@ -546,6 +546,8 @@ void gui::TreePaneGUITest() {
     TreePane<LetterState> *pane = 
         new TreePane<LetterState>(1, &TPANE_INFO, root);
 
+    pane->focus();
+
     gfx_Begin();
     gfx_SetDrawBuffer();
 
