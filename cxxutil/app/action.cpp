@@ -15,7 +15,7 @@ Action *Action::run() {
 void Action::finally() {
 }
 
-Action::Action(uint24_t memChnl) 
+Action::Action(uint8_t memChnl) 
     : core::SafeObject(memChnl) {
 }
 
@@ -43,6 +43,8 @@ Action *LoopAction::run() {
         if (this->redrawRequested) {
             this->render();
         }
+
+        delay(this->del);
     }
 
     return this->nextAction;
@@ -54,12 +56,16 @@ void LoopAction::update() {
 void LoopAction::render() {
 }
 
-LoopAction::LoopAction(uint24_t memChnl) 
+LoopAction::LoopAction(uint24_t memChnl, uint16_t d) 
     : Action(memChnl) {
+    this->redrawRequested = true; 
+    this->exitRequested = false;
+
+    this->del = d;
 }
 
-LoopAction::LoopAction() 
-    : LoopAction(core::CXX_DEF_CHNL) {
+LoopAction::LoopAction(uint16_t d) 
+    : LoopAction(core::CXX_DEF_CHNL, d) {
 }
 
 LoopAction::~LoopAction() {

@@ -95,8 +95,6 @@ namespace cxxutil { namespace gui {
 
         virtual void render(uint24_t x, uint8_t y) const override;
 
-        virtual void update(core::KeyManager *km) override;
-
         inline virtual uint24_t getWidth() const override {
             return this->paneInfo->lineWidth + this->paneInfo->scrollBarWidth;
         }

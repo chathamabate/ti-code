@@ -26,7 +26,7 @@ namespace cxxutil { namespace app {
         virtual void finally();
 
     public:
-        Action(uint24_t memChnl);
+        Action(uint8_t memChnl);
         Action();
         virtual ~Action();
 
@@ -56,6 +56,10 @@ namespace cxxutil { namespace app {
         uint16_t del;
 
         bool exitRequested;
+
+        // NOTE nextAction is set with request exit.
+        // It should live in dynamic memory and will not
+        // be deleted by this LoopAction's destructor.
         Action *nextAction;
 
         bool redrawRequested;
@@ -72,8 +76,8 @@ namespace cxxutil { namespace app {
             this->nextAction = next;
         }
     public:
-        LoopAction(uint24_t memChnl);
-        LoopAction();
+        LoopAction(uint24_t memChnl, uint16_t d);
+        LoopAction(uint16_t d);
         virtual ~LoopAction();
     };
 }}

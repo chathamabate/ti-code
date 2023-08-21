@@ -548,9 +548,6 @@ namespace cxxutil { namespace gui {
             this->renderScrollBar(x, y);
         }
 
-        virtual void update(core::KeyManager *km) override {
-        }
-
         virtual inline uint24_t getWidth() const override {
             return this->paneInfo->rowWidth + 
                 this->paneInfo->scrollBarWidth;

@@ -187,18 +187,6 @@ void ScrollTextPane::render(uint24_t x, uint8_t y) const {
     }
 }
 
-void ScrollTextPane::update(core::KeyManager *km) {
-    if (!(this->isInFocus())) {
-        return;
-    }
-    
-    if (km->isKeyPressed(core::CXX_KEY_8) || km->isKeyPressed(core::CXX_KEY_Up)) {
-        this->scrollUp();
-    } else if (km->isKeyPressed(core::CXX_KEY_5) || km->isKeyPressed(core::CXX_KEY_Down)) {
-        this->scrollDown();
-    } 
-}
-
 bool ScrollTextPane::nextUp(tp_index_t i, tp_index_t *d) const {
     if (i.lineInd > 0) {
         d->blockInd = i.blockInd;

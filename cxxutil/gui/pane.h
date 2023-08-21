@@ -8,17 +8,13 @@ namespace cxxutil { namespace gui {
     class Pane : public core::SafeObject {
     private:
         bool inFocus;
-    protected:
+    public:
         Pane(uint8_t memChnl);
         Pane();
 
         virtual ~Pane();
-    public:
-        virtual void render(uint24_t x, uint8_t y) const = 0;
 
-        // Key scanning should be done before this call.
-        // Probs will need to update this stuff...
-        virtual void update(core::KeyManager *km) = 0;
+        virtual void render(uint24_t x, uint8_t y) const = 0;
 
         virtual uint24_t getWidth() const = 0;
         virtual uint8_t getHeight() const = 0;
