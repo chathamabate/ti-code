@@ -522,7 +522,7 @@ static const gui::tree_pane_info_t TPANE_INFO = {
     .scrollBarFGColor = 24, 
     .scrollBarBGColor = 223,
 
-    .rowWidth = 160,
+    .rowWidth = 40,
     .height = 160,
 
     .lblVertSpace = 2,

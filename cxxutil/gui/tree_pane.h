@@ -422,22 +422,14 @@ namespace cxxutil { namespace gui {
 
             uint24_t relX = indRelX + pi->tabWidth;
 
+            if (relX >= pi->rowWidth) {
+                return;
+            }
+
             node->getState()->getLabelInfo()->install();
 
-            gfx_SetTextXY(x + relX, y);
-
-            const char *lbl = node->getState()->getLabel();
-
-            char currChar = *lbl;
-            uint8_t currCharWidth = gfx_GetCharWidth(currChar);
-            
-            while (currChar != '\0' && relX + currCharWidth <= pi->rowWidth) {
-                gfx_PrintChar(currChar); 
-                relX += currCharWidth;
-
-                currChar = *(++lbl);
-                currCharWidth = gfx_GetCharWidth(currChar);
-            } 
+            renderClippedText(x + relX, y, node->getState()->getLabel(), 
+                    pi->rowWidth - relX);
         }
 
         // x and y are the top left corner of the entire pane.

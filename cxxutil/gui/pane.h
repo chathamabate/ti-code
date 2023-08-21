@@ -5,6 +5,10 @@
 
 namespace cxxutil { namespace gui {
 
+    // No characters will be rendered past y + clipWidth.
+    void renderClippedText(uint24_t x, uint8_t y, 
+            const char *text, uint24_t clipWidth);
+
     class Pane : public core::SafeObject {
     private:
         bool inFocus;
