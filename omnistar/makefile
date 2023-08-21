@@ -22,7 +22,7 @@ EXTRA_C_SOURCES = $(wildcard ../cutil/*.c)
 CXX_UTIL_CORE_MODS			= core unit
 
 # Non Core modules which can be tested.
-CXX_UTIL_NON_CORE_MODS		= gui
+CXX_UTIL_NON_CORE_MODS		= gui unitapp app
 
 CXX_UTIL_MODS				= $(CXX_UTIL_CORE_MODS) $(CXX_UTIL_NON_CORE_MODS)
 
