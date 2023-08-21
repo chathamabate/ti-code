@@ -531,7 +531,7 @@ static const gui::tree_pane_info_t TPANE_INFO = {
 
     .paneBGColor = 247,
     .selRowBGColor = 223,
-    .tabWidth = 10,
+    .tabWidth = 16,
 };
 
 void gui::TreePaneGUITest() {

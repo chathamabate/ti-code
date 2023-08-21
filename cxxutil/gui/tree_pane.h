@@ -371,6 +371,7 @@ namespace cxxutil { namespace gui {
 
         uint8_t paneBGColor;
         uint8_t selRowBGColor;
+
         uint8_t tabWidth;
     };
 
@@ -400,10 +401,29 @@ namespace cxxutil { namespace gui {
 
         // x and y should be the top left corner of the node's row.
         // This will NOT install any text colors.
+        // Assumes correct text scale is already installed
         void renderNode(uint24_t x, uint8_t y, TreePaneNode<T> *node) const {
+            const tree_pane_info_t * const pi = this->paneInfo;
+
+            uint24_t indRelX = node->getDepth() * pi->tabWidth;
+
+            // Basically no space to do anything.
+            if (indRelX + gfx_GetCharWidth('>') > pi->rowWidth) {
+                return;
+            }
+
+            // Draw exposed/minimized indicators.
+            if (node->isBranch()) {
+                gfx_SetTextXY(x + indRelX, y);
+                gfx_SetTextFGColor(pi->scrollBarFGColor);
+
+                gfx_PrintChar(node->isMinimized() ? '>' : '-');
+            }
+
+            uint24_t relX = indRelX + pi->tabWidth;
+
             node->getState()->getLabelInfo()->install();
 
-            uint24_t relX = node->getDepth() * this->paneInfo->tabWidth; 
             gfx_SetTextXY(x + relX, y);
 
             const char *lbl = node->getState()->getLabel();
@@ -411,7 +431,7 @@ namespace cxxutil { namespace gui {
             char currChar = *lbl;
             uint8_t currCharWidth = gfx_GetCharWidth(currChar);
             
-            while (currChar != '\0' && relX + currCharWidth <= this->paneInfo->rowWidth) {
+            while (currChar != '\0' && relX + currCharWidth <= pi->rowWidth) {
                 gfx_PrintChar(currChar); 
                 relX += currCharWidth;
 
@@ -491,10 +511,8 @@ namespace cxxutil { namespace gui {
 
             // First render selected row.
             gfx_SetColor(pi->selRowBGColor);
-
-            // TODO fix this shit...
-            gfx_FillRectangle(x, y + this->selRelY - pi->lblVertSpace, pi->rowWidth, rowHeight + (2*pi->lblVertSpace));
-
+            
+            gfx_FillRectangle(x, y + this->selRelY, pi->rowWidth, rowHeight);
             this->renderNode(x, y + this->selRelY, this->sel);
 
             // Next we render up to the top of the pane.
