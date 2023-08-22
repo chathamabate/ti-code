@@ -505,13 +505,24 @@ public:
 
 TreePaneTestCase2 TreePaneTestCase2::ONLY_VAL;
 
-static const size_t TREE_PANE_SUITE_LEN = 2;
-static unit::TestTree *TREE_PANE_SUITE_TESTS[TREE_PANE_SUITE_LEN] = {
+static const size_t TREE_PANE_UI_SUITE_LEN = 2;
+static unit::TestTree *TREE_PANE_UI_SUITE_TESTS[TREE_PANE_UI_SUITE_LEN] = {
     TreePaneTestCase1::ONLY,
     TreePaneTestCase2::ONLY,
 };
 
-static unit::TestSuite TREE_PANE_SUITE_VAL("Tree Pane Suite", 
+static unit::TestSuite TREE_PANE_UI_SUITE_VAL("Tree Pane UI Suite", 
+        TREE_PANE_UI_SUITE_TESTS, TREE_PANE_UI_SUITE_LEN);
+
+unit::TestTree * const gui::TREE_PANE_UI_SUITE = &TREE_PANE_UI_SUITE_VAL;
+
+static const size_t TREE_PANE_SUITE_LEN = 2;
+static unit::TestTree *TREE_PANE_SUITE_TESTS[TREE_PANE_SUITE_LEN] = {
+    gui::TREE_PANE_NODE_SUITE,
+    gui::TREE_PANE_UI_SUITE,
+};
+
+static unit::TestSuite TREE_PANE_SUITE_VAL("Tree Pane Suite",
         TREE_PANE_SUITE_TESTS, TREE_PANE_SUITE_LEN);
 
 unit::TestTree * const gui::TREE_PANE_SUITE = &TREE_PANE_SUITE_VAL;

@@ -1,5 +1,11 @@
 #include "./unit_app.h"
+#include "cxxutil/gui/tree_pane.h"
+#include "cxxutil/unit/unit.h"
 #include <cxxutil/core/mem.h>
+#include <cxxutil/core/data.h>
+
+// We are including these tests to test the app itself.
+#include <cxxutil/gui/test/tree_pane.h>
 
 using namespace cxxutil;
 
@@ -29,10 +35,10 @@ enum class TestRunStatus : uint8_t {
 };
 
 const gui::text_color_info_t STATUS_STYLES[4] = {
-    {.fgColor = 0, .bgColor = 0}, 
-    {.fgColor = 0, .bgColor = 0}, 
-    {.fgColor = 0, .bgColor = 0}, 
-    {.fgColor = 0, .bgColor = 0}, 
+    {.fgColor = 0, .bgColor = 255}, 
+    {.fgColor = 0, .bgColor = 255}, 
+    {.fgColor = 0, .bgColor = 255}, 
+    {.fgColor = 0, .bgColor = 255}, 
 };
 
 // NOTE: this will be an abstract class as leaf nodes and
@@ -128,6 +134,132 @@ public:
     }
 };
 
-static gui::TreePaneNode<TestRunState> *prepareTestTree() {
+static void expandTestInStack(core::CoreList<const unit::TestTree *> *stack, 
+        const unit::TestTree *t) {
+    stack->add(t);
 
+    if (t->isCase()) {
+        return;
+    } 
+
+    const unit::TestTree * const *subTests = t->getSubTests();
+    size_t subTestsLen = t->getSubTestsLen();
+
+    for (size_t i = 0; i < subTestsLen; i++) {
+        expandTestInStack(stack, subTests[i]);
+    }
+}
+
+static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, const unit::TestTree *t) {
+    core::CoreList<const unit::TestTree *> *testStack = 
+        new core::CoreList<const unit::TestTree *>(memChnl);
+
+    expandTestInStack(testStack, t);
+
+    core::CoreList<gui::TreePaneNode<TestRunState> *> *testNodeStack = 
+        new core::CoreList<gui::TreePaneNode<TestRunState> *>(memChnl);
+
+    while (testStack->getLen() > 0) {
+        const unit::TestTree *test = testStack->pop();
+
+        if (test->isCase()) {
+            TestRunStateLeaf *caseState = new TestRunStateLeaf(memChnl, test);
+            gui::TreePaneLeaf<TestRunState> *leafNode = 
+                new gui::TreePaneLeaf<TestRunState>(memChnl, caseState);
+            
+            testNodeStack->add(leafNode);
+        } else {
+            TestRunStateBranch *branchState = 
+                new TestRunStateBranch(memChnl, test);
+
+            const size_t subTestsLen = test->getSubTestsLen();
+
+            core::SafeArray<gui::TreePaneNode<TestRunState> *> *childNodes = 
+                new core::SafeArray<gui::TreePaneNode<TestRunState> *>(memChnl, subTestsLen);
+
+            for (size_t i = 0; i < subTestsLen; i++) {
+                childNodes->set(i, testNodeStack->pop());
+            }
+
+            gui::TreePaneBranch<TestRunState> *branchNode =
+                new gui::TreePaneBranch<TestRunState>(branchState, childNodes);
+
+            testNodeStack->add(branchNode);
+        }
+    }
+
+    gui::TreePaneNode<TestRunState> *root = testNodeStack->pop();
+    root->declareRoot();
+
+    delete testNodeStack;
+    delete testStack;
+
+    return root;
+}
+
+static const gui::tree_pane_info_t TPANE_INFO = {
+    .scrollBarWidth = 8,
+
+    .scrollBarFGColor = 24, 
+    .scrollBarBGColor = 223,
+
+    .rowWidth = 200,
+    .height = 160,
+
+    .lblVertSpace = 2,
+    .lblWidthScale = 1,
+    .lblHeightScale = 2,
+
+    .paneBGColor = 247,
+    .selRowBGColor = 223,
+    .tabWidth = 16,
+};
+
+void cxxutil::unitapp::runTestGUITest() {
+    gui::TreePaneNode<TestRunState> *root = 
+        prepareTestTree(1, gui::TREE_PANE_SUITE); 
+
+    core::KeyManager *km = new core::KeyManager(1);
+    km->setRepeatDelay(5);
+    km->setFocusedKeys(
+            (core::cxx_key_t[]){
+            core::CXX_KEY_Clear, core::CXX_KEY_8, 
+            core::CXX_KEY_5, core::CXX_KEY_Enter}, 4);
+
+    gui::TreePane<TestRunState> *pane 
+        = new gui::TreePane<TestRunState>(1, &TPANE_INFO, root);
+
+    pane->focus();
+
+    gfx_Begin();
+    gfx_SetDrawBuffer();
+
+    while (!km->isKeyDown(core::CXX_KEY_Clear)) {
+        km->scanFocusedKeys();
+
+        if (km->isKeyPressed(core::CXX_KEY_8)) {
+            pane->scrollUp();
+        } 
+        
+        if (km->isKeyPressed(core::CXX_KEY_5)) {
+            pane->scrollDown();
+        } 
+        
+        if (km->isKeyPressed(core::CXX_KEY_Enter)) {
+            pane->toggle();
+        }
+
+        pane->render(50, (GFX_LCD_HEIGHT - 160) / 2);
+
+        gfx_BlitBuffer();
+        delay(100);    
+    }
+
+    gfx_End();
+
+    delete pane;
+    delete root;
+    delete km;
+
+    core::MemoryTracker::ONLY->checkMemLeaks();
 }
