@@ -2,6 +2,7 @@
 #include <cxxutil/gui/text_block.h>
 #include <cxxutil/gui/scroll_text_pane.h>
 
+#include "cxxutil/gui/test/centered_pane.h"
 #include "keypadc.h"
 #include "sys/timers.h"
 #include "ti/getcsc.h"
@@ -68,7 +69,7 @@ public:
 int main(void) {    
     os_ClrHome();
 
-    gui::TreePaneGUITest();
+    gui::runCenteredPaneGUITest();
 
     return 0;
     

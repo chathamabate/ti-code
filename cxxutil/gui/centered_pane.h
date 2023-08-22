@@ -67,18 +67,14 @@ namespace cxxutil { namespace gui {
             gfx_FillRectangle(x, y, 
                     pi->width, borderRelY);
 
-            // If the padding is too large to calculate a valid
-            // clipWidth, don't do anything.
-            if (pi->titlePadding <= pi->width) {
-                gfx_SetTextFGColor(pi->titleFGColor);
+            gfx_SetTextFGColor(pi->titleFGColor);
 
-                // NOTE: We are assuming this remains transparent.
-                gfx_SetTextBGColor(255);
+            // NOTE: We are assuming this remains transparent.
+            gfx_SetTextBGColor(255);
 
-                gfx_SetTextScale(pi->titleWidthScale, pi->titleHeightScale);
-                renderClippedText(x + pi->titlePadding, y + pi->titlePadding, 
-                        this->title, pi->width - pi->titlePadding);
-            }
+            gfx_SetTextScale(pi->titleWidthScale, pi->titleHeightScale);
+            renderClippedText(x + pi->titlePadding, y + pi->titlePadding, 
+                    this->title, pi->width - pi->titlePadding);
 
             // Now we center the inner pane in the left over rectangle.
             // NOTE: we are just assuming it fits. So be careful.
@@ -104,9 +100,9 @@ namespace cxxutil { namespace gui {
 
             gfx_FillRectangle(x, y + borderRelY + innerRelY, innerRelX, innerHeight); 
             gfx_FillRectangle(x + innerRelX + innerWidth, y + borderRelY + innerRelY,
-                    outerHeight - innerRelX - innerWidth, innerHeight);
+                    outerWidth - innerRelX - innerWidth, innerHeight);
 
-            // Now the question is... does this work?
+            this->innerPane->render(x + innerRelX, y + borderRelY + innerRelY);
         }
 
         virtual uint24_t getWidth() const override {
