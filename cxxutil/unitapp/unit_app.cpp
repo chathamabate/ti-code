@@ -1,5 +1,7 @@
 #include "./unit_app.h"
 
+#include <cxxutil/app/app.h>
+
 #include "cxxutil/core/input.h"
 #include "cxxutil/gui/scroll_text_pane.h"
 #include "cxxutil/gui/tree_pane.h"
@@ -30,6 +32,10 @@ static constexpr uint8_t UA_PURPLE     = 88;
 // NOTE: this needs to be the index of a color
 // not used above.
 static constexpr uint8_t UA_TRANSPARENT     = 244;
+
+// Delay in ms.
+static constexpr uint16_t UA_DELAY          = 50;
+
 
 // This is the state used in each of the tree pane nodes
 // when navigating through tests.
@@ -237,6 +243,72 @@ static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, const u
 
     return root;
 }
+
+// Now it's time to define the application states.
+// What about the key manager???
+
+class UnitAppGlobalState : public core::SafeObject {
+private:
+    unit::TestTree * const testRoot;
+    gui::TreePaneNode<TestRunState> * const testNodeRoot;
+    core::KeyManager * const km;
+
+public:
+    UnitAppGlobalState(uint8_t memChnl, unit::TestTree *t) 
+        : core::SafeObject(memChnl), 
+        testRoot(t), 
+        testNodeRoot(prepareTestTree(memChnl, t)),
+        km(new core::KeyManager(memChnl)) {
+    }
+
+    UnitAppGlobalState(unit::TestTree *t) 
+        : UnitAppGlobalState(core::CXX_DEF_CHNL, t) {
+    }
+
+    ~UnitAppGlobalState() {
+        delete this->km;
+        delete this->testNodeRoot; 
+    }
+
+    inline unit::TestTree *getTestRoot() const {
+        return this->testRoot;
+    }
+
+    inline gui::TreePaneNode<TestRunState> *getTestNodeRoot() const {
+        return this->testNodeRoot;
+    }
+
+    inline core::KeyManager *getKM() const {
+        return this->km;
+    }
+};
+
+
+
+class UnitAppNavState : 
+    public app::LoopState<UnitAppGlobalState> {
+
+private:
+
+    // gui::TreePane<TestRunState> * const treePane;
+
+    virtual void update() override {
+
+    }
+
+    virtual void render() override {
+
+    }
+public:
+    UnitAppNavState(uint8_t memChnl, UnitAppGlobalState *gs) 
+        : LoopState<UnitAppGlobalState>(memChnl, gs, UA_DELAY) {
+    }
+
+    UnitAppNavState(UnitAppGlobalState *gs) 
+        : UnitAppNavState(core::CXX_DEF_CHNL, gs) {
+    }
+};
+
 
 static const gui::tree_pane_info_t TPANE_INFO = {
     .scrollBarWidth = 8,
