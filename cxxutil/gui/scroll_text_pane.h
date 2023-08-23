@@ -121,6 +121,8 @@ namespace cxxutil { namespace gui {
         bool nextUp(tp_index_t i, tp_index_t *d) const;
         bool nextDown(tp_index_t i, tp_index_t *d) const;
 
+        // NOTE: consider updating these calls to return true if
+        // something happens.
         void scrollUp();
         void scrollDown();
 

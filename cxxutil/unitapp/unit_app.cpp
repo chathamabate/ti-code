@@ -1,4 +1,7 @@
 #include "./unit_app.h"
+
+#include "cxxutil/core/input.h"
+#include "cxxutil/gui/scroll_text_pane.h"
 #include "cxxutil/gui/tree_pane.h"
 #include "cxxutil/unit/unit.h"
 #include <cxxutil/core/mem.h>
@@ -9,7 +12,24 @@
 
 using namespace cxxutil;
 
+// Let's define some colors that will be used for this app.
+// UA is for UnitApp. These colors were chosen from the default 
+// color pallete.
+static constexpr uint8_t UA_WHITE      = 255;
 
+static constexpr uint8_t UA_LIGHT_GREY = 222;
+static constexpr uint8_t UA_DARK_GREY  = 148;
+
+static constexpr uint8_t UA_BLACK      = 0;
+static constexpr uint8_t UA_BLUE       = 24;
+static constexpr uint8_t UA_GREEN      = 6;
+static constexpr uint8_t UA_YELLOW     = 230;
+static constexpr uint8_t UA_RED        = 232;
+static constexpr uint8_t UA_PURPLE     = 88;
+
+// NOTE: this needs to be the index of a color
+// not used above.
+static constexpr uint8_t UA_TRANSPARENT     = 244;
 
 // This is the state used in each of the tree pane nodes
 // when navigating through tests.
@@ -35,10 +55,10 @@ enum class TestRunStatus : uint8_t {
 };
 
 const gui::text_color_info_t STATUS_STYLES[4] = {
-    {.fgColor = 0, .bgColor = 255}, 
-    {.fgColor = 0, .bgColor = 255}, 
-    {.fgColor = 0, .bgColor = 255}, 
-    {.fgColor = 0, .bgColor = 255}, 
+    {.fgColor = UA_BLUE,    .bgColor = UA_TRANSPARENT}, 
+    {.fgColor = UA_GREEN,   .bgColor = UA_TRANSPARENT}, 
+    {.fgColor = UA_YELLOW,  .bgColor = UA_TRANSPARENT}, 
+    {.fgColor = UA_RED,     .bgColor = UA_TRANSPARENT}, 
 };
 
 // NOTE: this will be an abstract class as leaf nodes and
@@ -68,7 +88,11 @@ public:
         return this->status;
     }
 
-    virtual void setLog(gui::ScrollTextPane *log) = 0;
+    // If a log is currently held, it will be deleted.
+    virtual void deleteLog() = 0;
+
+    // If a log is currently held, it will be deleted.
+    virtual void resetLog(const gui::scroll_text_pane_info_t *stpi) = 0;
 
     // NOTE: each test case (when run) will hold
     // a ScrollTextPane. This Pane will store
@@ -97,8 +121,11 @@ public:
     virtual ~TestRunStateBranch() {
     }
 
-    virtual inline void setLog(gui::ScrollTextPane *log) override {
-        (void)log;
+    virtual inline void deleteLog() override {
+    }
+
+    virtual inline void resetLog(const gui::scroll_text_pane_info_t *stpi) override {
+        (void)stpi;
     }
 
     // There is no log for Test Suites!
@@ -123,10 +150,24 @@ public:
     }
     
     virtual ~TestRunStateLeaf() {
+        if (this->log) {
+            delete this->log;
+        }
     }
 
-    virtual inline void setLog(gui::ScrollTextPane *log) override {
-        this->log = log;
+    virtual inline void deleteLog() override {
+        if (this->log) {
+            delete this->log;
+            this->log = nullptr;
+        }
+    }
+
+    virtual inline void resetLog(const gui::scroll_text_pane_info_t *stpi) override {
+        if (this->log) {
+            delete this->log;
+        }
+
+        this->log = new gui::ScrollTextPane(this->getChnl(), stpi);
     }
 
     virtual inline gui::ScrollTextPane *getLog() override {

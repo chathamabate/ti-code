@@ -228,7 +228,7 @@ bool ScrollTextPane::nextDown(tp_index_t i, tp_index_t *d) const {
 
 void ScrollTextPane::scrollUp() {
     if (this->blocks->getLen() == 0) {
-        return; // No lines.. do nothing!
+        return;
     }
 
     if (this->top) {
@@ -261,7 +261,7 @@ void ScrollTextPane::scrollUp() {
 
 void ScrollTextPane::scrollDown() {
     if (this->blocks->getLen() == 0) {
-        return; // No lines.. do nothing!
+        return;
     }
 
     if (!(this->top)) {
@@ -284,7 +284,7 @@ void ScrollTextPane::scrollDown() {
 
     do {
         if (!(this->nextDown(iter, &iter))) {
-            return; // No line to scroll down to!
+            return; // No line out of sight to scroll down to!
         }
  
         aH += this->paneInfo->vertLineSpace + 
@@ -308,8 +308,8 @@ void ScrollTextPane::gotoTop() {
 
 void ScrollTextPane::gotoBottom() {
     if (this->totalHeight <= this->paneInfo->height) {
-        return; // We must already be at the bottom.
-                // And... top cannot equal false.
+        return;   // We must already be at the bottom.
+                        // And... top cannot equal false.
     }
 
     size_t lastBlockInd = this->blocks->getLen() - 1;
