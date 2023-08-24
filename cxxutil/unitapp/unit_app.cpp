@@ -751,6 +751,8 @@ private:
                 }
             }
 
+            delete s;
+
             this->requestRedraw();
         }
     }
