@@ -554,6 +554,10 @@ namespace cxxutil { namespace gui {
         }
 
         // These three getters are primarily exposed to aid with testing.
+        
+        inline TreePaneNode<T> *getSelectedNode() const {
+            return this->sel;
+        }
 
         inline uint8_t getSelectedRowRelY() const {
             return this->selRelY;

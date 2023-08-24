@@ -39,10 +39,9 @@ static constexpr uint8_t UA_TRANSPARENT     = 244;
 // Delay in ms.
 static constexpr uint16_t UA_DELAY          = 50;
 
-static constexpr uint24_t UA_INNER_PANE_WIDTH   = 280;
-static constexpr uint8_t  UA_INNER_PANE_HEIGHT  = 178;
+static constexpr uint24_t UA_INNER_PANE_WIDTH   = 290;
+static constexpr uint8_t  UA_INNER_PANE_HEIGHT  = 196;
 static constexpr uint8_t  UA_SCROLL_BAR_WIDTH    = 8;
-
 
 // This is the state used in each of the tree pane nodes
 // when navigating through tests.
@@ -67,7 +66,7 @@ enum class TestRunStatus : uint8_t {
     FAILURE = 3,
 };
 
-const gui::text_color_info_t STATUS_STYLES[4] = {
+static const gui::text_color_info_t STATUS_STYLES[4] = {
     {.fgColor = UA_BLUE,    .bgColor = UA_TRANSPARENT}, 
     {.fgColor = UA_GREEN,   .bgColor = UA_TRANSPARENT}, 
     {.fgColor = UA_YELLOW,  .bgColor = UA_TRANSPARENT}, 
@@ -78,15 +77,15 @@ const gui::text_color_info_t STATUS_STYLES[4] = {
 // branch nodes will hold different states.
 class TestRunState : public core::SafeObject {
 private:
-    const unit::TestTree * const test;
+    unit::TestTree * const test;
     TestRunStatus status;
 public:
-    TestRunState(uint8_t memChnl, const unit::TestTree *t)
+    TestRunState(uint8_t memChnl, unit::TestTree *t)
         : core::SafeObject(memChnl), test(t) {
         this->status = TestRunStatus::NOT_RUN; 
     }
 
-    TestRunState(const unit::TestTree *t) 
+    TestRunState(unit::TestTree *t) 
         : TestRunState(core::CXX_DEF_CHNL, t) {
     }
 
@@ -97,8 +96,12 @@ public:
         this->status = s;
     }
     
-    inline TestRunStatus getStatus() {
+    inline TestRunStatus getStatus() const {
         return this->status;
+    }
+
+    inline unit::TestTree *getTestTree() const {
+        return this->test;
     }
 
     // If a log is currently held, it will be deleted.
@@ -110,7 +113,7 @@ public:
     // NOTE: each test case (when run) will hold
     // a ScrollTextPane. This Pane will store
     // all logged messages during the test run.
-    virtual gui::ScrollTextPane *getLog() = 0;
+    virtual gui::ScrollTextPane *getLog() const = 0;
 
     inline const char *getLabel() const {
         return test->getName();
@@ -123,11 +126,11 @@ public:
 
 class TestRunStateBranch : public TestRunState {
 public:
-    TestRunStateBranch(uint8_t memChnl, const unit::TestTree *t) 
+    TestRunStateBranch(uint8_t memChnl, unit::TestTree *t) 
         : TestRunState(memChnl, t) {
     }
 
-    TestRunStateBranch(const unit::TestTree *t) 
+    TestRunStateBranch(unit::TestTree *t) 
         : TestRunStateBranch(core::CXX_DEF_CHNL, t) {
     }
     
@@ -143,7 +146,7 @@ public:
 
     // There is no log for Test Suites!
     // Only logs for Test Cases.
-    virtual inline gui::ScrollTextPane *getLog() override {
+    virtual inline gui::ScrollTextPane *getLog() const override {
         return nullptr;
     }
 };
@@ -153,12 +156,12 @@ private:
     // NOTE: if status is "not run", log will be null!
     gui::ScrollTextPane *log; 
 public:
-    TestRunStateLeaf(uint8_t memChnl, const unit::TestTree *t) 
+    TestRunStateLeaf(uint8_t memChnl, unit::TestTree *t) 
         : TestRunState(memChnl, t) {
         this->log = nullptr;
     }
 
-    TestRunStateLeaf(const unit::TestTree *t) 
+    TestRunStateLeaf(unit::TestTree *t) 
         : TestRunStateLeaf(core::CXX_DEF_CHNL, t) {
     }
     
@@ -183,20 +186,20 @@ public:
         this->log = new gui::ScrollTextPane(this->getChnl(), stpi);
     }
 
-    virtual inline gui::ScrollTextPane *getLog() override {
+    virtual inline gui::ScrollTextPane *getLog() const override {
         return log;
     }
 };
 
-static void expandTestInStack(core::CoreList<const unit::TestTree *> *stack, 
-        const unit::TestTree *t) {
+static void expandTestInStack(core::CoreList<unit::TestTree *> *stack, 
+        unit::TestTree *t) {
     stack->add(t);
 
     if (t->isCase()) {
         return;
     } 
 
-    const unit::TestTree * const *subTests = t->getSubTests();
+    unit::TestTree * const *subTests = t->getSubTests();
     size_t subTestsLen = t->getSubTestsLen();
 
     for (size_t i = 0; i < subTestsLen; i++) {
@@ -204,9 +207,9 @@ static void expandTestInStack(core::CoreList<const unit::TestTree *> *stack,
     }
 }
 
-static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, const unit::TestTree *t) {
-    core::CoreList<const unit::TestTree *> *testStack = 
-        new core::CoreList<const unit::TestTree *>(memChnl);
+static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, unit::TestTree *t) {
+    core::CoreList<unit::TestTree *> *testStack = 
+        new core::CoreList<unit::TestTree *>(memChnl);
 
     expandTestInStack(testStack, t);
 
@@ -214,7 +217,7 @@ static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, const u
         new core::CoreList<gui::TreePaneNode<TestRunState> *>(memChnl);
 
     while (testStack->getLen() > 0) {
-        const unit::TestTree *test = testStack->pop();
+        unit::TestTree *test = testStack->pop();
 
         if (test->isCase()) {
             TestRunStateLeaf *caseState = new TestRunStateLeaf(memChnl, test);
@@ -251,8 +254,15 @@ static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, const u
     return root;
 }
 
-// Now it's time to define the application states.
-// What about the key manager???
+
+
+// -----------------------------------------------------
+// -----------------------------------------------------
+// BELOW LIES ALL APPLICATION STATES FOR THE UNIT APP!
+// -----------------------------------------------------
+// -----------------------------------------------------
+
+
 
 class UnitAppGlobalState : public core::SafeObject {
 private:
@@ -306,6 +316,196 @@ static const gui::centered_pane_info_t  UA_CPI = {
     .height = GFX_LCD_HEIGHT,
 };
 
+static const  gui::scroll_text_pane_info_t UA_STPI = {
+    .height = UA_INNER_PANE_HEIGHT,
+    .lineWidth = UA_INNER_PANE_WIDTH - UA_SCROLL_BAR_WIDTH,
+    .scrollBarWidth = UA_SCROLL_BAR_WIDTH,
+
+    .bgColor = UA_WHITE,
+    .scrollBarFGColor = UA_PURPLE,
+    .scrollBarBGColor = UA_BG_DARK,
+    .vertLineSpace = 2,
+};
+
+static const gui::text_info_t UA_LOG_INFO = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 0,
+
+    .fgColor = UA_BLUE,
+    .bgColor = UA_TRANSPARENT,
+};
+
+static const gui::text_info_t UA_LOG_WARN = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 0,
+
+    .fgColor = UA_YELLOW,
+    .bgColor = UA_TRANSPARENT,
+};
+
+static const gui::text_info_t UA_LOG_FATAL = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 0,
+
+    .fgColor = UA_RED,
+    .bgColor = UA_TRANSPARENT,
+};
+
+
+class UnitAppLeafTestMonitor : public unit::TestMonitor {
+private:
+    // This pane will be rerendered every time we print to the
+    // scroll text pane.
+    gui::CenteredPane<gui::ScrollTextPane> * const pane;
+
+    virtual void notifyCaseStart(unit::TestCase *c) override {
+        (void)c;
+
+        this->pane->render(0, 0);
+
+        gfx_SwapDraw();
+        gfx_Wait();
+    }
+
+    virtual void log(unit::log_level_t level, const char *msg) override {
+        gui::ScrollTextPane * const innerLog = this->pane->getInnerPane();
+
+        switch (level) {
+        case unit::INFO:
+            innerLog->log(&UA_LOG_INFO, msg);
+            break;
+        case unit::WARN:
+            innerLog->log(&UA_LOG_WARN, msg);
+            break;
+        case unit::FATAL:
+            innerLog->log(&UA_LOG_FATAL, msg);
+            break;
+        }
+
+        this->pane->render(0, 0);
+
+        gfx_SwapDraw();
+        gfx_Wait();
+    }
+public:
+    UnitAppLeafTestMonitor(gui::CenteredPane<gui::ScrollTextPane> *p) 
+        : unit::TestMonitor(), pane(p) {
+    }
+
+    virtual ~UnitAppLeafTestMonitor() {
+    }
+};
+
+
+// NOTE: The two states for running a test will actually both be run from inside
+// the nav pane state. Thus they will always return null.
+
+// This state is for running a singular test case.
+class UnitAppLeafRunState : public app::AppState<UnitAppGlobalState> {
+private:
+    // Remember, node already has a scroll text pane!
+    gui::TreePaneNode<TestRunState> * const node;
+
+    gui::CenteredPane<gui::ScrollTextPane> *pane;
+    UnitAppLeafTestMonitor *monitor;
+
+
+    virtual void init() override {
+        this->node->getState()->resetLog(&UA_STPI);
+        unit::TestTree *t = this->node->getState()->getTestTree();
+
+        this->pane = new gui::CenteredPane<gui::ScrollTextPane>(
+                this->getChnl(), &UA_CPI, t->getName(), this->node->getState()->getLog());
+
+        this->monitor = new UnitAppLeafTestMonitor(this->pane);
+    }
+
+    virtual AppState<UnitAppGlobalState> *run() override {
+        this->node->getState()->getTestTree()->run(this->monitor);
+
+        return nullptr;
+    }
+
+    virtual void finally() override {
+        delete this->monitor;
+        delete this->pane;
+
+        // Remember the scroll text pane will persist.
+    }
+
+public: 
+    UnitAppLeafRunState(uint8_t memChnl, UnitAppGlobalState *gs, 
+            gui::TreePaneNode<TestRunState> *n) 
+        : AppState<UnitAppGlobalState>(memChnl, gs),
+        node(n) {
+    }
+
+    UnitAppLeafRunState(UnitAppGlobalState *gs,
+            gui::TreePaneNode<TestRunState> *n) 
+        : UnitAppLeafRunState(core::CXX_DEF_CHNL, gs, n) {
+    }
+
+    virtual ~UnitAppLeafRunState() {
+    }
+};
+
+
+// This state is for running a test suite.
+class UnitAppBranchRunState : public app::AppState<UnitAppGlobalState> {
+private:
+    gui::TreePaneNode<TestRunState> * const node;
+
+
+    virtual void init() override {
+    }
+
+    virtual AppState<UnitAppGlobalState> *run() override {
+        gui::TreePaneNode<TestRunState> * const * children = this->node->getChildren();
+        size_t len = this->node->getChildrenLen();
+
+        for (size_t i = 0; i < len; i++) {
+            gui::TreePaneNode<TestRunState> *child = children[i];
+
+            app::AppState<UnitAppGlobalState> *childAppState;
+
+            if (child->isBranch()) {
+                childAppState = new UnitAppBranchRunState(this->getChnl(), this->getGlobalState(), child); 
+            } else {
+                childAppState = new UnitAppLeafRunState(this->getChnl(), this->getGlobalState(), child);
+            }
+
+            // run App States in a recursive format from here!
+            childAppState->complete();
+
+            delete childAppState;
+        }
+
+        return nullptr;
+    }
+
+    virtual void finally() override {
+    }
+
+public: 
+    UnitAppBranchRunState(uint8_t memChnl, UnitAppGlobalState *gs, 
+            gui::TreePaneNode<TestRunState> *n) 
+        : AppState<UnitAppGlobalState>(memChnl, gs),
+        node(n) {
+    }
+
+    UnitAppBranchRunState(UnitAppGlobalState *gs,
+            gui::TreePaneNode<TestRunState> *n) 
+        : UnitAppBranchRunState(core::CXX_DEF_CHNL, gs, n) {
+    }
+
+    virtual ~UnitAppBranchRunState() {
+    }
+};
+
+
 static const gui::tree_pane_info_t UA_NAV_TPI = {
     .scrollBarWidth = UA_SCROLL_BAR_WIDTH,
     .scrollBarFGColor = UA_PURPLE,
@@ -352,7 +552,9 @@ private:
                     core::CXX_KEY_8,
                     core::CXX_KEY_5,
                     core::CXX_KEY_Enter,
-                }, 6);
+
+                    core::CXX_KEY_9,
+                }, 7);
     }
 
     virtual void update() override {
@@ -372,6 +574,26 @@ private:
             this->requestRedraw();
         } else if (km->isKeyPressed(core::CXX_KEY_Enter)) {
             this->treePane->toggle();
+            this->requestRedraw();
+        } else if (km->isKeyPressed(core::CXX_KEY_9)) {
+            // Time to run our test!
+
+            gui::TreePaneNode<TestRunState> *selNode = 
+                this->treePane->getSelectedNode();
+
+            app::AppState<UnitAppGlobalState> *nodeRunState;
+
+            if (selNode->isBranch()) {
+                nodeRunState = new UnitAppBranchRunState(
+                        this->getChnl(), this->getGlobalState(), selNode);
+            } else {
+                nodeRunState = new UnitAppLeafRunState(
+                        this->getChnl(), this->getGlobalState(), selNode);
+            }
+
+            nodeRunState->complete();
+            delete nodeRunState;
+
             this->requestRedraw();
         }
     }
