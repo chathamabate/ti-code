@@ -291,6 +291,8 @@ static gui::TreePaneNode<TestRunState> *prepareTestTree(uint8_t memChnl, unit::T
 // -----------------------------------------------------
 // -----------------------------------------------------
 
+
+
 class UnitAppGlobalState;
 class UnitAppLeafTestMonitor;
 class UnitAppLeafRunState;
@@ -360,6 +362,24 @@ static const  gui::scroll_text_pane_info_t UA_STPI = {
     .scrollBarFGColor = UA_PURPLE,
     .scrollBarBGColor = UA_BG_DARK,
     .vertLineSpace = 2,
+};
+
+static const gui::text_info_t UA_LOG_HEADER = {
+    .widthScale = 2,
+    .heightScale = 3,
+    .monospace = 0,
+
+    .fgColor = UA_BLUE,
+    .bgColor = UA_TRANSPARENT,
+};
+
+static const gui::text_info_t UA_LOG_BLACK = {
+    .widthScale = 1,
+    .heightScale = 2,
+    .monospace = 0,
+
+    .fgColor = UA_BLACK,
+    .bgColor = UA_TRANSPARENT,
 };
 
 static const gui::text_info_t UA_LOG_INFO = {
@@ -471,6 +491,9 @@ private:
                 this->getChnl(), &UA_CPI, t->getName(), this->node->getState()->getLog());
 
         this->monitor = new UnitAppLeafTestMonitor(this->pane);
+
+        // Make sure the user know they cannot scroll.
+        this->pane->unFocus();
     }
 
     virtual AppState<UnitAppGlobalState> *run() override {
@@ -582,16 +605,17 @@ static const gui::tree_pane_info_t UA_NAV_TPI = {
 class UnitAppLogViewState :
     public app::LoopState<UnitAppGlobalState> {
 private:
-    TestRunState * const testRun;
+    const char * const title;
+    gui::ScrollTextPane * const scrollPane;
 
     gui::CenteredPane<gui::ScrollTextPane> *pane;
 
     virtual void init() override {
         this->pane = new gui::CenteredPane<gui::ScrollTextPane>(
                 this->getChnl(), &UA_CPI, 
-                testRun->getTestTree()->getName(), testRun->getLog());
+                this->title, this->scrollPane);
 
-        this->pane->getInnerPane()->focus();
+        this->scrollPane->focus();
     }
 
     virtual void update() override {
@@ -620,16 +644,20 @@ private:
     }
 
     virtual void finally() override {
+        this->scrollPane->unFocus();
+
         delete this->pane;
     }
 
 public:
-    UnitAppLogViewState(uint8_t memChnl, UnitAppGlobalState *gs, TestRunState *tr) 
-        : LoopState(memChnl, gs, UA_DELAY), testRun(tr) {
+    UnitAppLogViewState(uint8_t memChnl, UnitAppGlobalState *gs, 
+            const char *t, gui::ScrollTextPane *sp) 
+        : LoopState(memChnl, gs, UA_DELAY), title(t), scrollPane(sp) {
     }
 
-    UnitAppLogViewState(UnitAppGlobalState *gs, TestRunState *tr) 
-        : UnitAppLogViewState(core::CXX_DEF_CHNL, gs, tr) {
+    UnitAppLogViewState(UnitAppGlobalState *gs, 
+            const char *t, gui::ScrollTextPane *sp) 
+        : UnitAppLogViewState(core::CXX_DEF_CHNL, gs, t, sp) {
     }
 
     virtual ~UnitAppLogViewState() {
@@ -641,18 +669,40 @@ class UnitAppNavState :
     public app::LoopState<UnitAppGlobalState> {
 
 private:
-    gui::TreePane<TestRunState> *treePane;
-    gui::CenteredPane<gui::TreePane<TestRunState>> *centeredPane;
+    gui::TreePane<TestRunState> *navTree;
+    gui::CenteredPane<gui::TreePane<TestRunState>> *navPane;
+
+    gui::ScrollTextPane *helpLog;
 
     virtual void init() override {
-        this->treePane = new gui::TreePane<TestRunState>(
+        this->navTree = new gui::TreePane<TestRunState>(
                 this->getChnl(), &UA_NAV_TPI, 
                 this->getGlobalState()->getTestNodeRoot());
 
-        this->treePane->focus();
+        this->navTree->focus();
 
-        this->centeredPane = new gui::CenteredPane<gui::TreePane<TestRunState>>(
-                this->getChnl(), &UA_CPI, "TI Unit  -  Press 0 for help", treePane);
+        this->navPane = new gui::CenteredPane<gui::TreePane<TestRunState>>(
+                this->getChnl(), &UA_CPI, "TI Unit  -  Press 0 for help", this->navTree);
+
+        this->helpLog = new gui::ScrollTextPane(this->getChnl(), &UA_STPI);
+
+        // NOTE: this is kinda a waste of memory, but it's honestly ok.
+        this->helpLog->log(&UA_LOG_INFO,    "===================");
+        this->helpLog->log(&UA_LOG_HEADER,  "- TI Unit -");
+        this->helpLog->log(&UA_LOG_INFO,    "===================");
+        this->helpLog->log(&UA_LOG_INFO,    "Controls :");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use Up/Down or 8/5 to scroll up and down.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use Enter to expand a test suite.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use 9 to run a test case or suite.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use 6 to view a test case log.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use 3 to delete the test log(s) of a case or suite.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use 0 to view this page.");
+        this->helpLog->log(&UA_LOG_BLACK,   "* Use Clear to return to the main page or exit.");
+        this->helpLog->log(&UA_LOG_INFO,    "================");
+        this->helpLog->log(&UA_LOG_INFO,    "About :");
+        this->helpLog->log(&UA_LOG_BLACK,   "This project was created by Chatham Abate." );
+
+        this->helpLog->gotoTop();
 
         this->getGlobalState()->getKM()->setFocusedKeys(
                 (core::cxx_key_t[]){
@@ -666,7 +716,9 @@ private:
                     core::CXX_KEY_9,
                     core::CXX_KEY_6,
                     core::CXX_KEY_3,
-                }, 9);
+
+                    core::CXX_KEY_0
+                }, 10);
     }
 
     virtual void update() override {
@@ -678,20 +730,20 @@ private:
             this->requestExit(nullptr);
         } else if (km->isKeyPressed(core::CXX_KEY_Up) || 
                 km->isKeyPressed(core::CXX_KEY_8)) {
-            this->treePane->scrollUp();
+            this->navTree->scrollUp();
             this->requestRedraw();
         } else if (km->isKeyPressed(core::CXX_KEY_Down) || 
                 km->isKeyPressed(core::CXX_KEY_5)) {
-            this->treePane->scrollDown();
+            this->navTree->scrollDown();
             this->requestRedraw();
         } else if (km->isKeyPressed(core::CXX_KEY_Enter)) {
-            this->treePane->toggle();
+            this->navTree->toggle();
             this->requestRedraw();
         } else if (km->isKeyPressed(core::CXX_KEY_9)) {
             // Time to run our test!
 
             gui::TreePaneNode<TestRunState> *selNode = 
-                this->treePane->getSelectedNode();
+                this->navTree->getSelectedNode();
 
             app::AppState<UnitAppGlobalState> *nodeRunState;
 
@@ -709,11 +761,12 @@ private:
             this->requestRedraw();
         } else if (km->isKeyPressed(core::CXX_KEY_6)) {
             gui::TreePaneNode<TestRunState> *selNode = 
-                this->treePane->getSelectedNode();
+                this->navTree->getSelectedNode();
 
             if (selNode->isLeaf() && selNode->getState()->getLog()) {
                 UnitAppLogViewState *viewState = new UnitAppLogViewState(
-                        this->getChnl(), this->getGlobalState(), selNode->getState());
+                        this->getChnl(), this->getGlobalState(), 
+                        selNode->getState()->getTestTree()->getName(), selNode->getState()->getLog());
 
                 viewState->complete();
 
@@ -723,7 +776,7 @@ private:
             }
         } else if (km->isKeyPressed(core::CXX_KEY_3)) {
             gui::TreePaneNode<TestRunState> *selNode = 
-                this->treePane->getSelectedNode();
+                this->navTree->getSelectedNode();
             
             // Kinda rushed stack algo here.
             // This would be a nice place for a foreach function.
@@ -754,19 +807,31 @@ private:
             delete s;
 
             this->requestRedraw();
+        } else if (km->isKeyPressed(core::CXX_KEY_0)) {
+            UnitAppLogViewState *helpState = new UnitAppLogViewState(
+                    this->getChnl(), this->getGlobalState(), 
+                    "TI Unit  -  Help Page", this->helpLog);
+
+            helpState->complete();
+
+            delete helpState;
+
+            this->requestRedraw();
         }
     }
 
     virtual void render() override {
-        this->centeredPane->render(0, 0);
+        this->navPane->render(0, 0);
 
         gfx_SwapDraw();
         gfx_Wait();
     }
 
     virtual void finally() override {
-        delete this->centeredPane;
-        delete this->treePane;
+        delete this->navPane;
+        delete this->navTree;
+
+        delete this->helpLog;
     }
 
 public:
@@ -783,8 +848,8 @@ public:
 };
 
 
-void cxxutil::unitapp::runTestGUITest() {
-    UnitAppGlobalState *gs = new UnitAppGlobalState(1, gui::TREE_PANE_SUITE);
+void cxxutil::unitapp::runUnitApp(unit::TestTree *testTree) {
+    UnitAppGlobalState *gs = new UnitAppGlobalState(1, testTree);
     UnitAppNavState *initState = new UnitAppNavState(1, gs);
 
     gfx_Begin();
@@ -799,50 +864,4 @@ void cxxutil::unitapp::runTestGUITest() {
 
     delete initState;
     delete gs;
-
-    /*
-    core::KeyManager *km = new core::KeyManager(1);
-    km->setRepeatDelay(5);
-    km->setFocusedKeys(
-            (core::cxx_key_t[]){
-            core::CXX_KEY_Clear, core::CXX_KEY_8, 
-            core::CXX_KEY_5, core::CXX_KEY_Enter}, 4);
-
-    gui::TreePane<TestRunState> *pane 
-        = new gui::TreePane<TestRunState>(1, &TPANE_INFO, root);
-
-    pane->focus();
-
-    gfx_Begin();
-    gfx_SetDrawBuffer();
-
-    while (!km->isKeyDown(core::CXX_KEY_Clear)) {
-        km->scanFocusedKeys();
-
-        if (km->isKeyPressed(core::CXX_KEY_8)) {
-            pane->scrollUp();
-        } 
-        
-        if (km->isKeyPressed(core::CXX_KEY_5)) {
-            pane->scrollDown();
-        } 
-        
-        if (km->isKeyPressed(core::CXX_KEY_Enter)) {
-            pane->toggle();
-        }
-
-        pane->render(50, (GFX_LCD_HEIGHT - 160) / 2);
-
-        gfx_BlitBuffer();
-        delay(100);    
-    }
-
-    gfx_End();
-
-    delete pane;
-    delete root;
-    delete km;
-    */
-
-    core::MemoryTracker::ONLY->checkMemLeaks();
 }

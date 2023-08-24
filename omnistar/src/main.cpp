@@ -29,57 +29,9 @@
 
 using namespace cxxutil;
 
-
-class MyMonitor : public unit::TestMonitor {
-private:
-    virtual void notifySuiteStart(unit::TestSuite *suite) override {
-        (void)suite;
-        /* os_PutStrFull("S: ");
-        os_PutStrFull(suite->getName());
-        os_NewLine(); */
-    }
-
-    virtual void notifySuiteEnd() override {
-    }
-
-    virtual void notifyCaseStart(unit::TestCase *c) override {
-        os_PutStrFull("T: ");
-        os_PutStrFull(c->getName());
-        os_NewLine(); 
-    }
-
-    virtual void notifyCaseEnd() override {
-        os_PutStrFull("Test Ended");
-        os_NewLine();
-
-        core::waitClear();
-    }
-
-
-    virtual void log(unit::log_level_t level, const char *msg) override {
-        (void)level;
-        os_PutStrFull(msg);
-        os_NewLine();
-    }
-
-public:
-    MyMonitor() {}
-    virtual ~MyMonitor() override {}
-};
-
 int main(void) {    
-    os_ClrHome();
 
-    unitapp::runTestGUITest();
-
-    return 0;
-    
-    MyMonitor *m = new MyMonitor();
-    gui::TREE_PANE_NODE_SUITE->run(m);
-    gui::TREE_PANE_SUITE->run(m);
-    core::waitClear();
-
-    delete m;
+    unitapp::runUnitApp(gui::TEXT_BLOCK_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 

@@ -7,5 +7,5 @@
 
 
 namespace cxxutil { namespace unitapp {
-     void runTestGUITest();
+     void runUnitApp(unit::TestTree *testTree);
 }}

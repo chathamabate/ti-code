@@ -502,6 +502,7 @@ namespace cxxutil { namespace gui {
             gfx_FillRectangle(x, y, pi->rowWidth, pi->height);
 
             gfx_SetTextScale(pi->lblWidthScale, pi->lblHeightScale);
+            gfx_SetMonospaceFont(0);
 
             const uint8_t rowHeight = 8 * pi->lblHeightScale;
 
