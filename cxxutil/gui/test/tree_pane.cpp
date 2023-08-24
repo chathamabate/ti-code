@@ -16,12 +16,12 @@ class LetterState : public core::SafeObject {
 private:
     static const gui::text_color_info_t LS_INFO;
 
-    char lbl[7];
+    char lbl[2];
 public:
     LetterState(uint8_t memChnl, char l) 
-        : core::SafeObject(memChnl), lbl("Lbl: ") {
-        lbl[5] = l;
-        lbl[6] = '\0';
+        : core::SafeObject(memChnl) {
+        lbl[0] = l;
+        lbl[1] = '\0';
     }
 
     // Custom methods.
