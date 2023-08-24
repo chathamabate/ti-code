@@ -9,8 +9,10 @@ namespace cxxutil { namespace app {
     private:
         G * const globalState;
 
-        // This should return null if the whole app should end.
+        virtual void init() = 0;
         virtual AppState<G> *run() = 0;
+        virtual void finally() = 0;
+
     protected:
         AppState(uint8_t memChnl, G *gs) 
             : core::SafeObject(memChnl), globalState(gs) {
@@ -28,13 +30,21 @@ namespace cxxutil { namespace app {
             return this->globalState;
         }
 
+        inline AppState<G> *complete() {
+            this->init();
+            AppState<G> *result = this->run();
+            this->finally();
+
+            return result;
+        }
+
         // NOTE: this will not delete init state.
         // Created states will be deleted though.
         static void runApp(AppState<G> *initState) {
-            AppState<G> *currState = initState->run();
+            AppState<G> *currState = initState->complete();
 
             while (currState) {
-                AppState<G> *nextState = currState->run();
+                AppState<G> *nextState = currState->complete();
                 delete currState;
                 currState = nextState;
             }
@@ -53,7 +63,7 @@ namespace cxxutil { namespace app {
         bool redrawRequested;
 
         virtual void update() = 0;
-        virtual void render() = 0;
+        virtual void render() = 0; 
 
         virtual AppState<G> *run() override {
             while (!(this->exitRequested)) {
@@ -83,7 +93,7 @@ namespace cxxutil { namespace app {
         }
 
         inline void requestRedraw() {
-            this->exitRequested = true;
+            this->redrawRequested = true;
         }
 
         inline void requestExit(AppState<G> *ns) {

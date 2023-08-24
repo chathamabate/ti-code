@@ -373,6 +373,9 @@ namespace cxxutil { namespace gui {
         uint8_t selRowBGColor;
 
         uint8_t tabWidth;
+
+        // NOTE: we need the index of the transparent color for this.
+        uint8_t transparentColor;
     };
 
     template<typename T>
@@ -400,8 +403,7 @@ namespace cxxutil { namespace gui {
         size_t totalRows;
 
         // x and y should be the top left corner of the node's row.
-        // This will NOT install any text colors.
-        // Assumes correct text scale is already installed
+        // This assumes 255 is still the transparent color.
         void renderNode(uint24_t x, uint8_t y, TreePaneNode<T> *node) const {
             const tree_pane_info_t * const pi = this->paneInfo;
 
@@ -415,7 +417,9 @@ namespace cxxutil { namespace gui {
             // Draw exposed/minimized indicators.
             if (node->isBranch()) {
                 gfx_SetTextXY(x + indRelX, y);
+
                 gfx_SetTextFGColor(pi->scrollBarFGColor);
+                gfx_SetTextBGColor(pi->transparentColor);
 
                 gfx_PrintChar(node->isMinimized() ? '>' : '-');
             }

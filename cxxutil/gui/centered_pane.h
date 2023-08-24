@@ -38,8 +38,8 @@ namespace cxxutil { namespace gui {
         const centered_pane_info_t * const paneInfo;
         const char * const title;
 
-        // NOTE: Inner Pane is NOT "part" of this object.
-        // That is it is not deleted by this pane's destructor.
+        // NOTE: innerPane IS NOT "part" of the centered pane.
+        // It will not be deleted by centeredpane's destructor.
         T * const innerPane;
 
     public:
@@ -68,9 +68,7 @@ namespace cxxutil { namespace gui {
                     pi->width, borderRelY);
 
             gfx_SetTextFGColor(pi->titleFGColor);
-
-            // NOTE: We are assuming this remains transparent.
-            gfx_SetTextBGColor(255);
+            gfx_SetTextBGColor(pi->titleBGColor);
 
             gfx_SetTextScale(pi->titleWidthScale, pi->titleHeightScale);
             renderClippedText(x + pi->titlePadding, y + pi->titlePadding, 

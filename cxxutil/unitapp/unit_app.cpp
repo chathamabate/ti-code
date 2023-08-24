@@ -3,9 +3,11 @@
 #include <cxxutil/app/app.h>
 
 #include "cxxutil/core/input.h"
+#include "cxxutil/gui/centered_pane.h"
 #include "cxxutil/gui/scroll_text_pane.h"
 #include "cxxutil/gui/tree_pane.h"
 #include "cxxutil/unit/unit.h"
+#include "graphx.h"
 #include <cxxutil/core/mem.h>
 #include <cxxutil/core/data.h>
 
@@ -19,8 +21,9 @@ using namespace cxxutil;
 // color pallete.
 static constexpr uint8_t UA_WHITE      = 255;
 
-static constexpr uint8_t UA_LIGHT_GREY = 222;
-static constexpr uint8_t UA_DARK_GREY  = 148;
+static constexpr uint8_t UA_BG_LIGHT    = 222;
+static constexpr uint8_t UA_BG_MID      = 191;
+static constexpr uint8_t UA_BG_DARK     = 148;
 
 static constexpr uint8_t UA_BLACK      = 0;
 static constexpr uint8_t UA_BLUE       = 24;
@@ -35,6 +38,10 @@ static constexpr uint8_t UA_TRANSPARENT     = 244;
 
 // Delay in ms.
 static constexpr uint16_t UA_DELAY          = 50;
+
+static constexpr uint24_t UA_INNER_PANE_WIDTH   = 280;
+static constexpr uint8_t  UA_INNER_PANE_HEIGHT  = 178;
+static constexpr uint8_t  UA_SCROLL_BAR_WIDTH    = 8;
 
 
 // This is the state used in each of the tree pane nodes
@@ -259,6 +266,8 @@ public:
         testRoot(t), 
         testNodeRoot(prepareTestTree(memChnl, t)),
         km(new core::KeyManager(memChnl)) {
+
+        this->km->setRepeatDelay(5);
     }
 
     UnitAppGlobalState(unit::TestTree *t) 
@@ -283,22 +292,102 @@ public:
     }
 };
 
+static const gui::centered_pane_info_t  UA_CPI = {
+    .titleWidthScale = 1,
+    .titleHeightScale = 2,
 
+    .titleFGColor = UA_WHITE,
+    .titleBGColor = UA_PURPLE,
+    .titlePadding = 2,
+
+    .borderBGColor = UA_BG_LIGHT,
+
+    .width = GFX_LCD_WIDTH,
+    .height = GFX_LCD_HEIGHT,
+};
+
+static const gui::tree_pane_info_t UA_NAV_TPI = {
+    .scrollBarWidth = UA_SCROLL_BAR_WIDTH,
+    .scrollBarFGColor = UA_PURPLE,
+    .scrollBarBGColor = UA_BG_DARK,
+
+    .rowWidth = UA_INNER_PANE_WIDTH - UA_SCROLL_BAR_WIDTH,
+    .height = UA_INNER_PANE_HEIGHT,
+
+    .lblVertSpace = 2,
+
+    .lblWidthScale = 1,
+    .lblHeightScale = 2,
+
+    .paneBGColor = UA_WHITE,
+    .selRowBGColor = UA_BG_MID,
+
+    .tabWidth = 16,
+
+    .transparentColor = UA_TRANSPARENT,
+};
 
 class UnitAppNavState : 
     public app::LoopState<UnitAppGlobalState> {
 
 private:
+    gui::TreePane<TestRunState> *treePane;
+    gui::CenteredPane<gui::TreePane<TestRunState>> *centeredPane;
 
-    // gui::TreePane<TestRunState> * const treePane;
+    virtual void init() override {
+        this->treePane = new gui::TreePane<TestRunState>(
+                this->getChnl(), &UA_NAV_TPI, 
+                this->getGlobalState()->getTestNodeRoot());
+
+        this->treePane->focus();
+
+        this->centeredPane = new gui::CenteredPane<gui::TreePane<TestRunState>>(
+                this->getChnl(), &UA_CPI, "TI Unit  -  Press 0 for help", treePane);
+
+        this->getGlobalState()->getKM()->setFocusedKeys(
+                (core::cxx_key_t[]){
+                    core::CXX_KEY_Clear, 
+                    core::CXX_KEY_Up,
+                    core::CXX_KEY_Down,
+                    core::CXX_KEY_8,
+                    core::CXX_KEY_5,
+                    core::CXX_KEY_Enter,
+                }, 6);
+    }
 
     virtual void update() override {
+        core::KeyManager *km  = this->getGlobalState()->getKM();
 
+        km->scanFocusedKeys();
+        
+        if (km->isKeyPressed(core::CXX_KEY_Clear)) {
+            this->requestExit(nullptr);
+        } else if (km->isKeyPressed(core::CXX_KEY_Up) || 
+                km->isKeyPressed(core::CXX_KEY_8)) {
+            this->treePane->scrollUp();
+            this->requestRedraw();
+        } else if (km->isKeyPressed(core::CXX_KEY_Down) || 
+                km->isKeyPressed(core::CXX_KEY_5)) {
+            this->treePane->scrollDown();
+            this->requestRedraw();
+        } else if (km->isKeyPressed(core::CXX_KEY_Enter)) {
+            this->treePane->toggle();
+            this->requestRedraw();
+        }
     }
 
     virtual void render() override {
+        this->centeredPane->render(0, 0);
 
+        gfx_SwapDraw();
+        gfx_Wait();
     }
+
+    virtual void finally() override {
+        delete this->centeredPane;
+        delete this->treePane;
+    }
+
 public:
     UnitAppNavState(uint8_t memChnl, UnitAppGlobalState *gs) 
         : LoopState<UnitAppGlobalState>(memChnl, gs, UA_DELAY) {
@@ -307,31 +396,30 @@ public:
     UnitAppNavState(UnitAppGlobalState *gs) 
         : UnitAppNavState(core::CXX_DEF_CHNL, gs) {
     }
+
+    virtual ~UnitAppNavState() {
+    }
 };
 
-
-static const gui::tree_pane_info_t TPANE_INFO = {
-    .scrollBarWidth = 8,
-
-    .scrollBarFGColor = 24, 
-    .scrollBarBGColor = 223,
-
-    .rowWidth = 200,
-    .height = 160,
-
-    .lblVertSpace = 2,
-    .lblWidthScale = 1,
-    .lblHeightScale = 2,
-
-    .paneBGColor = 247,
-    .selRowBGColor = 223,
-    .tabWidth = 16,
-};
 
 void cxxutil::unitapp::runTestGUITest() {
-    gui::TreePaneNode<TestRunState> *root = 
-        prepareTestTree(1, gui::TREE_PANE_SUITE); 
+    UnitAppGlobalState *gs = new UnitAppGlobalState(1, gui::TREE_PANE_SUITE);
+    UnitAppNavState *initState = new UnitAppNavState(1, gs);
 
+    gfx_Begin();
+    gfx_SetDrawBuffer();
+
+    gfx_SetTransparentColor(UA_TRANSPARENT);
+    gfx_SetTextTransparentColor(UA_TRANSPARENT);
+
+    app::AppState<UnitAppGlobalState>::runApp(initState);
+
+    gfx_End();
+
+    delete initState;
+    delete gs;
+
+    /*
     core::KeyManager *km = new core::KeyManager(1);
     km->setRepeatDelay(5);
     km->setFocusedKeys(
@@ -373,6 +461,7 @@ void cxxutil::unitapp::runTestGUITest() {
     delete pane;
     delete root;
     delete km;
+    */
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 }
