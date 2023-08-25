@@ -29,7 +29,7 @@ static constexpr uint8_t UA_BG_DARK     = 148;
 static constexpr uint8_t UA_BLACK      = 0;
 static constexpr uint8_t UA_BLUE       = 24;
 static constexpr uint8_t UA_GREEN      = 6;
-static constexpr uint8_t UA_YELLOW     = 230;
+static constexpr uint8_t UA_YELLOW     = 229;
 static constexpr uint8_t UA_RED        = 232;
 static constexpr uint8_t UA_PURPLE     = 88;
 
@@ -851,7 +851,8 @@ public:
 void cxxutil::unitapp::runUnitApp(unit::TestTree *testTree) {
     core::MemoryExitRoutine *oldMer = core::MemoryTracker::ONLY->getMER();
 
-    UnitAppGlobalState *gs = new UnitAppGlobalState(1, testTree);
+    // This will contain the test logs.
+    UnitAppGlobalState *gs = new UnitAppGlobalState(core::CXX_TEST_CHNL, testTree);
     UnitAppNavState *initState = new UnitAppNavState(1, gs);
 
     gfx_Begin();

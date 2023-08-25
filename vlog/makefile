@@ -3,9 +3,9 @@
 # Makefile Options
 # ----------------------------
 
-NAME = OSTR
+NAME = VLOG
 ICON = icon.png
-DESCRIPTION = "OmniStar"
+DESCRIPTION = "Vlog Code"
 COMPRESSED := YES
 ARCHIVED = NO
 
