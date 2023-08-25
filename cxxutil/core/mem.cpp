@@ -63,6 +63,10 @@ void MemoryTracker::checkChnl(uint8_t memChnl) {
     }
 }
 
+MemoryExitRoutine *MemoryTracker::getMER() {
+    return this->mer;
+}
+
 void MemoryTracker::setMER(MemoryExitRoutine *pmer) {
     this->mer = pmer;
 }
@@ -156,6 +160,10 @@ void MemoryTracker::checkChnl(uint8_t memChnl) {
 
 void MemoryTracker::setMER(const MemoryExitRoutine *pmer) {
     (void)pmer;
+}
+
+MemoryExitRoutine *MemoryTracker::getMER() {
+    return nullptr;
 }
 
 void MemoryTracker::runMER(MemoryExitCode mec) {

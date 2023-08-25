@@ -30,7 +30,6 @@
 using namespace cxxutil;
 
 int main(void) {    
-
     unitapp::runUnitApp(gui::TEXT_BLOCK_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();

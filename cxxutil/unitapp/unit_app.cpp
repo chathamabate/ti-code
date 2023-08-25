@@ -849,10 +849,14 @@ public:
 
 
 void cxxutil::unitapp::runUnitApp(unit::TestTree *testTree) {
+    core::MemoryExitRoutine *oldMer = core::MemoryTracker::ONLY->getMER();
+
     UnitAppGlobalState *gs = new UnitAppGlobalState(1, testTree);
     UnitAppNavState *initState = new UnitAppNavState(1, gs);
 
     gfx_Begin();
+    core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
+
     gfx_SetDrawBuffer();
 
     gfx_SetTransparentColor(UA_TRANSPARENT);
@@ -861,6 +865,8 @@ void cxxutil::unitapp::runUnitApp(unit::TestTree *testTree) {
     app::AppState<UnitAppGlobalState>::runApp(initState);
 
     gfx_End();
+
+    core::MemoryTracker::ONLY->setMER(oldMer);
 
     delete initState;
     delete gs;

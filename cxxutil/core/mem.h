@@ -99,10 +99,10 @@ namespace core {
         void checkChnl(uint8_t memChnl);
     public:
         static constexpr MemoryTracker *ONLY = &ONLY_VAL;
-
         // NOTE: If memchecks are off, none of these functions
         // do anything. 
         void setMER(MemoryExitRoutine *pmer);
+        MemoryExitRoutine *getMER();
         void runMER(MemoryExitCode mec);
         void checkMemLeaks();
         bool memLeaks(uint8_t bound);

@@ -7,5 +7,8 @@
 
 
 namespace cxxutil { namespace unitapp {
-     void runUnitApp(unit::TestTree *testTree);
+    // NOTE: this function temporarily overwrites the memory exit routine. 
+    // The MER present at the start of the function call will be restored
+    // on return.
+    void runUnitApp(unit::TestTree *testTree);
 }}
