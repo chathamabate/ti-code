@@ -14,33 +14,54 @@
 #include <cxxutil/gui/test/tree_pane.h>
 #include <cxxutil/gui/test/scroll_text_pane.h>
 
+
+#include <stdio.h>
+#include <inttypes.h>
+
 using namespace cxxutil;
 
-class MyTestCase : public unit::TestCase {
+class SortedCase : public unit::TestCase {
 private:
-    static MyTestCase ONLY_VAL;
-    MyTestCase() : TestCase("MyTest") {}
+    const uint64_t * const arr;
+    const size_t arrLen;
 
-    // Pointers to dynamic memory...
-    
     virtual void attempt(unit::TestContext *tc) override {
-        tc->warn("This is a warning");
-        // Test Code....
+        char logBuf[50];
+        bool sorted = true;
+
+        for (size_t i = 0; i < arrLen - 1; i++) {
+            if (arr[i] > arr[i + 1]) {
+                sprintf(logBuf, "Decreasing Pair (%u, %u)", i, i + 1);
+                tc->warn(logBuf);
+
+                sorted = false;
+            }
+        }
+
+        if (!sorted) {
+            tc->fatal("Array is not sorted!");
+        }
     }
 
-    virtual void finally() override {
-        // Clean Up Code...
-    }
 public:
-    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+    SortedCase(const char *name, const uint64_t *a, size_t al) 
+        : TestCase(name), arr(a), arrLen(al) {}
 };
 
-MyTestCase MyTestCase::ONLY_VAL;
+
+
+
+
+
 
 
 int main(void) {    
-    unitapp::runUnitApp(MyTestCase::ONLY);
-    
+
+    uint64_t A[2] = {1, 0};
+    SortedCase sc("Case 1", A, 2);
+
+    unitapp::runUnitApp(&sc);
+        
     core::MemoryTracker::ONLY->checkMemLeaks();
 
     return 0;
