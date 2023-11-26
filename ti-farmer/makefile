@@ -1,18 +1,16 @@
-
 # ----------------------------
 # Makefile Options
 # ----------------------------
 
-NAME = VLOG
+NAME = FS
 ICON = icon.png
-DESCRIPTION = "Vlog Code"
+DESCRIPTION = "TI-Farmer!"
 COMPRESSED := YES
 ARCHIVED = NO
 
-CFLAGS = -Wall -Wextra -Oz -I..
+CFLAGS = -Wall -Wextra -Oz -I.. 
 CXXFLAGS = -Wall -Wextra -Oz -I..
 
-# This is because I use snprintf.
 HAS_PRINTF := NO
 
 # Core Modules without testing code.
@@ -29,7 +27,6 @@ CXX_UTIL_TEST_SOURCES	= $(foreach mod,$(CXX_UTIL_NON_CORE_MODS),$(wildcard ../cx
 
 CXX_UTIL_HEADERS		= $(foreach mod,$(CXX_UTIL_MODS),$(wildcard ../cxxutil/$(mod)/*.h)) 
 CXX_UTIL_TEST_HEADERS	= $(foreach mod,$(CXX_UTIL_NON_CORE_MODS),$(wildcard ../cxxutil/$(mod)/test/*.h)) 
-
 
 EXTRA_CXX_SOURCES = $(CXX_UTIL_SOURCES) $(CXX_UTIL_TEST_SOURCES)
 EXTRA_C_SOURCES = $(wildcard ../cutil/*.c)

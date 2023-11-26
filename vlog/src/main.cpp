@@ -26,21 +26,12 @@ private:
     const size_t arrLen;
 
     virtual void attempt(unit::TestContext *tc) override {
-        char logBuf[50];
-        bool sorted = true;
-
-        for (size_t i = 0; i < arrLen - 1; i++) {
-            if (arr[i] > arr[i + 1]) {
-                sprintf(logBuf, "Decreasing Pair (%u, %u)", i, i + 1);
-                tc->warn(logBuf);
-
-                sorted = false;
-            }
-        }
-
-        if (!sorted) {
-            tc->fatal("Array is not sorted!");
-        }
+        tc->info("Inserting X (31)");
+        tc->info("Inserting Y (128)");
+        tc->info("Sorting...");
+        tc->warn("Unexpected sort behavoir.");
+        tc->lblAssertEqUInt("BP1", 31, 2);
+            
     }
 
 public:
@@ -58,7 +49,7 @@ public:
 int main(void) {    
 
     uint64_t A[2] = {1, 0};
-    SortedCase sc("Case 1", A, 2);
+    SortedCase sc("Insertion Sort Test", A, 2);
 
     unitapp::runUnitApp(&sc);
         

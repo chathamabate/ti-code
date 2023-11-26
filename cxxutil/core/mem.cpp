@@ -209,9 +209,9 @@ SafeObject::SafeObject(uint8_t chnl) {
 #ifdef CXX_MEM_CHECKS
     this->chnl = chnl;
 
-    // NOTE, it is assumed all safe objects are created
-    // in dynamic memory. Calling the constructor will
-    // always increment the memory tracker.
+    // NOTE: Safe objects should only really only
+    // exist in dynamic memory.
+    // However, they don't need to.
     MemoryTracker::ONLY->incr(chnl);
 #else
     (void)chnl;
