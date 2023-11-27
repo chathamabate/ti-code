@@ -13,7 +13,7 @@ using namespace cxxutil;
 
 int main(void) {
 
-    unitapp::runUnitApp(data::BIT_VECTOR_SUITE);
+    unitapp::runUnitApp(data::BIT_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
