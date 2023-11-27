@@ -7,16 +7,21 @@ using namespace cxxutil::data;
 BitVector::BitVector(size_t bs) : BitVector(core::CXX_DEF_CHNL, bs) {
 }
 
-BitVector::BitVector(uint8_t chnl, size_t b) 
-    : core::SafeObject(chnl), bits(b) {
+BitVector::BitVector(uint8_t chnl, size_t bs) 
+    : core::SafeObject(chnl), bits(bs) {
 
-    size_t len = b / 8;
+    size_t len = bs / 8;
 
-    if (b % 8 > 0) {
+    if (bs % 8 > 0) {
         len++;
     }
 
     this->vector = new core::SafeArray<uint8_t>(chnl, len);
+
+    // 0 out the vector always!
+    for (size_t byte = 0; byte < len; byte++) {
+        this->vector->set(byte, 0);
+    }
 }
 
 BitVector::~BitVector() {

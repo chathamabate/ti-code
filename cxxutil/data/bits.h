@@ -13,8 +13,9 @@ namespace cxxutil { namespace data {
     public:
         // Requires total number of bits.
         // All bits will start as zero.
+        // NOTE: bs must be at least 1.
         BitVector(size_t bs);
-        BitVector(uint8_t chnl, size_t b);
+        BitVector(uint8_t chnl, size_t bs);
 
         ~BitVector();
 
@@ -55,7 +56,7 @@ namespace cxxutil { namespace data {
         }
 
         inline void set(size_t r, size_t c, bool value) {
-            this->grid->get(r)->set(r, value);
+            this->grid->get(r)->set(c, value);
         }
     };
 }}
