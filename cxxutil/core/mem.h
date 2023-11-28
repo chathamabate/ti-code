@@ -219,6 +219,8 @@ namespace core {
         }
     };
 
+    // NOTE: this does not resize the given array.
+    // It returns a copy with the larger size.
     template <typename T>
     SafeArray<T> *resize(uint8_t chnl, const SafeArray<T> *arr, size_t newLen) {
         SafeArray<T> *newArr = new SafeArray<T>(chnl, newLen); 
