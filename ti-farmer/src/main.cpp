@@ -8,6 +8,7 @@
 
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/data/test/bits.h>
+#include <cxxutil/data/heap.h>
 
 #include <cxxutil/data/bits.h>
 #include <stdio.h>
@@ -23,6 +24,7 @@ public:
 };
 
 void innerMain(void) {
+    data::Heap<int> z(NULL, 1);
 
     os_ClrHome();
 

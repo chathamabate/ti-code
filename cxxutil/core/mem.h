@@ -21,6 +21,9 @@
 namespace cxxutil {
 namespace core {
 
+    // Just to help with all this syntax highlighting BS.
+    typedef uint24_t U24;
+
     class MemoryTracker;
     class MemoryExitRoutine;
 
@@ -215,6 +218,23 @@ namespace core {
             this->arr[i] = ele;
         }
     };
+
+    template <typename T>
+    SafeArray<T> *resize(uint8_t chnl, const SafeArray<T> *arr, size_t newLen) {
+        SafeArray<T> *newArr = new SafeArray<T>(chnl, newLen); 
+
+        size_t bound = arr->getLen();
+
+        if (bound > newLen) {
+            bound = newLen;
+        }
+
+        for (size_t i = 0; i < bound; i++) {
+            newArr->set(i, arr->get(i));
+        }
+
+        return newArr;
+    }
 }
 }
 
