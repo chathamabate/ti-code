@@ -9,11 +9,38 @@
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/data/test/bits.h>
 
+#include <cxxutil/data/bits.h>
+#include <stdio.h>
+
 using namespace cxxutil;
 
-int main(void) {
+class X : public core::SafeObject {
+private:
+    int y;
+public:
+    X() : X(core::CXX_DEF_CHNL) {}
+    X(uint8_t chnl) : core::SafeObject(chnl) {}
+};
 
-    unitapp::runUnitApp(data::BIT_SUITE);
+void innerMain(void) {
+
+    os_ClrHome();
+
+    X x1(2);
+    X x2(3);
+
+    x2 = x1;
+
+    char buf[30];
+    sprintf(buf, "x1: %u   x2: %u", x1.getChnl(), x2.getChnl());
+
+    os_PutStrFull(buf);
+
+    while (os_GetCSC() != sk_Clear);
+}
+
+int main(void) {
+    innerMain();
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 

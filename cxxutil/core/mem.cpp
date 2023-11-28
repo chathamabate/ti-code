@@ -218,6 +218,14 @@ SafeObject::SafeObject(uint8_t chnl) {
 #endif
 }
 
+SafeObject::SafeObject(const SafeObject &so) {
+    (void)so;
+
+#ifdef CXX_MEM_CHECKS
+    this->chnl = CXX_DEF_CHNL;
+#endif
+}
+
 SafeObject::~SafeObject() {
 #ifdef CXX_MEM_CHECKS
     MemoryTracker::ONLY->decr(this->chnl);

@@ -123,6 +123,10 @@ namespace core {
     // All Classes which are used to make objects in dynamic memory should
     // extend SafeObject. This class will automatically increment and decrement
     // the memory tracker without the user needing to write any special code!
+    //
+    // NOTE: that a safe object can be created in static memory if the
+    // user wants to use a RAII design. This shouldn't cause any 
+    // problems.
 
     class SafeObject {
     private:
@@ -133,6 +137,14 @@ namespace core {
     public:
         SafeObject();
         SafeObject(uint8_t chnl);
+
+        SafeObject(const SafeObject &so);
+
+        // NOTE: given our object is already initialized,
+        // it already has a channel!
+        inline void operator=(const SafeObject &so) {
+            (void)so;
+        }
 
         ~SafeObject();
         void *operator new(size_t size);
