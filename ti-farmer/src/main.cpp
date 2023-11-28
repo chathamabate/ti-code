@@ -26,13 +26,12 @@ void innerMain(void) {
 
     os_ClrHome();
 
-    X x1(2);
-    X x2(3);
+    X x(2);
+    X y(x);
 
-    x2 = x1;
 
     char buf[30];
-    sprintf(buf, "x1: %u   x2: %u", x1.getChnl(), x2.getChnl());
+    sprintf(buf, "x1: %u   x2: %u", x.getChnl(), y.getChnl());
 
     os_PutStrFull(buf);
 

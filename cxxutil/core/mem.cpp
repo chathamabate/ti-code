@@ -208,22 +208,15 @@ SafeObject::SafeObject() : SafeObject(CXX_DEF_CHNL) { }
 SafeObject::SafeObject(uint8_t chnl) {
 #ifdef CXX_MEM_CHECKS
     this->chnl = chnl;
-
-    // NOTE: Safe objects should only really only
-    // exist in dynamic memory.
-    // However, they don't need to.
     MemoryTracker::ONLY->incr(chnl);
 #else
     (void)chnl;
 #endif
 }
 
-SafeObject::SafeObject(const SafeObject &so) {
+SafeObject::SafeObject(const SafeObject &so) 
+    : SafeObject(CXX_DEF_CHNL) {
     (void)so;
-
-#ifdef CXX_MEM_CHECKS
-    this->chnl = CXX_DEF_CHNL;
-#endif
 }
 
 SafeObject::~SafeObject() {

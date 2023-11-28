@@ -199,6 +199,10 @@ namespace core {
             return this->arr;
         }
 
+        inline const T *getPtr(size_t i) const {
+            return &(this->arr[i]);
+        }
+
         inline T *getArrMut() {
             return this->arr;
         }
@@ -207,7 +211,7 @@ namespace core {
             return &(this->arr[i]);
         }
 
-        inline void set(size_t i, T ele) {
+        inline void set(size_t i, const T &ele) {
             this->arr[i] = ele;
         }
     };
