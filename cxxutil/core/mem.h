@@ -214,7 +214,7 @@ namespace core {
             return &(this->arr[i]);
         }
 
-        inline void set(size_t i, const T &ele) {
+        inline void set(size_t i, T ele) {
             this->arr[i] = ele;
         }
     };

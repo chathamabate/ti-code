@@ -10,20 +10,22 @@ class BitVectorCase : public unit::TestCase {
 private:
     const size_t inputNB;
 
-    virtual void attempt(unit::TestContext *tc) override {
-        data::BitVector bv(this->inputNB);
+    data::BitVector *bv;
 
-        const size_t nb = bv.getNumBits();
+    virtual void attempt(unit::TestContext *tc) override {
+        this->bv = new data::BitVector(2, this->inputNB);
+
+        const size_t nb = this->bv->getNumBits();
         tc->lblAssertEqUInt("Eq Bits", this->inputNB, nb);
 
         // Set every even bit to 1.
         for (size_t bi = 0; bi < nb; bi += 2) {
-            bv.set(bi, true);
+            this->bv->set(bi, true);
         }
 
         // Set every third bit to 0.
         for (size_t bi = 0; bi < nb; bi += 3) {
-            bv.set(bi, false);
+            this->bv->set(bi, false);
         }
 
         char lbl[20];
@@ -31,11 +33,15 @@ private:
         for (size_t bi = 0; bi < nb; bi++) {
             sprintf(lbl, "bi %u", bi);
             if (bi % 2 == 0 && bi % 3 > 0) {
-                tc->lblAssertTrue(lbl, bv.get(bi));
+                tc->lblAssertTrue(lbl, this->bv->get(bi));
             } else {
-                tc->lblAssertFalse(lbl, bv.get(bi));
+                tc->lblAssertFalse(lbl, this->bv->get(bi));
             }
         }
+    }
+
+    virtual void finally() override {
+        delete this->bv;
     }
 
 public:
@@ -71,11 +77,13 @@ private:
     const size_t inputRows;
     const size_t inputCols;
 
-    virtual void attempt(unit::TestContext *tc) override {
-        data::BitGrid bg(this->inputRows, this->inputCols);
+    data::BitGrid *bg;
 
-        size_t rows = bg.getRows();
-        size_t cols = bg.getCols();
+    virtual void attempt(unit::TestContext *tc) override {
+        this->bg = new data::BitGrid(this->inputRows, this->inputCols);
+
+        size_t rows = this->bg->getRows();
+        size_t cols = this->bg->getCols();
 
         tc->lblAssertEqUInt("Eq Rows", this->inputRows, rows);
         tc->lblAssertEqUInt("Eq Cols", this->inputCols, cols);
@@ -87,11 +95,11 @@ private:
             size_t c = bi % cols;
 
             if (bi % 2 == 0) {
-                bg.set(r, c, true);
+                this->bg->set(r, c, true);
             }
 
             if (bi % 3 == 0) {
-                bg.set(r, c, false);
+                this->bg->set(r, c, false);
             }
         }
 
@@ -105,11 +113,15 @@ private:
             sprintf(buf, "(%u, %u)", r, c);
 
             if (bi % 2 == 0 && bi % 3 > 0) {
-                tc->lblAssertTrue(buf, bg.get(r, c)); 
+                tc->lblAssertTrue(buf, this->bg->get(r, c)); 
             } else {
-                tc->lblAssertFalse(buf, bg.get(r, c)); 
+                tc->lblAssertFalse(buf, this->bg->get(r, c)); 
             }
         }
+    }
+
+    virtual void finally() override {
+        delete this->bg;
     }
 
 public:

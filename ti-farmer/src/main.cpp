@@ -8,6 +8,7 @@
 
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/data/test/bits.h>
+#include <cxxutil/data/test/heap.h>
 #include <cxxutil/data/heap.h>
 
 #include <cxxutil/data/bits.h>
@@ -15,29 +16,9 @@
 
 using namespace cxxutil;
 
-class X : public core::SafeObject {
-private:
-    int y;
-public:
-    X() : X(core::CXX_DEF_CHNL) {}
-    X(uint8_t chnl) : core::SafeObject(chnl) {}
-};
 
 void innerMain(void) {
-    data::Heap<int> z(NULL, 1);
-
-    os_ClrHome();
-
-    X x(2);
-    X y(x);
-
-
-    char buf[30];
-    sprintf(buf, "x1: %u   x2: %u", x.getChnl(), y.getChnl());
-
-    os_PutStrFull(buf);
-
-    while (os_GetCSC() != sk_Clear);
+    unitapp::runUnitApp(data::HEAP_SUITE);
 }
 
 int main(void) {

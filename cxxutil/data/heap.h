@@ -1,5 +1,6 @@
 
 
+#include "ti/screen.h"
 #include <stdint.h>
 #include <stdlib.h>
 #include <limits.h>
@@ -19,7 +20,7 @@ namespace cxxutil { namespace data {
     private:
         core::U24 (* const keyFunc)(const T &);
 
-        core::SafeArray<T> *table;
+        core::SafeArray<HeapEntry<T>> *table;
         size_t len;
 
     public:
@@ -32,7 +33,7 @@ namespace cxxutil { namespace data {
             // Init cap must be larger than 0.
             size_t actualInitCap = initCap == 0 ? 1 : initCap;
 
-            this->table = new core::SafeArray<T>(chnl, actualInitCap);
+            this->table = new core::SafeArray<HeapEntry<T>>(chnl, actualInitCap);
             this->len = 0;                
         }
 
@@ -44,10 +45,10 @@ namespace cxxutil { namespace data {
             return this->len;
         }
 
-        void push(const T &ele) {
+        void push(T ele) {
             // Resize if we do not have space.
             if (this->len == table->getLen()) {
-                core::SafeArray<T> *newTable = 
+                core::SafeArray<HeapEntry<T>> *newTable = 
                     core::resize(this->getChnl(), this->table, table->getLen() * 2);
 
                 delete this->table;
@@ -91,43 +92,55 @@ namespace cxxutil { namespace data {
             // Save our return value.
             T rootValue = this->table->get(0).value;
 
-            core::U24 shiftKey = this->table->get(this->len - 1).key;
+            // The entry to be sifted down.
+            HeapEntry<T> siftEntry = this->table->get(this->len - 1);
 
-            // Move last element to the root.
-            this->table->set(0, this->table->get(this->len - 1));
             this->len--; // Shrink heap by 1.
             
-            // We will always try to go left first.
-            // I don't think this will cause any problems with randomness.
-
-            // Now we sift our new root down.
+            // Skip needless work if there are no more elements in the heap.
+            if (this->len == 0) {
+                return rootValue;
+            }
             
             size_t iter = 0;
+
+            // This loop will reorganize the heap and find the correct
+            // position for the sift Entry to be placed.
 
             while (true) {
                 // Try left.
                 size_t leftInd = (2 * iter) + 1;
 
-                if (leftInd < this->len && this->table->get(leftInd).key < shiftKey) {
-                    this->table->set(iter, this->table->get(leftInd));
-                    iter = leftInd;
-
-                    continue;
-                } 
-
-                // Try right.
-                size_t rightInd = (2 * iter) + 2;
-
-                if (rightInd < this->len && this->table->get(rightInd).key < shiftKey) {
-                    this->table->set(iter, this->table->get(rightInd));
-                    iter = rightInd;
-
-                    continue;
+                // Check if iter has any children at all.
+                if (leftInd >= this->len) {
+                    break;
                 }
 
-                // Otherwise we're done.
-                return rootValue; 
+                // If it does, find which child has the smallest
+                // key.
+
+                size_t minInd = leftInd;
+
+                size_t rightInd = (2 * iter) + 2;
+                if (rightInd < this->len && 
+                        this->table->get(rightInd).key < this->table->get(leftInd).key) {
+                    minInd = rightInd;
+                }
+
+                if (siftEntry.key < this->table->get(minInd).key) {
+                    // The sifted key is less than both of its
+                    // childrens' keys. we are done!
+                   
+                    break;
+                }
+
+                this->table->set(iter, this->table->get(minInd));
+                iter = minInd;
             }
+
+            this->table->set(iter, siftEntry);
+
+            return rootValue;
         }
     };
 }}

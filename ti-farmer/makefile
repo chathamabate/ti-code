@@ -21,7 +21,6 @@ CXX_UTIL_NON_CORE_MODS		= gui unitapp app data
 
 CXX_UTIL_MODS				= $(CXX_UTIL_CORE_MODS) $(CXX_UTIL_NON_CORE_MODS)
 
-
 CXX_UTIL_SOURCES 		= $(foreach mod,$(CXX_UTIL_MODS),$(wildcard ../cxxutil/$(mod)/*.cpp)) 
 CXX_UTIL_TEST_SOURCES	= $(foreach mod,$(CXX_UTIL_NON_CORE_MODS),$(wildcard ../cxxutil/$(mod)/test/*.cpp)) 
 
