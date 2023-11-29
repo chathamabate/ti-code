@@ -3,6 +3,7 @@
 #include <cxxutil/data/test/heap.h>
 #include <cxxutil/unit/unit.h>
 #include <limits.h>
+#include <stdio.h>
 
 using namespace cxxutil;
 
@@ -127,13 +128,72 @@ public:
 
 SimpleHeapCase3 SimpleHeapCase3::ONLY_VAL;
 
+class BigHeapCase1 : public unit::TestCase {
+private:
+    static BigHeapCase1 ONLY_VAL;
+    BigHeapCase1() : TestCase("Big Heap 1") {}
 
-const size_t HEAP_SUITE_LEN = 3;
+    data::Heap<uint8_t> *h;
+
+    virtual void attempt(unit::TestContext *tc) override {
+        this->h = new data::Heap<uint8_t>(2, trivKey, 1);
+
+        for (size_t i = 0; i < 100; i++) {
+            this->h->push(i);
+        }
+
+        for (size_t i = 0; i < 100; i++) {
+            tc->assertEqUInt(i, this->h->pop());
+        }
+    }
+
+    virtual void finally() override {
+        delete this->h;
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BigHeapCase1 BigHeapCase1::ONLY_VAL;
+
+class BigHeapCase2 : public unit::TestCase {
+private:
+    static BigHeapCase2 ONLY_VAL;
+    BigHeapCase2() : TestCase("Big Heap 2") {}
+
+    data::Heap<uint8_t> *h;
+
+    virtual void attempt(unit::TestContext *tc) override {
+        this->h = new data::Heap<uint8_t>(2, revKey, 1);
+
+        for (size_t i = 0; i < 100; i++) {
+            this->h->push(i);
+        }
+
+        for (size_t i = 0; i < 100; i++) {
+            tc->assertEqUInt(99 - i, this->h->pop());
+        }
+    }
+
+    virtual void finally() override {
+        delete this->h;
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BigHeapCase2 BigHeapCase2::ONLY_VAL;
+
+const size_t HEAP_SUITE_LEN = 5;
 static unit::TestTree * const 
 HEAP_SUITE_TESTS[HEAP_SUITE_LEN] = {
     SimpleHeapCase1::ONLY,
     SimpleHeapCase2::ONLY,
-    SimpleHeapCase3::ONLY
+    SimpleHeapCase3::ONLY,
+    BigHeapCase1::ONLY,
+    BigHeapCase2::ONLY
 };
 
 static unit::TestSuite HEAP_SUITE_VAL(

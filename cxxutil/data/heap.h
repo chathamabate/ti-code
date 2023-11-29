@@ -17,7 +17,7 @@ namespace cxxutil { namespace data {
     // This is a min heap by keys.
     template <typename T>
     class Heap : public core::SafeObject {
-    private:
+    public:
         core::U24 (* const keyFunc)(const T &);
 
         core::SafeArray<HeapEntry<T>> *table;
@@ -61,7 +61,7 @@ namespace cxxutil { namespace data {
             core::U24 key = this->keyFunc(ele);
 
             size_t iter = this->len;
-            size_t parent = iter / 2;
+            size_t parent = (iter-1) / 2;
 
             // Do bubble up.
             // iter always points to an empty cell.
@@ -69,7 +69,7 @@ namespace cxxutil { namespace data {
                 this->table->set(iter, this->table->get(parent));
 
                 iter = parent;
-                parent = iter / 2;
+                parent = (iter-1) / 2;
             }
 
             // At this point, iter points to a cell which can
