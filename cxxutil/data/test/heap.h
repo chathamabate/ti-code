@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include <cxxutil/unit/unit.h>
 

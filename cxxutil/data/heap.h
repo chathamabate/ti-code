@@ -1,4 +1,4 @@
-
+#pragma once
 
 #include "ti/screen.h"
 #include <stdint.h>
@@ -17,7 +17,7 @@ namespace cxxutil { namespace data {
     // This is a min heap by keys.
     template <typename T>
     class Heap : public core::SafeObject {
-    public:
+    private:
         core::U24 (* const keyFunc)(const T &);
 
         core::SafeArray<HeapEntry<T>> *table;
