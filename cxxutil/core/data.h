@@ -82,7 +82,7 @@ namespace cxxutil { namespace core {
             return arr;
         }
 
-        void add(const T &ele) {
+        void add(T ele) {
             size_t cap = this->safeArr->getLen();
 
             if (this->len == cap) {
