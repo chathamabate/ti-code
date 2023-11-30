@@ -25,7 +25,7 @@ using namespace cxxutil;
 
 // Looking good so far!
 static void viewBitGrid(cxxutil::data::BitGrid *bg) {
-    const uint8_t SIDE_LEN = 8; // 5px per side.
+    const uint8_t SIDE_LEN = 4; // 5px per side.
     
     const uint8_t PATH_COLOR = 22; 
     const uint8_t BARR_COLOR = 19;
@@ -61,7 +61,7 @@ void innerMain(void) {
     srand(time(&t));
 
     cxxutil::data::BitGrid *bg = 
-        tif::model::createMaze(1, 15, 15);
+        tif::model::createMaze(1, 30, 30);
 
     gfx_Begin();
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);

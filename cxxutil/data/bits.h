@@ -4,6 +4,11 @@
 
 namespace cxxutil { namespace data {
 
+    typedef struct {
+        size_t r;
+        size_t c;
+    } grid_coord_t;
+
     // A string of bits read left-to-right.
     class BitVector : public core::SafeObject {
     private:

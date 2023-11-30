@@ -8,49 +8,46 @@
 
 using namespace tif::model;
 
-typedef struct {
-    size_t r;
-    size_t c;
-} MazeCoord;
 
-static cxxutil::core::U24 randomKey(const MazeCoord &v) {
+static cxxutil::core::U24 randomKey(const cxxutil::data::grid_coord_t &v) {
     (void)v;
 
     return rand();
 }
 
-// This adds all barrier edges bordering cell c to the open
-// set.  
+// This pushes all edges that border c which are "open".
+// Meaning that they are barriers that have the chance of being
+// made paths.
 // NOTE: rows/cols must both  be larger than 0
-static void pushBarrierEdges(cxxutil::data::Heap<MazeCoord> *open, 
-        MazeCoord c, cxxutil::data::BitGrid *bg) {
+static void pushOpenEdges(cxxutil::data::Heap<cxxutil::data::grid_coord_t> *open, 
+        cxxutil::data::grid_coord_t c, cxxutil::data::BitGrid *bg) {
     // Add West.
-    if (c.c > 0 && !(bg->get(c.r, c.c - 1))) {
-        open->push((MazeCoord){
+    if (c.c > 0 && !(bg->get(c.r, c.c - 2))) {
+        open->push((cxxutil::data::grid_coord_t){
             .r = c.r,
             .c = c.c - 1
         });
     }  
 
     // Add East.
-    if (c.c < bg->getCols() - 1 && !(bg->get(c.r, c.c + 1))) {
-        open->push((MazeCoord){
+    if (c.c < bg->getCols() - 1 && !(bg->get(c.r, c.c + 2))) {
+        open->push((cxxutil::data::grid_coord_t){
             .r = c.r,
             .c = c.c + 1
         });
     }
 
     // Add North.
-    if (c.r > 0 && !(bg->get(c.r - 1, c.c))) {
-        open->push((MazeCoord){
+    if (c.r > 0 && !(bg->get(c.r - 2, c.c))) {
+        open->push((cxxutil::data::grid_coord_t){
             .r = c.r - 1,
             .c = c.c 
         });
     }
 
     // Add South.
-    if (c.r < bg->getRows() - 1 && !(bg->get(c.r + 1, c.c))) {
-        open->push((MazeCoord){
+    if (c.r < bg->getRows() - 1 && !(bg->get(c.r + 2, c.c))) {
+        open->push((cxxutil::data::grid_coord_t){
             .r = c.r + 1,
             .c = c.c
         });
@@ -67,22 +64,22 @@ tif::model::createMaze(uint8_t chnl, size_t rows, size_t cols) {
 
     // This contains coordinates of edge pathes which may
     // be addable to our maze.
-    cxxutil::data::Heap<MazeCoord> open(chnl, randomKey, 20);
+    cxxutil::data::Heap<cxxutil::data::grid_coord_t> open(chnl, randomKey, 20);
 
     // Remember, due to how the maze is organized, an edge
     // path can only ever connect to node pathes. 
 
     // First lets get our random starting point.
-    MazeCoord start = {
+    cxxutil::data::grid_coord_t start = {
         .r = (rand() % rows) * 2,
         .c = (rand() % cols) * 2
     };
 
     bg->set(start.r, start.c, true);
-    pushBarrierEdges(&open, start, bg);
+    pushOpenEdges(&open, start, bg);
 
     while (open.getLength() > 0) {
-        MazeCoord edge = open.pop();
+        cxxutil::data::grid_coord_t edge = open.pop();
         
         // It's possible our edge has already been visited.
         if (bg->get(edge.r, edge.c)) {
@@ -99,7 +96,7 @@ tif::model::createMaze(uint8_t chnl, size_t rows, size_t cols) {
         
         // Invalid initial value will be used at the 
         // end to determine if a valid node was found.
-        MazeCoord node = {
+        cxxutil::data::grid_coord_t node = {
             .r = bgRows,
             .c = bgCols
         };
@@ -145,7 +142,7 @@ tif::model::createMaze(uint8_t chnl, size_t rows, size_t cols) {
             bg->set(edge.r, edge.c, true);
             bg->set(node.r, node.c, true);
 
-            pushBarrierEdges(&open, node, bg);
+            pushOpenEdges(&open, node, bg);
         }
     }
 
