@@ -10,8 +10,8 @@ namespace tif { namespace model {
     // 0's in the grid represent barriers.
     // 1's in the grid represent paths.
     //
-    // A Maze is valid iff the paths in the maze form a single connected graph.
-    // Cycles are allowed. (Although the current algorithm produces a tree).
+    // NOTE: a maze is valid if there is a path from the top left corner to the
+    // bottom right corner. (THIS IS THE ONLY CONSTRAINT)
     //
     // Coordinates of the form (x, y) where x, y are both even are always paths.
     // Coordinates of the form (x, y) where x, y are both odd are always barriers.
@@ -28,5 +28,5 @@ namespace tif { namespace model {
     // of the given maze.
     //
     // NOTE: it is the user's responsibilty to delete the given bit grid.
-    cxxutil::data::BitGrid *createMazeDFS(uint8_t chnl, cxxutil::data::BitGrid *m);
+    cxxutil::data::BitGrid *createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid *m);
 }}

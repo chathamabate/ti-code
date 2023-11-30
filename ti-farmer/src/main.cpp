@@ -60,8 +60,9 @@ void innerMain(void) {
     time_t t;
     srand(time(&t));
 
-    cxxutil::data::BitGrid *bg = 
-        tif::model::createMaze(1, 30, 30);
+    cxxutil::data::BitGrid *bg = new cxxutil::data::BitGrid(2, 5, 5);
+
+    cxxutil::data::BitGrid *v = tif::model::createMazeDFS(2, bg);
 
     gfx_Begin();
     core::MemoryTracker::ONLY->setMER(core::GraphicsMemoryExitRoutine::ONLY);
@@ -71,7 +72,7 @@ void innerMain(void) {
 
     // Make the whole screen white.
     gfx_FillScreen(255);
-    viewBitGrid(bg);
+    viewBitGrid(v);
 
     // Copy buffer to the screen.
     gfx_BlitBuffer();
@@ -81,6 +82,7 @@ void innerMain(void) {
 
     gfx_End();
 
+    delete v;
     delete bg;
 
     core::MemoryTracker::ONLY->setMER(core::BasicMemoryExitRoutine::ONLY);

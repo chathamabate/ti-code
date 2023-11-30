@@ -255,7 +255,7 @@ static void visitEdge(dfs_context_t ctx, cxxutil::data::grid_coord_t edge) {
     ctx.v->set(edge.r, edge.c, true);
 }
 
-cxxutil::data::BitGrid *createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid *m) {
+cxxutil::data::BitGrid *tif::model::createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid *m) {
     cxxutil::data::BitGrid *visited = 
         new cxxutil::data::BitGrid(chnl, m->getRows(), m->getCols());
 
@@ -264,8 +264,8 @@ cxxutil::data::BitGrid *createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid
 
     dfs_context_t ctx = {
         .s = &stack,
+        .m = m,
         .v = visited,
-        .m = m
     };
 
     visitNode(ctx, (cxxutil::data::grid_coord_t){.r = 0, .c = 0});
