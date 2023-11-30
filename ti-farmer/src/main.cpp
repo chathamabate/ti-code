@@ -5,6 +5,7 @@
 #include "sys/lcd.h"
 #include "ti/getcsc.h"
 #include "ti/getkey.h"
+#include <cstdlib>
 #include <ti/screen.h>
 #include <cxxutil/core/input.h>
 
@@ -15,6 +16,7 @@
 
 #include <cxxutil/data/bits.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "./model/maze.h"
 
@@ -55,6 +57,9 @@ static void viewBitGrid(cxxutil::data::BitGrid *bg) {
 }
 
 void innerMain(void) {
+    time_t t;
+    srand(time(&t));
+
     cxxutil::data::BitGrid *bg = 
         tif::model::createMaze(1, 15, 15);
 
