@@ -9,6 +9,130 @@
 
 using namespace tif::model;
 
+// DFS Code...
+
+typedef struct {
+    cxxutil::core::CoreList<cxxutil::data::grid_coord_t> *s;     // Stack.
+    const cxxutil::data::BitGrid *m;                             // Maze.
+    cxxutil::data::BitGrid *v;                                   // Visted.
+} dfs_context_t;
+
+// A node is marked visited once it is gauranteed all of its outgoing edges
+// have been visited or will be visited in the future.
+static void visitNode(dfs_context_t ctx, cxxutil::data::grid_coord_t node) {
+    const size_t rows = ctx.m->getRows();
+    const size_t cols = ctx.m->getCols();
+
+    // North.
+    if (node.r > 0 && ctx.m->get(node.r - 1, node.c)) {
+        ctx.s->add(
+                (cxxutil::data::grid_coord_t)
+                {.r = node.r - 1, .c = node.c});
+    }
+
+    // South.
+    if (node.r < rows - 1 && ctx.m->get(node.r + 1, node.c)) {
+        ctx.s->add(
+                (cxxutil::data::grid_coord_t)
+                {.r = node.r + 1, .c = node.c});
+    }
+
+    // West.
+    if (node.c > 0 && ctx.m->get(node.r, node.c - 1)) {
+        ctx.s->add(
+                (cxxutil::data::grid_coord_t)
+                {.r = node.r, .c = node.c - 1});
+    }
+
+    // East.
+    if (node.c < cols - 1 && ctx.m->get(node.r, node.c + 1)) {
+        ctx.s->add(
+                (cxxutil::data::grid_coord_t)
+                {.r = node.r, .c = node.c + 1});
+    }
+
+    
+    // Mark Visited!
+    ctx.v->set(node.r, node.c, true);
+}
+
+// An edge is marked visited after both of its endpoints are marked visited.
+static void visitEdge(dfs_context_t ctx, cxxutil::data::grid_coord_t edge) {
+
+    // It is gauranteed one or both of the edges endpoints are visited.
+
+    if (edge.r % 2 == 0) {
+        // East West Edge.
+        
+        if (!(ctx.v->get(edge.r, edge.c - 1))) {
+
+            // West Node not visited.
+            visitNode(ctx, 
+                    (cxxutil::data::grid_coord_t)
+                    {.r = edge.r, .c = edge.c - 1});
+
+        } else if (!(ctx.v->get(edge.r, edge.c + 1))) {
+
+            // East Node not visited.
+            visitNode(ctx, 
+                    (cxxutil::data::grid_coord_t)
+                    {.r = edge.r, .c = edge.c + 1});
+        }
+        
+    } else {
+        // North South Edge.
+
+        if (!(ctx.v->get(edge.r - 1, edge.c))) {
+
+            // North Node not visited.
+            visitNode(ctx, 
+                    (cxxutil::data::grid_coord_t)
+                    {.r = edge.r - 1, .c = edge.c});
+
+        } else if (!(ctx.v->get(edge.r + 1, edge.c))) {
+
+            // South Node not visited.
+            visitNode(ctx, 
+                    (cxxutil::data::grid_coord_t)
+                    {.r = edge.r + 1, .c = edge.c});
+        }
+    }
+
+    // Mark Visited.
+    ctx.v->set(edge.r, edge.c, true);
+}
+
+cxxutil::data::BitGrid *tif::model::createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid *m) {
+    cxxutil::data::BitGrid *visited = 
+        new cxxutil::data::BitGrid(chnl, m->getRows(), m->getCols());
+
+    // The stack actually only holds edges.
+    cxxutil::core::CoreList<cxxutil::data::grid_coord_t> stack;
+
+    dfs_context_t ctx = {
+        .s = &stack,
+        .m = m,
+        .v = visited,
+    };
+
+    visitNode(ctx, (cxxutil::data::grid_coord_t){.r = 0, .c = 0});
+
+    while (stack.getLen() > 0) {
+        cxxutil::data::grid_coord_t edge = stack.pop();
+        
+        // As we aren't necessarily working with a tree,
+        // It will be possible that the same edge is added twice.
+        if (visited->get(edge.r, edge.c)) {
+            continue;
+        } 
+
+        visitEdge(ctx, edge);
+    }
+
+    return visited;
+}
+
+// Maze Generation Code.
 
 static cxxutil::core::U24 randomKey(const cxxutil::data::grid_coord_t &v) {
     (void)v;
@@ -160,127 +284,3 @@ tif::model::createMaze(uint8_t chnl, size_t rows, size_t cols) {
     return bg;
 }
 
-// DFS Code...
-// NOTE: The below code will inherently look similar to what is above.
-// However its semantics are different.
-
-typedef struct {
-    cxxutil::core::CoreList<cxxutil::data::grid_coord_t> *s;     // Stack.
-    const cxxutil::data::BitGrid *m;                             // Maze.
-    cxxutil::data::BitGrid *v;                                   // Visted.
-} dfs_context_t;
-
-// A node is marked visited once it is gauranteed all of its outgoing edges
-// have been visited or will be visited in the future.
-static void visitNode(dfs_context_t ctx, cxxutil::data::grid_coord_t node) {
-    const size_t rows = ctx.m->getRows();
-    const size_t cols = ctx.m->getCols();
-
-    // North.
-    if (node.r > 0 && ctx.m->get(node.r - 1, node.c)) {
-        ctx.s->add(
-                (cxxutil::data::grid_coord_t)
-                {.r = node.r - 1, .c = node.c});
-    }
-
-    // South.
-    if (node.r < rows - 1 && ctx.m->get(node.r + 1, node.c)) {
-        ctx.s->add(
-                (cxxutil::data::grid_coord_t)
-                {.r = node.r + 1, .c = node.c});
-    }
-
-    // West.
-    if (node.c > 0 && ctx.m->get(node.r, node.c - 1)) {
-        ctx.s->add(
-                (cxxutil::data::grid_coord_t)
-                {.r = node.r, .c = node.c - 1});
-    }
-
-    // East.
-    if (node.c < cols - 1 && ctx.m->get(node.r, node.c + 1)) {
-        ctx.s->add(
-                (cxxutil::data::grid_coord_t)
-                {.r = node.r, .c = node.c + 1});
-    }
-
-    
-    // Mark Visited!
-    ctx.v->set(node.r, node.c, true);
-}
-
-// An edge is marked visited after both of its endpoints are marked visited.
-static void visitEdge(dfs_context_t ctx, cxxutil::data::grid_coord_t edge) {
-
-    // It is gauranteed one or both of the edges endpoints are visited.
-
-    if (edge.r % 2 == 0) {
-        // East West Edge.
-        
-        if (!(ctx.v->get(edge.r, edge.c - 1))) {
-
-            // West Node not visited.
-            visitNode(ctx, 
-                    (cxxutil::data::grid_coord_t)
-                    {.r = edge.r, .c = edge.c - 1});
-
-        } else if (!(ctx.v->get(edge.r, edge.c + 1))) {
-
-            // East Node not visited.
-            visitNode(ctx, 
-                    (cxxutil::data::grid_coord_t)
-                    {.r = edge.r, .c = edge.c + 1});
-        }
-        
-    } else {
-        // North South Edge.
-
-        if (!(ctx.v->get(edge.r - 1, edge.c))) {
-
-            // North Node not visited.
-            visitNode(ctx, 
-                    (cxxutil::data::grid_coord_t)
-                    {.r = edge.r - 1, .c = edge.c});
-
-        } else if (!(ctx.v->get(edge.r + 1, edge.c))) {
-
-            // South Node not visited.
-            visitNode(ctx, 
-                    (cxxutil::data::grid_coord_t)
-                    {.r = edge.r + 1, .c = edge.c});
-        }
-    }
-
-    // Mark Visited.
-    ctx.v->set(edge.r, edge.c, true);
-}
-
-cxxutil::data::BitGrid *tif::model::createMazeDFS(uint8_t chnl, const cxxutil::data::BitGrid *m) {
-    cxxutil::data::BitGrid *visited = 
-        new cxxutil::data::BitGrid(chnl, m->getRows(), m->getCols());
-
-    // The stack actually only holds edges.
-    cxxutil::core::CoreList<cxxutil::data::grid_coord_t> stack;
-
-    dfs_context_t ctx = {
-        .s = &stack,
-        .m = m,
-        .v = visited,
-    };
-
-    visitNode(ctx, (cxxutil::data::grid_coord_t){.r = 0, .c = 0});
-
-    while (stack.getLen() > 0) {
-        cxxutil::data::grid_coord_t edge = stack.pop();
-        
-        // As we aren't necessarily working with a tree,
-        // It will be possible that the same edge is added twice.
-        if (visited->get(edge.r, edge.c)) {
-            continue;
-        } 
-
-        visitEdge(ctx, edge);
-    }
-
-    return visited;
-}

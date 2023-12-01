@@ -1,42 +1,146 @@
 
 #include "./maze.h"
 #include "../maze.h"
-#include "cxxutil/data/bits.h"
+#include <cxxutil/data/bits.h>
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/core/data.h>
 
 using namespace tif::model;
 
-// This test confirms that all positions in the maze are reachable
-// from starting position (0, 0).
-//
-// NOTE: while our current maze algorithm builds a tree,
-// this test case should be independent of that fact.
-// The given maze could contain a loop, that is ok.
-//
-// A Maze is really just a connected graph of a grid of
-// nodes.
-class MazeCase : public cxxutil::unit::TestCase {
+class DFSCase : public cxxutil::unit::TestCase {
 private:
-
-    const unsigned int seed;
     const size_t rows;
     const size_t cols;
+    const bool * const initMaze;
+    const bool * const dfsMaze;
 
-    // m is our maze.
-    cxxutil::data::BitGrid *m;
-    cxxutil::data::BitGrid *visited; 
+    cxxutil::data::BitGrid *initGrid;
+    cxxutil::data::BitGrid *actualDFSGrid;
+    cxxutil::data::BitGrid *dfsGrid;
 
     virtual void attempt(cxxutil::unit::TestContext *tc) override {
+        this->initGrid = new cxxutil::data::BitGrid(2, this->rows, this->cols);
+        this->dfsGrid = new cxxutil::data::BitGrid(2, this->rows, this->cols);
+        
+        // Let's load up our input grids.
+        const size_t inputLen  = this->rows * this->cols;
+        for (size_t i = 0; i < inputLen; i++) {
+            this->initGrid->set(i / cols, i % cols, this->initMaze[i]);
+            this->dfsGrid->set(i / cols, i % cols, this->dfsMaze[i]);
+        }
 
+        this->actualDFSGrid = createMazeDFS(2, this->initGrid);
+        
+        tc->assertTrue(*(this->dfsGrid) == *(this->actualDFSGrid)); 
     }
 
     virtual void finally() override {
-        delete this->visited;
-        delete this->m;
+        delete this->actualDFSGrid;
+        delete this->dfsGrid;
+        delete this->initGrid;
     }
 
 public:
-    MazeCase(const char *name, unsigned int s, size_t rs, size_t cs) 
-        : TestCase(name), seed(s), rows(rs), cols(cs) {}
+    DFSCase(const char *name, size_t rs, size_t cs, 
+            const bool *initM, const bool *dfsM) 
+        : TestCase(name), rows(rs), cols(cs), initMaze(initM), dfsMaze(dfsM) {}
 };
+
+// Time to make some mazes!
+
+static DFSCase DFS_CASE1("DFS Case 1", 1, 1, 
+        (bool[]){
+            true
+        }, 
+        (bool[]){
+            true
+        });
+
+static DFSCase DFS_CASE2("DFS Case 2", 3, 3, 
+        (bool[]){
+            true, true, true,
+            false, false, false,
+            true, true, true,
+        }, 
+        (bool[]){
+            true, true, true,
+            false, false, false,
+            false, false, false,
+        });
+
+static DFSCase DFS_CASE3("DFS Case 3", 3, 3, 
+        (bool[]){
+            true, true, true,
+            true, false, false,
+            true, true, true,
+        }, 
+        (bool[]){
+            true, true, true,
+            true, false, false,
+            true, true, true,
+        });
+
+static DFSCase DFS_CASE4("DFS Case 4", 3, 3, 
+        (bool[]){
+            true, true, true,
+            true, false, true,
+            true, true, true,
+        }, 
+        (bool[]){
+            true, true, true,
+            true, false, true,
+            true, true, true,
+        });
+
+static DFSCase DFS_CASE5("DFS Case 5", 3, 5, 
+        (bool[]){
+            true, true, true, false, true,
+            true, false, true, false, true,
+            true, true, true, false, true,
+        }, 
+        (bool[]){
+            true, true, true, false, false,
+            true, false, true, false, false,
+            true, true, true, false, false
+        });
+
+static DFSCase DFS_CASE6("DFS Case 6", 3, 5, 
+        (bool[]){
+            true, true, true, true, true,
+            true, false, true, false, true,
+            true, true, true, false, true,
+        }, 
+        (bool[]){
+            true, true, true, true, true,
+            true, false, true, false, true,
+            true, true, true, false, true,
+        });
+
+static DFSCase DFS_CASE7("DFS Case 7", 3, 5, 
+        (bool[]){
+            true, true, true, true, true,
+            true, false, true, false, true,
+            true, true, true, true, true,
+        }, 
+        (bool[]){
+            true, true, true, true, true,
+            true, false, true, false, true,
+            true, true, true, true, true,
+        });
+
+static const size_t DFS_SUITE_TESTS_LEN = 7;
+static cxxutil::unit::TestTree * const DFS_SUITE_TESTS[] = {
+    &DFS_CASE1,
+    &DFS_CASE2,
+    &DFS_CASE3,
+    &DFS_CASE4,
+    &DFS_CASE5,
+    &DFS_CASE6,
+    &DFS_CASE7,
+};
+
+static cxxutil::unit::TestSuite DFS_SUITE_VALUE("DFS Suite", 
+        DFS_SUITE_TESTS, DFS_SUITE_TESTS_LEN);
+
+cxxutil::unit::TestTree * const tif::model::DFS_SUITE = 
+        &DFS_SUITE_VALUE;

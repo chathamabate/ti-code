@@ -19,6 +19,7 @@
 #include <time.h>
 
 #include "./model/maze.h"
+#include "./model/test/maze.h"
 
 using namespace cxxutil;
 
@@ -90,7 +91,7 @@ void innerMain(void) {
 
 int main(void) {
     // innerMain();
-    unitapp::runUnitApp(data::BIT_SUITE);
+    unitapp::runUnitApp(tif::model::DFS_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
