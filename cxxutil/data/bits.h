@@ -33,6 +33,12 @@ namespace cxxutil { namespace data {
         }
 
         void set(size_t bit, bool value);
+
+        bool operator==(const BitVector &o) const;
+
+        inline bool operator!=(const BitVector &o) const {
+            return !(*this == o);
+        }
     };
 
 
@@ -62,6 +68,12 @@ namespace cxxutil { namespace data {
 
         inline void set(size_t r, size_t c, bool value) {
             this->grid->get(r)->set(c, value);
+        }
+
+        bool operator==(const BitGrid &o) const;
+
+        inline bool operator!=(const BitGrid &o) const {
+            return !(*this == o);
         }
     };
 }}

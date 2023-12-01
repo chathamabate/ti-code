@@ -25,41 +25,9 @@ private:
 
     // m is our maze.
     cxxutil::data::BitGrid *m;
-
-    // Which nodes we have visited.
     cxxutil::data::BitGrid *visited; 
 
-    cxxutil::core::CoreList<cxxutil::data::grid_coord_t> *stack;
-
-    void pushUnvisitedNeighbors(cxxutil::data::grid_coord_t node) {
-        
-    }
-
     virtual void attempt(cxxutil::unit::TestContext *tc) override {
-        this->m = createMaze(2, this->rows, this->cols);
-
-        this->visited = new cxxutil::data::BitGrid(2, this->rows, this->cols);
-        this->stack = 
-            new cxxutil::core::CoreList<cxxutil::data::grid_coord_t>(2);
-
-        this->stack->add((cxxutil::data::grid_coord_t){.r = 0, .c = 0});
-
-        // First we search the entire maze starting at the top left corner.
-        while (this->stack->getLen() > 0) {
-            cxxutil::data::grid_coord_t node = this->stack->pop(); 
-
-            // Add all reachable unvisited neighbors to the stack!
-
-            // Coordinates of our node in the node grid.
-            size_t nodeR = node.r / 2;
-            size_t nodeC = node.c / 2;
-
-            this->visited->set(nodeR, nodeC, true);
-
-
-            // Since this is a tree... 
-            // There should never be the possibility of double visiting?
-        }
 
     }
 

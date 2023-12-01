@@ -43,6 +43,20 @@ void BitVector::set(size_t bit, bool value) {
     this->vector->set(byteIndex, byte);
 }
 
+bool BitVector::operator==(const BitVector &o) const {
+    if (this->bits != o.bits) {
+        return false;
+    }
+
+    for (size_t i = 0; i < this->vector->getLen(); i++) {
+        if (this->vector->get(i) != o.vector->get(i)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 BitGrid::BitGrid(size_t rs, size_t cs) 
     : BitGrid(core::CXX_DEF_CHNL, rs, cs) {
 }
@@ -64,6 +78,20 @@ BitGrid::~BitGrid() {
     }
 
     delete this->grid;
+}
+
+bool BitGrid::operator==(const BitGrid &o) const {
+    if (this->rows != o.rows) {
+        return false;
+    }
+
+    for (size_t i = 0; i < this->rows; i++) {
+        if (*(this->grid->get(i)) != *(o.grid->get(i))) {
+            return false;
+        }
+    }
+
+    return true;
 }
 
 

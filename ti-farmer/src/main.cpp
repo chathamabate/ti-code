@@ -89,7 +89,8 @@ void innerMain(void) {
 }
 
 int main(void) {
-    innerMain();
+    // innerMain();
+    unitapp::runUnitApp(data::BIT_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 

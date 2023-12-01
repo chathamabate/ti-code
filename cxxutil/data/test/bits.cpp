@@ -57,7 +57,57 @@ static BitVectorCase BVC5("BitVector Case 5", 13);
 static BitVectorCase BVC6("BitVector Case 6", 24);
 static BitVectorCase BVC7("BitVector Case 7", 400);
 
-const size_t BIT_VECTOR_SUITE_LEN = 7;
+class BitVectorEqCase : public unit::TestCase {
+private:
+
+    static BitVectorEqCase ONLY_VAL;
+
+    static const size_t NUM_VECTORS = 6;
+    data::BitVector *bvs[NUM_VECTORS];
+
+    virtual void attempt(unit::TestContext *tc) override {
+        bvs[0] = new data::BitVector(2, 2);
+        bvs[1] = new data::BitVector(2, 2);
+
+        bvs[2] = new data::BitVector(2, 24);
+        bvs[3] = new data::BitVector(2, 24);
+
+        bvs[4] = new data::BitVector(2, 27);
+        bvs[5] = new data::BitVector(2, 27);
+
+        tc->assertTrue(*(bvs[0]) == *(bvs[1]));
+        bvs[0]->set(0, true);
+        tc->assertTrue(*(bvs[0]) != *(bvs[1]));
+
+        tc->assertTrue(*(bvs[0]) != *(bvs[2]));
+
+        tc->assertTrue(*(bvs[2]) == *(bvs[3]));
+        bvs[3]->set(23, true);
+        bvs[2]->set(11, true);
+        tc->assertTrue(*(bvs[2]) != *(bvs[3]));
+
+        bvs[4]->set(25, true);
+        tc->assertTrue(*(bvs[4]) != *(bvs[5]));
+        bvs[4]->set(25, false);
+        tc->assertTrue(*(bvs[4]) == *(bvs[5]));
+    }
+
+    virtual void finally() override {
+        for (size_t i = 0; i < NUM_VECTORS; i++) {
+            delete this->bvs[i];
+        }
+    }
+
+    BitVectorEqCase() : unit::TestCase("BitVector Eq Case") {
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BitVectorEqCase BitVectorEqCase::ONLY_VAL;
+
+const size_t BIT_VECTOR_SUITE_LEN = 8;
 static unit::TestTree * const
 BIT_VECTOR_SUITE_TESTS[BIT_VECTOR_SUITE_LEN] = {
     &BVC1,
@@ -67,6 +117,8 @@ BIT_VECTOR_SUITE_TESTS[BIT_VECTOR_SUITE_LEN] = {
     &BVC5,
     &BVC6,
     &BVC7,
+
+    BitVectorEqCase::ONLY
 };
 
 static unit::TestSuite BIT_VECTOR_SUITE_VAL(
@@ -137,7 +189,51 @@ static BitGridCase BGC5("BitGrid Case 5", 3, 8);
 static BitGridCase BGC6("BitGrid Case 6", 23, 11);
 static BitGridCase BGC7("BitGrid Case 7", 32, 32);
 
-static const size_t BIT_GRID_SUITE_LEN = 7;
+class BitGridEqCase : public unit::TestCase {
+private:
+
+    static BitGridEqCase ONLY_VAL;
+
+    data::BitGrid *bg1;
+    data::BitGrid *bg2;
+    data::BitGrid *bg3;
+
+    virtual void attempt(unit::TestContext *tc) override {
+        this->bg1 = new data::BitGrid(2, 4, 17);
+        this->bg2 = new data::BitGrid(2, 4, 17);
+        this->bg3 = new data::BitGrid(2, 3, 17);
+
+        tc->assertTrue(*(this->bg3) != *(this->bg2));
+
+        tc->assertTrue(*(this->bg1) == *(this->bg2));
+
+        this->bg1->set(2, 2, true);
+        tc->assertTrue(*(this->bg1) != *(this->bg2));
+
+        this->bg1->set(2, 2, false);
+        this->bg2->set(3, 5, true);
+        tc->assertTrue(*(this->bg1) != *(this->bg2));
+
+        this->bg2->set(3, 5, false);
+        tc->assertTrue(*(this->bg1) == *(this->bg2));
+    }
+
+    virtual void finally() override {
+        delete this->bg3;
+        delete this->bg2;
+        delete this->bg1;
+    }
+
+    BitGridEqCase() : unit::TestCase("BitGrid Eq Case") {
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BitGridEqCase BitGridEqCase::ONLY_VAL;
+
+static const size_t BIT_GRID_SUITE_LEN = 8;
 static unit::TestTree * const 
 BIT_GRID_SUITE_TESTS[BIT_GRID_SUITE_LEN] = {
     &BGC1,
@@ -147,6 +243,7 @@ BIT_GRID_SUITE_TESTS[BIT_GRID_SUITE_LEN] = {
     &BGC5,
     &BGC6,
     &BGC7,
+    BitGridEqCase::ONLY
 };
 
 static unit::TestSuite BIT_GRID_SUITE_VAL(
