@@ -25,5 +25,5 @@ namespace tif { namespace model {
     // Coordinates of the form (x, y) where x, y are both odd are always barriers.
     //
     // NOTE: it is the user's responsibilty to delete the given bit grid.
-    cxxutil::data::BitGrid *createMaze(uint8_t chnl, size_t rows, size_t cols);
+    cxxutil::data::BitGrid *createTreeMaze(uint8_t chnl, size_t rows, size_t cols);
 }}

@@ -144,3 +144,32 @@ static cxxutil::unit::TestSuite DFS_SUITE_VALUE("DFS Suite",
 
 cxxutil::unit::TestTree * const tif::model::DFS_SUITE = 
         &DFS_SUITE_VALUE;
+
+class TreeMazeCase : public cxxutil::unit::TestCase {
+private:
+    const size_t seed;
+    const size_t rows;
+    const size_t cols;
+
+    const cxxutil::data::BitGrid *maze;
+    const cxxutil::data::BitGrid *search;
+
+    virtual void attempt(cxxutil::unit::TestContext *tc) override {
+        srand(this->seed);
+        this->maze = createTreeMaze(2, this->rows, this->cols);
+        this->search = createMazeDFS(2, this->maze);
+
+        // NOTE: As we are testing our treemaze algorithm.
+        // The generated maze and the searched maze should be equal.
+        tc->assertTrue(*(this->maze) == *(this->search));
+    }
+
+    virtual void finally() override {
+        delete this->search;
+        delete this->maze;
+    }
+
+public:
+    TreeMazeCase(const char *name, size_t s, size_t rs, size_t cs) 
+        : TestCase(name), seed(s), rows(rs), cols(cs) {}
+};

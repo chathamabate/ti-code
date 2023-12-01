@@ -180,7 +180,7 @@ static void pushOpenEdges(cxxutil::data::Heap<cxxutil::data::grid_coord_t> *open
 }
 
 cxxutil::data::BitGrid *
-tif::model::createMaze(uint8_t chnl, size_t rows, size_t cols) {
+tif::model::createTreeMaze(uint8_t chnl, size_t rows, size_t cols) {
     const size_t bgRows = (2 * rows) - 1;
     const size_t bgCols = (2 * cols) - 1;
 
