@@ -23,7 +23,6 @@
 
 using namespace cxxutil;
 
-
 // Looking good so far!
 static void viewBitGrid(cxxutil::data::BitGrid *bg) {
     const uint8_t SIDE_LEN = 4; // 5px per side.
