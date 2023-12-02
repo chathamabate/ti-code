@@ -4,6 +4,7 @@
 #include <cxxutil/data/bits.h>
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/core/data.h>
+#include <stdlib.h>
 
 using namespace tif::model;
 
@@ -142,9 +143,6 @@ static cxxutil::unit::TestTree * const DFS_SUITE_TESTS[] = {
 static cxxutil::unit::TestSuite DFS_SUITE_VALUE("DFS Suite", 
         DFS_SUITE_TESTS, DFS_SUITE_TESTS_LEN);
 
-cxxutil::unit::TestTree * const tif::model::DFS_SUITE = 
-        &DFS_SUITE_VALUE;
-
 class TreeMazeCase : public cxxutil::unit::TestCase {
 private:
     const size_t seed;
@@ -173,3 +171,36 @@ public:
     TreeMazeCase(const char *name, size_t s, size_t rs, size_t cs) 
         : TestCase(name), seed(s), rows(rs), cols(cs) {}
 };
+
+static TreeMazeCase TM_CASE1("TreeMaze Case 1", 123, 1, 1);
+static TreeMazeCase TM_CASE2("TreeMaze Case 2", 123, 2, 2);
+static TreeMazeCase TM_CASE3("TreeMaze Case 3", 45, 2, 2);
+static TreeMazeCase TM_CASE4("TreeMaze Case 4", 45, 5, 5);
+static TreeMazeCase TM_CASE5("TreeMaze Case 5", 76, 5, 5);
+static TreeMazeCase TM_CASE6("TreeMaze Case 6", 76, 10, 10);
+
+static const size_t TM_SUITE_TESTS_LEN = 6;
+static cxxutil::unit::TestTree * const 
+TM_SUITE_TESTS[TM_SUITE_TESTS_LEN] = {
+    &TM_CASE1,
+    &TM_CASE2,
+    &TM_CASE3,
+    &TM_CASE4,
+    &TM_CASE5,
+    &TM_CASE6,
+};
+
+static cxxutil::unit::TestSuite 
+TM_SUITE_VALUE("TreeMaze Suite", TM_SUITE_TESTS, TM_SUITE_TESTS_LEN);
+
+static const size_t MAZE_SUITE_TESTS_LEN = 2;
+static cxxutil::unit::TestTree * const
+MAZE_SUITE_TESTS[MAZE_SUITE_TESTS_LEN] = {
+    &DFS_SUITE_VALUE,
+    &TM_SUITE_VALUE,
+};
+
+static cxxutil::unit::TestSuite 
+MAZE_SUITE_VALUE("Maze Suite", MAZE_SUITE_TESTS, MAZE_SUITE_TESTS_LEN);
+
+cxxutil::unit::TestTree * const tif::model::MAZE_SUITE = &MAZE_SUITE_VALUE;

@@ -91,7 +91,7 @@ void innerMain(void) {
 
 int main(void) {
     // innerMain();
-    unitapp::runUnitApp(tif::model::DFS_SUITE);
+    unitapp::runUnitApp(tif::model::MAZE_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
