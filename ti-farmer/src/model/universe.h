@@ -20,15 +20,12 @@ namespace tif { namespace model {
     struct universe_t {
         const char *name;
 
-        size_t planetsLen;
+        uint8_t planetsLen;
         const planet_t *planets;
     };
 
-    // Every planet has 4 seasons.
-    static constexpr size_t SPRING_IND = 0;
-    static constexpr size_t SUMMER_IND = 1;
-    static constexpr size_t FALL_IND   = 2;
-    static constexpr size_t WINTER_IND = 3;
+    // All planets have 4 seasons.
+    static constexpr uint8_t NUM_SEASONS = 4;
 
     struct planet_t {
         // Name of this planet.
@@ -36,18 +33,15 @@ namespace tif { namespace model {
         const char *description;
 
         // The dimmensions of mazes on this planet.
-        size_t mazeRows;
-        size_t mazeCols;
+        uint8_t mazeRows;
+        uint8_t mazeCols;
         
         // NOTE: Every planet will have 4 seasons.
         // 0 = Spring
         // 1 = Summer
         // 2 = Fall
         // 3 = Winter
-        const season_t *seasons[4];
-
-        size_t cropsLen;
-        const crop_t *crops;
+        const season_t *seasons[NUM_SEASONS];
     };
 
     struct season_t {
@@ -55,6 +49,10 @@ namespace tif { namespace model {
 
         // How many days the season lasts.
         day_count_t duration;
+
+        // Crops available in this season.
+        uint8_t cropsLen;
+        const crop_t * const * crops;
     };
 
     struct crop_t {
@@ -63,15 +61,20 @@ namespace tif { namespace model {
 
         // How long before the crop is ready to harvest.
         day_count_t timeToHarvest;
-
-        // The season this crop can grow in.
-        size_t seasonInd;
     };
 
+    // Under this look up model, there can be no more the 4 planets.
+    // Also no more the 16 crops per season.
+
     struct crop_lookup_t {
-        size_t planetInd; 
-        size_t cropInd;
+        uint8_t planetInd : 2; 
+        uint8_t seasonInd : 2;   // a few more indeces??
+        uint8_t cropInd   : 4;
     };
 
     extern const universe_t UNIVERSE;
+
+    // Should we provide the look up of each crops??
+    // Or maybe the look up of other stuff??
+
 }}
