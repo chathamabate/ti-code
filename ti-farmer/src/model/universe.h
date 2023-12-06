@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cxxutil/core/mem.h>
 #include <stdint.h>
 #include <stdlib.h>
 
@@ -20,6 +21,14 @@ namespace tif { namespace model {
     struct universe_t {
         const char *name;
 
+        // Goals for each crop on each planet will follow
+        // the pattern, each awarding one star.
+        //
+        // gb^1, gb^2, gb^3 ... gb^numGoals
+        //
+        uint8_t numGoals;
+        uint8_t goalBase;
+
         uint8_t planetsLen;
         const planet_t *planets;
     };
@@ -27,7 +36,13 @@ namespace tif { namespace model {
     // All planets have 4 seasons.
     static constexpr uint8_t NUM_SEASONS = 4;
 
+    // Each crop of each planet has a 5 goal sequence.
+    // Each goal awards one star.
+
     struct planet_t {
+        // Stars required to unlock this planet.
+        cxxutil::core::U24 reqStars;
+
         // Name of this planet.
         const char *name;
         const char *description;
