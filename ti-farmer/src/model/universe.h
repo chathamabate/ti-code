@@ -10,6 +10,7 @@ namespace tif { namespace model {
 
     struct universe_t;
     struct planet_t;
+    struct feature_t;
     struct season_t;
     struct crop_t;
 
@@ -26,22 +27,30 @@ namespace tif { namespace model {
         //
         // gb^1, gb^2, gb^3 ... gb^numGoals
         //
+        // Each goal rewards its exponent in stars.
+        //
+        // Stars be a pseudo currency.
+        //
+        // Maybe farms have a set number of plots.
+        // The user can purchase how many of said plots can be farm land.
+        // These are just ideas...
+        //
+        // I like the idea of purchasing plots and such...
+        //
+        //
         uint8_t numGoals;
         uint8_t goalBase;
 
         uint8_t planetsLen;
-        const planet_t *planets;
+        const planet_t * const *planets;
     };
 
     // All planets have 4 seasons.
     static constexpr uint8_t NUM_SEASONS = 4;
 
-    // Each crop of each planet has a 5 goal sequence.
-    // Each goal awards one star.
-
     struct planet_t {
-        // Stars required to unlock this planet.
-        cxxutil::core::U24 reqStars;
+        // Cost to unlock this planet.
+        cxxutil::core::U24 unlockCost;
 
         // Name of this planet.
         const char *name;
@@ -50,6 +59,10 @@ namespace tif { namespace model {
         // The dimmensions of mazes on this planet.
         uint8_t mazeRows;
         uint8_t mazeCols;
+
+        // The dimmensions of the farm on this planet.
+        uint8_t farmRows;
+        uint8_t farmCols;
         
         // NOTE: Every planet will have 4 seasons.
         // 0 = Spring
@@ -57,7 +70,30 @@ namespace tif { namespace model {
         // 2 = Fall
         // 3 = Winter
         const season_t *seasons[NUM_SEASONS];
+
+        // All features which can be used on this planet.
+        // NOTE: features[0] should always be a plot.
+        uint8_t featuresLen;
+        const feature_t * const *features;
     };
+
+    // A feature is something which can occupy a square on the farm.
+    // The most notable feature is a plot.
+    //
+    // All other features will be cosmetic. (At least for now)
+    struct feature_t {
+        cxxutil::core::U24 cost;
+
+        const char *name;
+        const char *description;
+
+        // The initial amount the user starts with.
+        uint8_t initialAmt;
+
+        // The maximum amount of this feature which can be
+        // purchased.
+        uint8_t maxAmt;
+    }; 
 
     struct season_t {
         const char *description;
