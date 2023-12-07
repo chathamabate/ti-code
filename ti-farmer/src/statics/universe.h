@@ -9,6 +9,7 @@ namespace tif { namespace statics {
     typedef uint32_t day_count_t;
 
     struct universe_t;
+    struct goal_timeline_t; 
     struct planet_t;
     struct feature_t;
     struct season_t;
@@ -22,26 +23,17 @@ namespace tif { namespace statics {
     struct universe_t {
         const char *name;
 
-        // Goals for each crop on each planet will follow
-        // the pattern, each awarding one star.
-        //
-        // gb^1, gb^2, gb^3 ... gb^numGoals
-        //
-        // Each goal rewards its exponent in stars.
-        //
-        // Stars be a pseudo currency.
-        //
-        // Maybe farms have a set number of plots.
-        // The user can purchase how many of said plots can be farm land.
-        // These are just ideas...
-        //
-        // I like the idea of purchasing plots and such...
-        //
-        uint8_t numGoals;
-        uint8_t goalBase;
+        // All crops across all planets and seasons
+        // follow the same timeline.
+        const goal_timeline_t *goalTimeline;
 
         uint8_t planetsLen;
         const planet_t * const *planets;
+    };
+
+    struct goal_timeline_t {
+        uint8_t timelineLen;
+        cxxutil::core::U24 *timeline;
     };
 
     // All planets have 4 seasons.

@@ -3,26 +3,6 @@
 
 using namespace tif::statics;
 
-// Earth Features.
-
-static const feature_t FARM_PLOT = {
-    .cost = 1,
-
-    .name = "Farm Plot",
-    .description = "A nice place to plant something.",
-
-    // Temporary values.
-    .initialAmt = 4,
-    .maxAmt = 16
-};
-
-// More to come...
-
-static const size_t EARTH_FEATURES_LEN = 1;
-static const feature_t * const 
-EARTH_FEATURES[EARTH_FEATURES_LEN] = {
-    &FARM_PLOT,
-};
 
 // Earth Seasons.
 // Earth Spring.
@@ -163,6 +143,27 @@ static const season_t EARTH_WINTER = {
     .crops = NULL
 };
 
+// Earth Features.
+
+static const feature_t FARM_PLOT = {
+    .cost = 1,
+
+    .name = "Farm Plot",
+    .description = "A nice place to plant something.",
+
+    // Temporary values.
+    .initialAmt = 4,
+    .maxAmt = 16
+};
+
+// More to come...
+
+static const size_t EARTH_FEATURES_LEN = 1;
+static const feature_t * const 
+EARTH_FEATURES[EARTH_FEATURES_LEN] = {
+    &FARM_PLOT,
+};
+
 const planet_t tif::statics::EARTH = {
     // Earth is always free.
     .unlockCost = 0,
@@ -181,5 +182,8 @@ const planet_t tif::statics::EARTH = {
         &EARTH_SUMMER,
         &EARTH_FALL,
         &EARTH_WINTER
-    }
+    },
+
+    .featuresLen = EARTH_FEATURES_LEN,
+    .features = EARTH_FEATURES,
 };
