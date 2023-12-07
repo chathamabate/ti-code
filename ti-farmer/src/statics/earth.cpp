@@ -173,6 +173,9 @@ const planet_t tif::statics::EARTH = {
     .mazeRows = 8,
     .mazeCols = 8,
 
+    .gridRows = 10,
+    .gridCols = 10,
+
     .seasons = {
         &EARTH_SPRING,
         &EARTH_SUMMER,

@@ -37,7 +37,6 @@ namespace tif { namespace statics {
         //
         // I like the idea of purchasing plots and such...
         //
-        //
         uint8_t numGoals;
         uint8_t goalBase;
 
@@ -61,8 +60,8 @@ namespace tif { namespace statics {
         uint8_t mazeCols;
 
         // The dimmensions of the farm on this planet.
-        uint8_t farmRows;
-        uint8_t farmCols;
+        uint8_t gridRows;
+        uint8_t gridCols;
         
         // NOTE: Every planet will have 4 seasons.
         // 0 = Spring
