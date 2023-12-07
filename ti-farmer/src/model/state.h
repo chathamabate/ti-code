@@ -9,8 +9,6 @@
 
 namespace tif { namespace model {
 
-
-
     // A planets environent is made up of a grid of cells.
     struct cell_state_t {
         // The index of what feature occupies this cell.
@@ -39,11 +37,11 @@ namespace tif { namespace model {
 
         cxxutil::core::SafeArray<cxxutil::core::U24> *cropCounts;
         cxxutil::data::BitVector *cropLocks;    // 1 when locked, 0 when not.
-        cxxutil::core::SafeArray<cxxutil::data::BitVector *> goals; // 1 when collected, 0 when not.
+        cxxutil::data::BitGrid *goals;          // 1 when collected, 0 when not.
 
     public:
-        SeasonState(const statics::season_t *s);
-        SeasonState(uint8_t chnl, const statics::season_t *s);
+        SeasonState(const statics::season_t *s, const statics::goal_timeline_t *gt);
+        SeasonState(uint8_t chnl, const statics::season_t *s, const statics::goal_timeline_t *gt);
         ~SeasonState();
 
         // This doesn't check if a crop is locked or not.
@@ -68,12 +66,23 @@ namespace tif { namespace model {
             return false;
         }
         
-        bool isCollected(uint8_t cropInd, uint8_t goalInd) {
-
+        inline bool isCollected(uint8_t cropInd, uint8_t goalInd) {
+            return this->goals->get(cropInd, goalInd);
         }
 
-        bool isPassed(uint8_t cropInd, uint8_t goalInd);
-        bool collect(uint8_t cropInd, uint8_t goalInd);
+        inline bool isPassed(uint8_t cropInd, uint8_t goalInd) {
+            return this->cropCounts->get(cropInd) >= this->goalTimeline->timeline[goalInd];
+        }
+
+        inline bool collect(uint8_t cropInd, uint8_t goalInd) {
+            if ( (!(this->isCollected(cropInd, goalInd))) && this->isPassed(cropInd, goalInd) ) {
+                this->goals->set(cropInd, goalInd, true);
+
+                return true;
+            }
+
+            return false;
+        }
     };
 
     // Maybe the only universal thing should be stars???
