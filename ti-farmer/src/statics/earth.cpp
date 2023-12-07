@@ -1,7 +1,7 @@
 #include "./earth.h"
-#include "ti-farmer/src/model/universe.h"
+#include "./universe.h"
 
-using namespace tif::model;
+using namespace tif::statics;
 
 // Earth Features.
 
@@ -15,6 +15,8 @@ static const feature_t FARM_PLOT = {
     .initialAmt = 4,
     .maxAmt = 16
 };
+
+// More to come...
 
 static const size_t EARTH_FEATURES_LEN = 1;
 static const feature_t * const 
@@ -161,7 +163,7 @@ static const season_t EARTH_WINTER = {
     .crops = NULL
 };
 
-const planet_t tif::model::EARTH = {
+const planet_t tif::statics::EARTH = {
     // Earth is always free.
     .unlockCost = 0,
 

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stdlib.h>
 
-namespace tif { namespace model {
+namespace tif { namespace statics {
 
     typedef uint32_t day_count_t;
 
