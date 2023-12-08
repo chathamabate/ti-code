@@ -36,7 +36,7 @@ namespace tif { namespace model {
         const statics::goal_timeline_t * const goalTimeline;
 
         cxxutil::core::SafeArray<cxxutil::core::U24> *cropCounts;
-        cxxutil::data::BitVector *cropLocks;    // 1 when locked, 0 when not.
+        cxxutil::data::BitVector *cropUnlocks;  // 1 when unlocked 0 when locked.
         cxxutil::data::BitGrid *goals;          // 1 when collected, 0 when not.
 
     public:
@@ -53,13 +53,13 @@ namespace tif { namespace model {
             return this->cropCounts->get(cropInd);
         }
 
-        inline bool isLocked(uint8_t cropInd) {
-            return this->cropLocks->get(cropInd);
+        inline bool isUnlocked(uint8_t cropInd) {
+            return this->cropUnlocks->get(cropInd);
         }
 
         bool unlock(uint8_t cropInd) {
-            if (this->isLocked(cropInd)) {
-                this->cropLocks->set(cropInd, 0);
+            if (!(this->isUnlocked(cropInd))) {
+                this->cropUnlocks->set(cropInd, 1);
                 return true;
             }
 
@@ -91,13 +91,20 @@ namespace tif { namespace model {
     private:
         const statics::planet_t * const planet;
 
+        // Number of days in a year.
+        statics::day_count_t yearLen;
+
         // Todays date.
         statics::day_count_t date;
 
-        // Store the season just for quick speed up.
-        // Can always be calculated on demand just using date.
-        const statics::season_t *season;
+        // Remember that goals and crops are organzied in seasons.
+        SeasonState *seasonStates[statics::NUM_SEASONS];
 
+        // Here we store current season information for speed and
+        // code brevity.
+        uint8_t seasonInd;
+        const statics::season_t *season;
+        SeasonState *seasonState; // NOTE: Weak ptr, do not delete.
 
         // Feature inventory on this planet.
         cxxutil::core::SafeArray<feature_count_t> *featureCounts;
@@ -116,7 +123,7 @@ namespace tif { namespace model {
         inline bool isPlantablePtr(const cell_state_t *cell, uint8_t cropInd) const {
             return cell->featureInd == 0 &&                 // Is the cell a plot?
                 cell->cropInd == this->season->cropsLen &&  // Is the plot clear?
-
+                this->seasonState->isUnlocked(cropInd);     // Have we unlocked said crop.
         }
 
         inline bool isHarvestablePtr(const cell_state_t *cell) const {
@@ -135,8 +142,8 @@ namespace tif { namespace model {
         }
         
     public:
-        PlanetState(const statics::planet_t *p); 
-        PlanetState(uint8_t chnl, const statics::planet_t *p); 
+        PlanetState(const statics::planet_t *p, const statics::goal_timeline_t *gt); 
+        PlanetState(uint8_t chnl, const statics::planet_t *p, const statics::goal_timeline_t *gt); 
 
         ~PlanetState();
 
@@ -150,6 +157,14 @@ namespace tif { namespace model {
 
         inline statics::day_count_t getDate() const {
             return this->date;
+        }
+
+        inline uint8_t getSeasonInd() const {
+            return this->seasonInd;
+        }
+
+        inline const statics::season_t *getSeason() const {
+            return this->season;
         }
 
         // NOTE: The below calls will assume all indeces are valid
@@ -200,12 +215,18 @@ namespace tif { namespace model {
         // These calls are slightly different than the above.
         
         // Whether or not a specific goal has been collected.
-        bool isCollected(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) const;
+        inline bool isCollected(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) const {
+            return this->seasonStates[seasonInd]->isCollected(cropInd, goalInd);
+        }
 
         // Whether or not the requirements of a goal have been passed.
-        bool isPassed(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) const;
+        inline bool isPassed(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) const {
+            return this->seasonStates[seasonInd]->isPassed(cropInd, goalInd);
+        }
 
         // Collect a goal.
-        bool collect(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd);
+        inline bool collect(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) {
+            return this->seasonStates[seasonInd]->collect(cropInd, goalInd);
+        }
     };
 }}

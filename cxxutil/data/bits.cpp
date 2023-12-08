@@ -43,15 +43,6 @@ void BitVector::set(size_t bit, bool value) {
     this->vector->set(byteIndex, byte);
 }
 
-void BitVector::complement() {
-    uint8_t *arr = this->vector->getArrMut();
-    const size_t arrLen = this->vector->getLen();
-
-    for (size_t i = 0; i < arrLen; i++) {
-        arr[i] = ~arr[i];
-    }
-}
-
 bool BitVector::operator==(const BitVector &o) const {
     if (this->bits != o.bits) {
         return false;

@@ -34,9 +34,6 @@ namespace cxxutil { namespace data {
 
         void set(size_t bit, bool value);
 
-        // Flips all bits inside the vector.
-        void complement();
-
         bool operator==(const BitVector &o) const;
 
         inline bool operator!=(const BitVector &o) const {
