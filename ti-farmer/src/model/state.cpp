@@ -193,5 +193,17 @@ bool PlanetState::place(uint8_t r, uint8_t c, uint8_t featureInd) {
     return true;
 }
 
+bool PlanetState::purchase(uint8_t fi) {
+    feature_count_t *fc = this->featureCounts->getPtrMut(fi);
+    const statics::feature_t *f = this->planet->features[fi];
+
+    if (!(this->isPurchaseablePtr(f, fc))) {
+        return false;
+    }
+
+    fc->owned++;
+
+    return true;
+}
 
 

@@ -5,7 +5,6 @@
 
 #include "../statics/universe.h"
 #include "cxxutil/data/bits.h"
-#include "ti-farmer/src/model/universe.h"
 
 namespace tif { namespace model {
 
@@ -136,9 +135,13 @@ namespace tif { namespace model {
             return cell->featureInd < this->planet->featuresLen;
         }
 
-        bool isPlaceablePtr(const cell_state_t *cell, const feature_count_t *fc) const {
+        inline bool isPlaceablePtr(const cell_state_t *cell, const feature_count_t *fc) const {
             return cell->featureInd == this->planet->featuresLen && // Is our cell clear?
                 fc->placed < fc->owned; // Do we have another feature to place?
+        }
+
+        inline bool isPurchaseablePtr(const statics::feature_t *f, const feature_count_t *fc) const {
+            return fc->owned < f->maxAmt;
         }
         
     public:
@@ -204,13 +207,24 @@ namespace tif { namespace model {
 
         // True when we have excess of a feature in our inventory,
         // and the given cell is clear.
-        bool isPlaceable(uint8_t r, uint8_t c, uint8_t featureInd) const {
+        inline bool isPlaceable(uint8_t r, uint8_t c, uint8_t featureInd) const {
             return this->isPlaceablePtr(
                     this->getCellStatePtr(r, c), this->featureCounts->getPtr(featureInd));
         }
 
         // Place a feature.
         bool place(uint8_t r, uint8_t c, uint8_t featureInd);
+
+        // NOTE: Planet state knows nothing of stars/tokens/currency...
+        // A feature is purchaseable iff the max amount is yet to be 
+        // reached.
+
+        inline bool isPurchaseable(uint8_t fi) const {
+            return this->isPurchaseablePtr(this->planet->features[fi], 
+                    this->featureCounts->getPtr(fi));
+        }
+
+        bool purchase(uint8_t fi);
 
         // These calls are slightly different than the above.
         
