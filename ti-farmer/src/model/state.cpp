@@ -141,6 +141,9 @@ bool PlanetState::plant(uint8_t r, uint8_t c, uint8_t cropInd) {
         return false;
     }
 
+    cell->plantDate = this->date;
+    cell->cropInd = cropInd;
+
     return true;
 }
 

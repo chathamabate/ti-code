@@ -163,7 +163,7 @@ static const feature_t POND = {
     .description = "A watery escape.",
 
     // Temporary values.
-    .initialAmt = 1,
+    .initialAmt = 2,
     .maxAmt = 5 
 };
 

@@ -221,6 +221,10 @@ namespace tif { namespace model {
         // A feature is purchaseable iff the max amount is yet to be 
         // reached.
 
+        inline feature_count_t getFeatureCount(uint8_t fi) const {
+            return this->featureCounts->get(fi);
+        }
+
         inline bool isPurchaseable(uint8_t fi) const {
             return this->isPurchaseablePtr(this->planet->features[fi], 
                     this->featureCounts->getPtr(fi));
