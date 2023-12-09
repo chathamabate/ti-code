@@ -156,12 +156,36 @@ static const feature_t FARM_PLOT = {
     .maxAmt = 16
 };
 
+static const feature_t POND = {
+    .cost = 1,
+
+    .name = "Pond",
+    .description = "A watery escape.",
+
+    // Temporary values.
+    .initialAmt = 1,
+    .maxAmt = 5 
+};
+
+static const feature_t STONES = {
+    .cost = 1,
+
+    .name = "Stones",
+    .description = "Be careful! Some are sharp.",
+
+    // Temporary values.
+    .initialAmt = 1,
+    .maxAmt = 5 
+};
+
 // More to come...
 
-static const size_t EARTH_FEATURES_LEN = 1;
+static const size_t EARTH_FEATURES_LEN = 3;
 static const feature_t * const 
 EARTH_FEATURES[EARTH_FEATURES_LEN] = {
     &FARM_PLOT,
+    &POND,
+    &STONES,
 };
 
 const planet_t tif::statics::EARTH = {

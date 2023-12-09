@@ -179,7 +179,9 @@ namespace tif { namespace model {
         // "tokens" are handled correctly.
 
         // Go to tomorrow. (This will account for season changes)
-        void incDate();
+        // Returns true if there's been a seasonal change.
+        // false otherwise.
+        bool incDate();
 
         // Whether or not the given cell is an empty plot.
         inline bool isPlantable(uint8_t r, uint8_t c, uint8_t cropInd) const {
@@ -225,6 +227,19 @@ namespace tif { namespace model {
         }
 
         bool purchase(uint8_t fi);
+
+        // Wrappers around Season State calls.
+        inline cxxutil::core::U24 getCropCount(uint8_t seasonInd, uint8_t cropInd) const {
+            return this->seasonStates[seasonInd]->getCropCount(cropInd);
+        }
+
+        inline bool isUnlocked(uint8_t seasonInd, uint8_t cropInd) const {
+            return this->seasonStates[seasonInd]->isUnlocked(cropInd);
+        }
+
+        inline bool unlock(uint8_t seasonInd, uint8_t cropInd) {
+            return this->seasonStates[seasonInd]->unlock(cropInd);
+        }
 
         // These calls are slightly different than the above.
         

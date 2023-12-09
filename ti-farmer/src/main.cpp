@@ -20,6 +20,7 @@
 
 #include "./model/maze.h"
 #include "./model/test/maze.h"
+#include "./model/test/state.h"
 
 using namespace cxxutil;
 
@@ -90,7 +91,7 @@ void innerMain(void) {
 
 int main(void) {
     // innerMain();
-    unitapp::runUnitApp(tif::model::MAZE_SUITE);
+    unitapp::runUnitApp(tif::model::STATE_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 

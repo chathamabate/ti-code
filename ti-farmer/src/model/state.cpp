@@ -58,6 +58,7 @@ PlanetState::PlanetState(uint8_t chnl, const statics::planet_t *p,
     }
 
     // Always starts on season 0.
+    this->seasonInd = 0;
     this->season = this->planet->seasons[0];
     this->seasonState = this->seasonStates[0];
 
@@ -94,7 +95,7 @@ PlanetState::~PlanetState() {
     }
 }
 
-void PlanetState::incDate() {
+bool PlanetState::incDate() {
     // Advance our day.
     this->date++;
     statics::day_count_t day = this->date % this->yearLen;
@@ -112,7 +113,7 @@ void PlanetState::incDate() {
 
     // No season change.
     if (si == this->seasonInd) {
-        return;
+        return false;
     }
 
     this->seasonInd = si;
@@ -129,6 +130,8 @@ void PlanetState::incDate() {
             cell->cropInd = this->season->cropsLen;
         }
     }
+
+    return true;
 }
 
 bool PlanetState::plant(uint8_t r, uint8_t c, uint8_t cropInd) {

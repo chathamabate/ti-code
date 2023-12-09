@@ -17,12 +17,7 @@ namespace tif { namespace statics {
 
     struct crop_lookup_t;
 
-    // These structs should all be used as constants in 
-    // static memory. 
-
     struct universe_t {
-        const char *name;
-
         // All crops across all planets and seasons
         // follow the same timeline.
         const goal_timeline_t *goalTimeline;
@@ -33,7 +28,7 @@ namespace tif { namespace statics {
 
     struct goal_timeline_t {
         uint8_t timelineLen;
-        cxxutil::core::U24 *timeline;
+        const cxxutil::core::U24 *timeline;
     };
 
     // All planets have 4 seasons.
