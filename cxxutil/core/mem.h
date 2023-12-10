@@ -174,6 +174,7 @@ namespace core {
         SafeArray(uint8_t chnl, size_t len) : SafeObject(chnl) {
             this->len = len;
 
+            // NOTE: even when len = 0, this does not return NULL.
             T *arr = new (std::nothrow) T[len];
 
 #ifdef CXX_MEM_CHECKS
