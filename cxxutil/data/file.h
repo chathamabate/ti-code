@@ -4,7 +4,7 @@
 #include <cxxutil/core/serial.h>
 #include <fileioc.h>
 
-namespace cxxutil { namespace core {
+namespace cxxutil { namespace data {
 
     template <typename T>
     class FileWriter : public core::SafeObject {
@@ -16,6 +16,8 @@ namespace cxxutil { namespace core {
         }
     public:
         virtual ~FileWriter() = default;
+
+        // Should return false if write fails.
         virtual bool write(uint8_t handle, T element) = 0;
     };
 
@@ -29,7 +31,9 @@ namespace cxxutil { namespace core {
         }
     public:
         virtual ~FileReader() = default;
-        virtual T read(uint8_t handle) = 0;
+
+        // Should return false on failure.
+        virtual bool read(uint8_t handle, T *dest) = 0;
     };
 
     // Here are some standard ways for reading and writing 
@@ -47,6 +51,9 @@ namespace cxxutil { namespace core {
 
         ArrayFileWriter(uint8_t chnl, FileWriter<T> *ew) 
             : FileWriter<core::SafeArray<T> *>(chnl), elementWriter(ew) {
+        }
+
+        virtual ~ArrayFileWriter() {
         }
 
         virtual bool write(uint8_t handle, core::SafeArray<T> *element) override {
@@ -69,6 +76,49 @@ namespace cxxutil { namespace core {
                 }
             }
 
+            return true;
+        }
+    };
+
+    template <typename T>
+    class ArrayFileReader : public FileReader<core::SafeArray<T> *> {
+    private:
+        FileReader<T> * const elementReader;
+
+    public:
+        ArrayFileReader(FileReader<T> *er) 
+            : ArrayFileReader(core::CXX_DEF_CHNL, er) {
+        }
+
+        ArrayFileReader(uint8_t chnl, FileReader<T> *er) 
+            : FileReader<core::SafeArray<T> *>(chnl), elementReader(er) {
+        }
+
+        virtual ~ArrayFileReader() {
+        }
+
+        virtual bool read(uint8_t handle, core::SafeArray<T> **dest) override {
+            size_t len;
+            size_t lenRes = ti_Read(&len, sizeof(size_t), 1, handle);    
+
+            if (lenRes != 1) {
+                return false;
+            }
+
+            core::SafeArray<T> *arr = 
+                new core::SafeArray<T>(this->getChnl(), len);
+
+            for (size_t i = 0; i < len; i++) {
+                bool eleRes = 
+                    this->elementReader->read(handle, arr->getPtrMut(i));
+
+                if (!eleRes) {
+                    delete arr;
+                    return false;
+                }
+            }
+
+            *dest = arr;
             return true;
         }
     };
