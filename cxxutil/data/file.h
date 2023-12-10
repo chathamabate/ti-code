@@ -1,7 +1,6 @@
 
 #include "cxxutil/core/mem.h"
 #include <stdlib.h>
-#include <cxxutil/core/serial.h>
 #include <fileioc.h>
 
 namespace cxxutil { namespace data {

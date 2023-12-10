@@ -12,6 +12,7 @@
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/data/test/bits.h>
 #include <cxxutil/data/test/heap.h>
+#include <cxxutil/data/test/file.h>
 #include <cxxutil/data/heap.h>
 
 #include <cxxutil/data/bits.h>
@@ -91,7 +92,7 @@ void innerMain(void) {
 
 int main(void) {
     // innerMain();
-    unitapp::runUnitApp(tif::model::STATE_SUITE);
+    unitapp::runUnitApp(cxxutil::data::FILE_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
