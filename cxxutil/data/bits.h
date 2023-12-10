@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cxxutil/core/mem.h>
+#include <cxxutil/data/file.h>
 
 namespace cxxutil { namespace data {
 
@@ -11,9 +12,14 @@ namespace cxxutil { namespace data {
 
     // A string of bits read left-to-right.
     class BitVector : public core::SafeObject {
+        friend class BitVectorFileReader;
+        friend class BitVectorFileWriter;
+
     private:
         const size_t bits;
         core::SafeArray<uint8_t> *vector;
+
+        BitVector(uint8_t chnl, size_t bs, core::SafeArray<uint8_t> *v);
 
     public:
         // Requires total number of bits.
@@ -41,6 +47,21 @@ namespace cxxutil { namespace data {
         }
     };
 
+    class BitVectorFileWriter : public FileWriter<BitVector *> {
+    public:
+        BitVectorFileWriter();    
+        BitVectorFileWriter(uint8_t chnl);
+        virtual ~BitVectorFileWriter();
+        virtual bool write(uint8_t handle, BitVector *element) override;
+    };
+
+    class BitVectorFileReader : public FileReader<BitVector *> {
+    public:
+        BitVectorFileReader();    
+        BitVectorFileReader(uint8_t chnl);
+        virtual ~BitVectorFileReader();
+        virtual bool read(uint8_t handle, BitVector **dest) override;
+    };
 
     class BitGrid : public core::SafeObject {
     private:

@@ -1,8 +1,14 @@
 
 #include "./bits.h"
 #include "cxxutil/core/mem.h"
+#include "fileioc.h"
+#include <cxxutil/data/file.h>
 
 using namespace cxxutil::data;
+
+BitVector::BitVector(uint8_t chnl, size_t bs, core::SafeArray<uint8_t> *v) 
+    : core::SafeObject(chnl), bits(bs), vector(v) {
+}
 
 BitVector::BitVector(size_t bs) : BitVector(core::CXX_DEF_CHNL, bs) {
 }
@@ -93,5 +99,74 @@ bool BitGrid::operator==(const BitGrid &o) const {
 
     return true;
 }
+
+BitVectorFileWriter::BitVectorFileWriter()
+    : BitVectorFileWriter(core::CXX_DEF_CHNL) {
+}
+
+BitVectorFileWriter::BitVectorFileWriter(uint8_t chnl) 
+    : FileWriter<BitVector *>(chnl) {
+}
+
+
+BitVectorFileWriter::~BitVectorFileWriter() {
+}
+
+bool BitVectorFileWriter::write(uint8_t handle, BitVector *element) {
+    const size_t bits = element->bits;
+    size_t bitsRes = ti_Write(&bits, sizeof(size_t), 1, handle);
+
+    if (bitsRes != 1) {
+        return false;
+    }
+
+    ShallowArrayFileWriter<uint8_t> *arrWriter = 
+        new ShallowArrayFileWriter<uint8_t>(this->getChnl());
+
+    bool arrRes = arrWriter->write(handle, element->vector);
+
+    delete arrWriter; 
+
+    return arrRes;
+}
+
+BitVectorFileReader::BitVectorFileReader()
+    : BitVectorFileReader(core::CXX_DEF_CHNL) {
+}
+
+BitVectorFileReader::BitVectorFileReader(uint8_t chnl) 
+    : FileReader<BitVector *>(chnl) {
+}
+
+
+BitVectorFileReader::~BitVectorFileReader() {
+}
+
+bool BitVectorFileReader::read(uint8_t handle, BitVector **dest) {
+    size_t bits;
+    size_t bitsRes = ti_Read(&bits, sizeof(size_t), 1, handle);
+
+    if (bitsRes != 1) {
+        return false;
+    }
+
+    core::SafeArray<uint8_t> *vector;
+
+    ShallowArrayFileReader<uint8_t> *arrReader = 
+        new ShallowArrayFileReader<uint8_t>(this->getChnl());
+
+    bool vectorRes = arrReader->read(handle, &vector);
+
+    delete arrReader;
+
+    if (!vectorRes) {
+        return false;
+    }
+
+    *dest = new BitVector(this->getChnl(), bits, vector);
+
+    return true;
+}
+
 
 
