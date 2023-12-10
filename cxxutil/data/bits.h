@@ -64,11 +64,16 @@ namespace cxxutil { namespace data {
     };
 
     class BitGrid : public core::SafeObject {
+        friend class BitGridFileWriter;
+        friend class BitGridFileReader;
+
     private:
         const size_t rows;
         const size_t cols;
 
         core::SafeArray<BitVector *> *grid;
+
+        BitGrid(uint8_t chnl, size_t rs, size_t cs, core::SafeArray<BitVector *> *g);
 
     public:
         BitGrid(size_t rs, size_t cs);
@@ -96,5 +101,21 @@ namespace cxxutil { namespace data {
         inline bool operator!=(const BitGrid &o) const {
             return !(*this == o);
         }
+    };
+
+    class BitGridFileWriter : public FileWriter<BitGrid *> {
+    public:
+        BitGridFileWriter();    
+        BitGridFileWriter(uint8_t chnl);
+        virtual ~BitGridFileWriter();
+        virtual bool write(uint8_t handle, BitGrid *element) override;
+    };
+
+    class BitGridFileReader : public FileReader<BitGrid *> {
+    public:
+        BitGridFileReader();    
+        BitGridFileReader(uint8_t chnl);
+        virtual ~BitGridFileReader();
+        virtual bool read(uint8_t handle, BitGrid **dest) override;
     };
 }}

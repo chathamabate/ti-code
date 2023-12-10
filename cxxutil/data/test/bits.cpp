@@ -1,4 +1,5 @@
 
+#include "fileioc.h"
 #include <cstdio>
 #include <cxxutil/unit/unit.h>
 #include <cxxutil/data/bits.h>
@@ -107,7 +108,71 @@ public:
 
 BitVectorEqCase BitVectorEqCase::ONLY_VAL;
 
-const size_t BIT_VECTOR_SUITE_LEN = 8;
+class BitVectorFileCase : public unit::TestCase {
+private:
+
+    static BitVectorFileCase ONLY_VAL;
+
+    data::BitVectorFileWriter *writer;
+    data::BitVectorFileReader *reader;
+
+    data::BitVector *initVec;
+    data::BitVector *resVec;
+
+
+    virtual void attempt(unit::TestContext *tc) override {
+        this->writer = new data::BitVectorFileWriter(2);
+        this->reader = new data::BitVectorFileReader(2);
+
+        const size_t bits = 50;
+        this->initVec = new data::BitVector(2, bits);
+
+        for (size_t i = 0; i < bits; i += 2) {
+            this->initVec->set(i, true);
+        }
+
+        this->resVec = NULL;
+
+        uint8_t handle = ti_Open("TVAR", "w");
+        tc->assertTrue(handle > 0);
+        bool writeRes = this->writer->write(handle, this->initVec);
+        ti_Close(handle);
+
+        tc->assertTrue(writeRes);
+
+        handle = ti_Open("TVAR", "r");
+        tc->assertTrue(handle > 0);
+        bool readRes = this->reader->read(handle, &(this->resVec));
+        ti_Close(handle);
+
+        tc->assertTrue(readRes);
+        tc->assertTrue(this->resVec != NULL);
+
+        tc->assertTrue(*(this->initVec) == *(this->resVec));
+    }
+
+    virtual void finally() override {
+        delete this->writer;
+        delete this->reader;
+        delete this->initVec;
+
+        if (this->resVec) {
+            delete this->resVec;
+        }
+        
+        ti_Delete("TVAR");
+    }
+
+    BitVectorFileCase() : unit::TestCase("BitVector File Case") {
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BitVectorFileCase BitVectorFileCase::ONLY_VAL;
+
+const size_t BIT_VECTOR_SUITE_LEN = 9;
 static unit::TestTree * const
 BIT_VECTOR_SUITE_TESTS[BIT_VECTOR_SUITE_LEN] = {
     &BVC1,
@@ -118,7 +183,8 @@ BIT_VECTOR_SUITE_TESTS[BIT_VECTOR_SUITE_LEN] = {
     &BVC6,
     &BVC7,
 
-    BitVectorEqCase::ONLY
+    BitVectorEqCase::ONLY,
+    BitVectorFileCase::ONLY
 };
 
 static unit::TestSuite BIT_VECTOR_SUITE_VAL(
@@ -233,7 +299,77 @@ public:
 
 BitGridEqCase BitGridEqCase::ONLY_VAL;
 
-static const size_t BIT_GRID_SUITE_LEN = 8;
+class BitGridFileCase : public unit::TestCase {
+private:
+
+    static BitGridFileCase ONLY_VAL;
+
+    data::BitGridFileWriter *writer;
+    data::BitGridFileReader *reader;
+
+    data::BitGrid *initGrid;
+    data::BitGrid *resGrid;
+
+
+    virtual void attempt(unit::TestContext *tc) override {
+        this->writer = new data::BitGridFileWriter(2);
+        this->reader = new data::BitGridFileReader(2);
+
+        const size_t rows = 5;
+        const size_t cols = 11;
+
+        this->initGrid = new data::BitGrid(2, rows, cols);
+
+        for (size_t r = 0; r < rows; r++) {
+            for (size_t c = 0; c < cols; c++) {
+                if (((r * cols) + c) % 2 == 0) {
+                    this->initGrid->set(r, c, true);
+                }
+            }
+        }
+
+        this->resGrid = NULL;
+
+        uint8_t handle = ti_Open("TVAR", "w");
+        tc->assertTrue(handle > 0);
+        bool writeRes = this->writer->write(handle, this->initGrid);
+        ti_Close(handle);
+
+        tc->assertTrue(writeRes);
+
+        handle = ti_Open("TVAR", "r");
+        tc->assertTrue(handle > 0);
+        bool readRes = this->reader->read(handle, &(this->resGrid));
+        ti_Close(handle);
+
+        tc->assertTrue(readRes);
+        tc->assertTrue(this->resGrid != NULL);
+
+        tc->assertTrue(*(this->initGrid) == *(this->resGrid));
+    }
+
+    virtual void finally() override {
+        delete this->writer;
+        delete this->reader;
+        delete this->initGrid;
+
+        if (this->resGrid) {
+            delete this->resGrid;
+        }
+        
+        ti_Delete("TVAR");
+    }
+
+    BitGridFileCase() : unit::TestCase("BitGrid File Case") {
+    }
+
+public:
+    static constexpr unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+BitGridFileCase BitGridFileCase::ONLY_VAL;
+
+static const size_t BIT_GRID_SUITE_LEN = 9;
 static unit::TestTree * const 
 BIT_GRID_SUITE_TESTS[BIT_GRID_SUITE_LEN] = {
     &BGC1,
@@ -243,7 +379,8 @@ BIT_GRID_SUITE_TESTS[BIT_GRID_SUITE_LEN] = {
     &BGC5,
     &BGC6,
     &BGC7,
-    BitGridEqCase::ONLY
+    BitGridEqCase::ONLY,
+    BitGridFileCase::ONLY
 };
 
 static unit::TestSuite BIT_GRID_SUITE_VAL(

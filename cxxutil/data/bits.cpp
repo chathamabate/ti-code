@@ -63,6 +63,11 @@ bool BitVector::operator==(const BitVector &o) const {
     return true;
 }
 
+BitGrid::BitGrid(uint8_t chnl, size_t rs, size_t cs, 
+    core::SafeArray<BitVector *> *g) 
+    : core::SafeObject(chnl), rows(rs), cols(cs), grid(g) {
+}
+
 BitGrid::BitGrid(size_t rs, size_t cs) 
     : BitGrid(core::CXX_DEF_CHNL, rs, cs) {
 }
@@ -120,12 +125,9 @@ bool BitVectorFileWriter::write(uint8_t handle, BitVector *element) {
         return false;
     }
 
-    ShallowArrayFileWriter<uint8_t> *arrWriter = 
-        new ShallowArrayFileWriter<uint8_t>(this->getChnl());
+    ShallowArrayFileWriter<uint8_t> arrWriter(this->getChnl());
 
-    bool arrRes = arrWriter->write(handle, element->vector);
-
-    delete arrWriter; 
+    bool arrRes = arrWriter.write(handle, element->vector);
 
     return arrRes;
 }
@@ -152,12 +154,9 @@ bool BitVectorFileReader::read(uint8_t handle, BitVector **dest) {
 
     core::SafeArray<uint8_t> *vector;
 
-    ShallowArrayFileReader<uint8_t> *arrReader = 
-        new ShallowArrayFileReader<uint8_t>(this->getChnl());
+    ShallowArrayFileReader<uint8_t> arrReader(this->getChnl());
 
-    bool vectorRes = arrReader->read(handle, &vector);
-
-    delete arrReader;
+    bool vectorRes = arrReader.read(handle, &vector);
 
     if (!vectorRes) {
         return false;
@@ -167,6 +166,78 @@ bool BitVectorFileReader::read(uint8_t handle, BitVector **dest) {
 
     return true;
 }
+
+
+BitGridFileWriter::BitGridFileWriter()
+    : BitGridFileWriter(core::CXX_DEF_CHNL) {
+}
+
+BitGridFileWriter::BitGridFileWriter(uint8_t chnl) 
+    : FileWriter<BitGrid *>(chnl) {
+}
+
+
+BitGridFileWriter::~BitGridFileWriter() {
+}
+
+bool BitGridFileWriter::write(uint8_t handle, BitGrid *element) {
+    const size_t dim[2] = {
+        element->rows, element->cols
+    };
+
+    size_t dimRes = ti_Write(dim, sizeof(size_t), 2, handle);
+
+    if (dimRes != 2) {
+        return false;
+    }
+
+    // Now time to write our vectors!
+
+    BitVectorFileWriter bvWriter(this->getChnl());
+    DeepArrayFileWriter<BitVector *> bgWriter(this->getChnl(), &bvWriter);
+
+    bool gridRes = bgWriter.write(handle, element->grid);
+
+    return gridRes;
+}
+
+BitGridFileReader::BitGridFileReader()
+    : BitGridFileReader(core::CXX_DEF_CHNL) {
+}
+
+BitGridFileReader::BitGridFileReader(uint8_t chnl) 
+    : FileReader<BitGrid *>(chnl) {
+}
+
+
+BitGridFileReader::~BitGridFileReader() {
+}
+
+bool BitGridFileReader::read(uint8_t handle, BitGrid **dest) {
+    size_t dim[2];
+    size_t dimRes = ti_Read(dim, sizeof(size_t), 2, handle);
+
+    if (dimRes != 2) {
+        return false;
+    }
+
+    BitVectorFileReader bvReader(this->getChnl());
+    DeepArrayFileReader<BitVector *> bgReader(this->getChnl(), &bvReader);
+
+    core::SafeArray<BitVector *> *grid;
+
+    bool bgRes = bgReader.read(handle, &grid);
+
+    if (!bgRes) {
+        return false;
+    }
+
+    *dest = new BitGrid(this->getChnl(), dim[0], dim[1], grid);
+
+    return true; 
+}
+
+
 
 
 

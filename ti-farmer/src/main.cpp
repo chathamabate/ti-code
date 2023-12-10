@@ -92,7 +92,7 @@ void innerMain(void) {
 
 int main(void) {
     // innerMain();
-    unitapp::runUnitApp(cxxutil::data::FILE_SUITE);
+    unitapp::runUnitApp(cxxutil::data::BIT_SUITE);
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 
