@@ -2,7 +2,7 @@
 
 #include "./state.h"
 #include "cxxutil/data/file.h"
-#include "ti-farmer/src/statics/universe.h"
+#include "fileioc.h"
 #include <cxxutil/core/mem.h>
 #include <cxxutil/data/bits.h>
 
@@ -319,5 +319,167 @@ bool PlanetState::purchase(uint8_t fi) {
 
     return true;
 }
+
+PlanetStateFileWriter::PlanetStateFileWriter() 
+    : PlanetStateFileWriter(cxxutil::core::CXX_DEF_CHNL) {
+}
+
+PlanetStateFileWriter::PlanetStateFileWriter(uint8_t chnl) 
+    : cxxutil::data::FileWriter<PlanetState *>(chnl) {
+}
+
+PlanetStateFileWriter::~PlanetStateFileWriter() {
+}
+
+bool PlanetStateFileWriter::write(uint8_t handle, PlanetState *element) {
+    // Order:
+    // date, hsLen, highscores, seasonStates, featureCounts, grid
+
+    const tif::statics::day_count_t date = element->getDate();
+    size_t dateRes = ti_Write(&date, sizeof(tif::statics::day_count_t), 1, handle);
+    if (dateRes != 1) {
+        return false;
+    }
+
+    const uint8_t hsLen = element->getHSLen();
+    size_t hsLenRes = ti_Write(&hsLen, sizeof(uint8_t), 1, handle);
+    if (hsLenRes != 1) {
+        return false;
+    }
+
+    const highscore_entry_t *highscores = element->getHighscores();
+    size_t hsRes = ti_Write(highscores, sizeof(highscore_entry_t), PlanetState::HS_CAP, handle);
+    if (hsRes != PlanetState::HS_CAP) {
+        return false;
+    }
+
+    SeasonStateFileWriter seasonWriter(this->getChnl());
+    for (uint8_t i = 0; i < tif::statics::NUM_SEASONS; i++) {
+        bool seasonRes = seasonWriter.write(handle, element->seasonStates[i]);
+
+        if (!seasonRes) {
+            return false;
+        }
+    }
+
+    cxxutil::data::ShallowArrayFileWriter<feature_count_t> 
+       featureWriter(this->getChnl()); 
+    bool featureRes = featureWriter.write(handle, element->featureCounts);
+    if (!featureRes) {
+        return false;
+    }
+
+    cxxutil::data::ShallowArrayFileWriter<cell_state_t>
+        gridWriter(this->getChnl());
+    bool gridRes = gridWriter.write(handle, element->grid);
+
+    return gridRes;
+}
+
+PlanetStateFileReader::PlanetStateFileReader(const statics::planet_t *p, const statics::goal_timeline_t *gt) 
+    : PlanetStateFileReader(cxxutil::core::CXX_DEF_CHNL, p, gt) {
+}
+
+PlanetStateFileReader::PlanetStateFileReader(uint8_t chnl, const statics::planet_t *p, const statics::goal_timeline_t *gt) 
+    : cxxutil::data::FileReader<PlanetState *>(chnl), planet(p), goalTimeline(gt) {
+}
+
+PlanetStateFileReader::~PlanetStateFileReader() {
+}
+
+// Helper function for deallocating dynamics when there
+// is an error during the read.
+static void psfrFailureDealloc(SeasonState * const *sss,
+        cxxutil::core::SafeArray<feature_count_t> *fcs,
+        cxxutil::core::SafeArray<cell_state_t> *g) {
+    for (uint8_t i = 0; i < tif::statics::NUM_SEASONS; i++) {
+        if (sss[i]) {
+            delete sss[i];
+        }
+    }
+
+    if (fcs) {
+        delete fcs;
+    }
+
+    if (g) {
+        delete g;
+    }
+}
+
+bool PlanetStateFileReader::read(uint8_t handle, PlanetState **dest) {
+    // Order:
+    // date, hsLen, highscores, seasonStates, featureCounts, grid
+
+    tif::statics::day_count_t date;
+    size_t dateRes = ti_Read(&date, sizeof(tif::statics::day_count_t), 1, handle);
+    if (dateRes != 1) {
+        return false;
+    }
+
+    uint8_t hsl;
+    size_t hslRes = ti_Read(&hsl, sizeof(uint8_t), 1, handle);
+    if (hslRes != 1) {
+        return false;
+    }
+
+    highscore_entry_t hss[PlanetState::HS_CAP];
+    size_t hssRes = ti_Read(hss, sizeof(highscore_entry_t), PlanetState::HS_CAP, handle);
+    if (hssRes != PlanetState::HS_CAP) {
+        return false;
+    }
+
+    // Time for dynamics.
+
+    // Gotta make sure all of these are delete at the end though?
+    SeasonState *sss[tif::statics::NUM_SEASONS];
+    for (uint8_t i = 0; i < tif::statics::NUM_SEASONS; i++) {
+        sss[i] = NULL;
+    }
+    cxxutil::core::SafeArray<feature_count_t> *fcs = NULL;
+    cxxutil::core::SafeArray<cell_state_t> *g = NULL;
+
+    for (uint8_t i = 0; i < tif::statics::NUM_SEASONS; i++) {
+        SeasonStateFileReader ssReader(
+                this->getChnl(), this->planet->seasons[i], this->goalTimeline);
+
+        bool ssRes = ssReader.read(handle, &(sss[i]));
+        if (!ssRes) {
+            psfrFailureDealloc(sss, fcs, g);
+            return false;
+        }
+    }
+
+    cxxutil::data::ShallowArrayFileReader<feature_count_t>
+        featureReader(this->getChnl());
+    bool featureRes = featureReader.read(handle, &fcs);
+    if (!featureRes) {
+        psfrFailureDealloc(sss, fcs, g);
+        return false;
+    }
+
+    cxxutil::data::ShallowArrayFileReader<cell_state_t>
+        gridReader(this->getChnl());
+    bool gridRes = gridReader.read(handle, &g);
+    if (!gridRes) {
+        psfrFailureDealloc(sss, fcs, g);
+        return false;
+    }
+
+    // Success!
+
+    PlanetState *ps = new PlanetState(this->getChnl(), this->planet,
+            date, 
+            hsl,
+            hss,
+            sss,
+            fcs,
+            g);
+
+    *dest = ps;
+
+    return true;
+}
+
 
 

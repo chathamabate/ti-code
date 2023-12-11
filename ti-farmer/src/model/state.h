@@ -125,6 +125,9 @@ namespace tif { namespace model {
     // Maybe the only universal thing should be stars???
 
     class PlanetState : public cxxutil::core::SafeObject {
+        friend class PlanetStateFileWriter;
+        friend class PlanetStateFileReader;
+
     public:
         // Number of high score entries to store.
         static constexpr uint8_t HS_CAP = 5;
@@ -156,6 +159,15 @@ namespace tif { namespace model {
         // NOTE: It is garaunteed that all crops in the grid are in-season.
         // When the season changes, all crops are cleared.
         cxxutil::core::SafeArray<cell_state_t> *grid; 
+
+        // Direct constructor.
+        PlanetState(uint8_t chnl, const statics::planet_t *p,
+                statics::day_count_t d,
+                uint8_t hsl,
+                const highscore_entry_t *hss,
+                SeasonState * const *sss,
+                cxxutil::core::SafeArray<feature_count_t> *fcs,
+                cxxutil::core::SafeArray<cell_state_t> *g);
         
         // NOTE: this call is somewhat dangerous.
         // It is marked const so it can be used in other const functions.
@@ -188,6 +200,7 @@ namespace tif { namespace model {
         inline bool isPurchaseablePtr(const statics::feature_t *f, const feature_count_t *fc) const {
             return fc->owned < f->maxAmt;
         }
+
         
     public:
         PlanetState(const statics::planet_t *p, const statics::goal_timeline_t *gt); 
@@ -205,6 +218,14 @@ namespace tif { namespace model {
 
         inline statics::day_count_t getDate() const {
             return this->date;
+        }
+
+        inline uint8_t getHSLen() const {
+            return this->hsLen;
+        }
+
+        inline const highscore_entry_t *getHighscores() const {
+            return this->highscores;
         }
 
         inline uint8_t getSeasonInd() const {
@@ -308,11 +329,23 @@ namespace tif { namespace model {
         }
     };
 
-    class SeasonStateFileWriter : public cxxutil::data::FileWriter<SeasonState *> {
+    class PlanetStateFileWriter : public cxxutil::data::FileWriter<PlanetState *> {
     public:
-        SeasonStateFileWriter();    
-        SeasonStateFileWriter(uint8_t chnl);
-        virtual ~SeasonStateFileWriter();
-        virtual bool write(uint8_t handle, SeasonState *element) override;
+        PlanetStateFileWriter();    
+        PlanetStateFileWriter(uint8_t chnl);
+        virtual ~PlanetStateFileWriter();
+        virtual bool write(uint8_t handle, PlanetState *element) override;
+    };
+
+    class PlanetStateFileReader : public cxxutil::data::FileReader<PlanetState *> {
+    private:
+        const statics::planet_t * const planet;
+        const statics::goal_timeline_t * const goalTimeline;
+    public:
+        PlanetStateFileReader(const statics::planet_t *p, const statics::goal_timeline_t *gt);
+        PlanetStateFileReader(uint8_t chnl, const statics::planet_t *p, const statics::goal_timeline_t *gt);
+
+        virtual ~PlanetStateFileReader();
+        virtual bool read(uint8_t handle, PlanetState **dest) override;
     };
 }}
