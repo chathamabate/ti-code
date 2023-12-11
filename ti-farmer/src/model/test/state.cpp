@@ -1,6 +1,7 @@
 
 
 // These absolute paths are a bit better now tbh.
+#include "fileioc.h"
 #include <ti-farmer/src/model/state.h>
 #include <ti-farmer/src/model/test/state.h>
 #include <ti-farmer/src/statics/earth.h>
@@ -18,6 +19,109 @@ EARTH_PTR = &tif::statics::EARTH;
 
 static const tif::statics::goal_timeline_t * const
 GOALS_PTR = tif::statics::UNIVERSE.goalTimeline;
+
+class SeasonStateFileCase : public cxxutil::unit::TestCase {
+private:
+    static SeasonStateFileCase ONLY_VAL;
+    SeasonStateFileCase() : TestCase("SeasonState File Case") {}
+
+    SeasonState *ss;
+    SeasonState *resSs;
+
+    SeasonStateFileWriter *ssWriter;
+    SeasonStateFileReader *ssReader;
+    
+    virtual void attempt(cxxutil::unit::TestContext *tc) override {
+        const tif::statics::season_t * const S_PTR = EARTH_PTR->seasons[0];
+        this->ss = new SeasonState(2, S_PTR, GOALS_PTR);
+        this->resSs = NULL;
+        this->ssWriter = new SeasonStateFileWriter(2);
+        this->ssReader = new SeasonStateFileReader(2, S_PTR, GOALS_PTR);
+
+        tc->assertTrue(S_PTR->cropsLen >= 3);
+
+        this->ss->unlock(0);
+        this->ss->unlock(1);
+
+        this->ss->incCropCount(0, 10);
+        this->ss->incCropCount(1, 100);
+
+        this->ss->collect(1, 0); 
+
+        uint8_t handle;
+
+        handle = ti_Open("TVAR", "w");
+        bool writeRes = this->ssWriter->write(handle, this->ss);
+        ti_Close(handle);
+
+        tc->assertTrue(writeRes);
+
+        handle = ti_Open("TVAR", "r");
+        uint16_t fsize = ti_GetSize(handle);
+        bool readRes = this->ssReader->read(handle, &(this->resSs));
+        ti_Close(handle);
+
+        char buf[20];
+        sprintf(buf, "%u", fsize);
+        tc->info(buf);
+
+        tc->assertTrue(readRes);
+
+        // Now some simple equality checks.
+        tc->assertTrue(this->resSs->isUnlocked(0));
+        tc->assertTrue(this->resSs->isUnlocked(1));
+        tc->assertFalse(this->resSs->isUnlocked(2));
+
+        tc->assertEqUInt(10, this->resSs->getCropCount(0));
+        tc->assertEqUInt(100, this->resSs->getCropCount(1));
+        tc->assertEqUInt(0, this->resSs->getCropCount(2));
+
+        tc->assertTrue(this->resSs->isCollected(1, 0));
+    }
+
+    virtual void finally() override {
+        delete this->ssReader;
+        delete this->ssWriter;
+
+        if (this->resSs) {
+            delete this->resSs;
+        }
+
+        delete this->ss;
+
+        ti_Delete("TVAR");
+    }
+public:
+    static constexpr cxxutil::unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+SeasonStateFileCase SeasonStateFileCase::ONLY_VAL;
+
+class PlanetStateFileCase : public cxxutil::unit::TestCase {
+private:
+    static PlanetStateFileCase ONLY_VAL;
+    PlanetStateFileCase() : TestCase("PlanetState File Case") {}
+
+    PlanetState *initPs;
+    PlanetState *resPs;
+
+    PlanetStateFileWriter *psWriter;
+    PlanetStateFileReader *psReader;
+    
+    virtual void attempt(cxxutil::unit::TestContext *tc) override {
+        this->initPs = new PlanetState(2, EARTH_PTR, GOALS_PTR);
+
+    }
+
+    virtual void finally() override {
+
+        ti_Delete("TVAR");
+    }
+public:
+    static constexpr cxxutil::unit::TestTree *ONLY = &ONLY_VAL;
+};
+
+PlanetStateFileCase PlanetStateFileCase::ONLY_VAL;
 
 class StateCase1 : public cxxutil::unit::TestCase {
 private:
@@ -188,9 +292,10 @@ public:
 
 StateCase3 StateCase3::ONLY_VAL;
 
-static const size_t STATE_SUITE_TESTS_LEN = 3;
+static const size_t STATE_SUITE_TESTS_LEN = 4;
 static cxxutil::unit::TestTree * const 
 STATE_SUITE_TESTS[STATE_SUITE_TESTS_LEN] = {
+    SeasonStateFileCase::ONLY,
     StateCase1::ONLY,
     StateCase2::ONLY,
     StateCase3::ONLY

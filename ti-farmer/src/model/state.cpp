@@ -141,8 +141,63 @@ bool SeasonStateFileReader::read(uint8_t handle, SeasonState **dest) {
     return true;
 }
 
+// Helper functions for calculating season Index and year length.
+
+static tif::statics::day_count_t 
+calcYearLen(const tif::statics::planet_t *p) {
+    tif::statics::day_count_t yearLen = 0;
+    for (uint8_t i = 0; i < tif::statics::NUM_SEASONS; i++) {
+        yearLen += p->seasons[i]->duration;
+    }
+
+    return yearLen;
+}
+
+static uint8_t calcSeasonInd(const tif::statics::planet_t *p, 
+        tif::statics::day_count_t day) {
+    uint8_t si;
+    tif::statics::day_count_t bound = 0;
+    for (si = 0; si < tif::statics::NUM_SEASONS; si++) {
+        bound += p->seasons[si]->duration; 
+
+        if (day < bound) {
+            return si;
+        }
+    }
+
+    // This should never run.
+    return si;
+}
 
 // Time for planet state boys.
+PlanetState::PlanetState(uint8_t chnl, const statics::planet_t *p,
+                statics::day_count_t d,
+                uint8_t hsl,
+                const highscore_entry_t *hss,
+                SeasonState * const *sss,
+                cxxutil::core::SafeArray<feature_count_t> *fcs,
+                cxxutil::core::SafeArray<cell_state_t> *g) 
+    : cxxutil::core::SafeObject(chnl), planet(p) {
+    // Calculate year length.
+    this->yearLen = calcYearLen(this->planet);
+
+    this->date = d;
+    this->hsLen = hsl;
+    for (uint8_t i = 0; i < HS_CAP; i++) {
+        this->highscores[i] = hss[i];
+    }
+
+    for (uint8_t i = 0; i < statics::NUM_SEASONS; i++) {
+        this->seasonStates[i] = sss[i];
+    }
+
+    this->seasonInd = calcSeasonInd(this->planet, this->date % this->yearLen);
+    this->season = this->planet->seasons[this->seasonInd];
+    this->seasonState = this->seasonStates[this->seasonInd];
+
+    this->featureCounts = fcs;
+    this->grid = g;
+}
 
 PlanetState::PlanetState(const statics::planet_t *p, 
         const statics::goal_timeline_t *gt) 
@@ -153,14 +208,12 @@ PlanetState::PlanetState(uint8_t chnl, const statics::planet_t *p,
         const statics::goal_timeline_t *gt) 
     : cxxutil::core::SafeObject(chnl), planet(p) {
 
-    this->yearLen = 0;
+    this->yearLen = calcYearLen(this->planet);
     this->date = 0; 
     this->hsLen = 0;
 
     // Create all seasons.
     for (uint8_t i = 0; i < statics::NUM_SEASONS; i++) {
-        this->yearLen += this->planet->seasons[i]->duration;
-
         this->seasonStates[i] = 
             new SeasonState(chnl, this->planet->seasons[i], gt);  
     }
@@ -209,15 +262,7 @@ bool PlanetState::incDate() {
     statics::day_count_t day = this->date % this->yearLen;
 
     // Determine what season we are in.
-    uint8_t si;
-    statics::day_count_t bound = 0;
-    for (si = 0; si < statics::NUM_SEASONS; si++) {
-        bound += this->planet->seasons[si]->duration; 
-
-        if (day < bound) {
-            break;
-        }
-    }
+    uint8_t si = calcSeasonInd(this->planet, day);
 
     // No season change.
     if (si == this->seasonInd) {

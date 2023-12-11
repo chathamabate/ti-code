@@ -200,7 +200,6 @@ namespace tif { namespace model {
         inline bool isPurchaseablePtr(const statics::feature_t *f, const feature_count_t *fc) const {
             return fc->owned < f->maxAmt;
         }
-
         
     public:
         PlanetState(const statics::planet_t *p, const statics::goal_timeline_t *gt); 
