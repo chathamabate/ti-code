@@ -218,6 +218,25 @@ namespace core {
         inline void set(size_t i, T ele) {
             this->arr[i] = ele;
         }
+
+        bool operator==(const SafeArray<T> &o) const {
+            if (this->len != o.len) {
+                return false;
+            }
+
+            if (this->arr == o.arr) {
+                return true;
+            }
+
+            // Element wise check.
+            for (size_t i = 0; i < this->len; i++) {
+                if (this->arr[i] != o.arr[i]) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
     };
 
     // NOTE: this does not resize the given array.

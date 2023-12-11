@@ -57,13 +57,8 @@ private:
         tc->assertTrue(writeRes);
 
         handle = ti_Open("TVAR", "r");
-        uint16_t fsize = ti_GetSize(handle);
         bool readRes = this->ssReader->read(handle, &(this->resSs));
         ti_Close(handle);
-
-        char buf[20];
-        sprintf(buf, "%u", fsize);
-        tc->info(buf);
 
         tc->assertTrue(readRes);
 
@@ -110,10 +105,59 @@ private:
     
     virtual void attempt(cxxutil::unit::TestContext *tc) override {
         this->initPs = new PlanetState(2, EARTH_PTR, GOALS_PTR);
+        this->resPs = NULL;
 
+        this->psWriter = new PlanetStateFileWriter(2);
+        this->psReader = new PlanetStateFileReader(2, EARTH_PTR, GOALS_PTR);
+    
+        // Do some work on our planet state.
+
+        // Let's plant a crop!
+        tc->assertTrue(EARTH_PTR->gridRows > 0 && 
+                EARTH_PTR->gridCols > 0);
+
+        tc->assertTrue(this->initPs->place(0, 0, 0));
+
+        uint8_t si = this->initPs->getSeasonInd();
+
+        tc->assertTrue(EARTH_PTR->seasons[si]->cropsLen > 0);
+        tc->assertTrue(this->initPs->unlock(this->initPs->getSeasonInd(), 0));
+        tc->assertTrue(this->initPs->plant(0, 0, 0));
+
+        this->initPs->incDate();
+        
+        bool res;
+        uint8_t handle;
+
+        handle = ti_Open("TVAR", "w");
+        res = this->psWriter->write(handle, this->initPs);
+        ti_Close(handle);
+
+        tc->assertTrue(res);
+
+        handle = ti_Open("TVAR", "r");
+        res = this->psReader->read(handle, &(this->resPs));
+        ti_Close(handle);
+
+        tc->assertTrue(res);
+
+        // Some simple equality checks.
+        tc->assertTrue(this->resPs->isClearable(0, 0));
+        tc->assertTrue(this->resPs->getCellState(0, 0).cropInd == 0);
+        tc->assertTrue(this->resPs->getDate() == this->initPs->getDate());
+
+        
     }
 
     virtual void finally() override {
+        delete this->initPs;
+
+        if (this->resPs) {
+            delete this->resPs;
+        }
+
+        delete this->psWriter;
+        delete this->psReader;
 
         ti_Delete("TVAR");
     }
@@ -292,10 +336,11 @@ public:
 
 StateCase3 StateCase3::ONLY_VAL;
 
-static const size_t STATE_SUITE_TESTS_LEN = 4;
+static const size_t STATE_SUITE_TESTS_LEN = 5;
 static cxxutil::unit::TestTree * const 
 STATE_SUITE_TESTS[STATE_SUITE_TESTS_LEN] = {
     SeasonStateFileCase::ONLY,
+    PlanetStateFileCase::ONLY,
     StateCase1::ONLY,
     StateCase2::ONLY,
     StateCase3::ONLY
