@@ -73,7 +73,8 @@ namespace cxxutil { namespace data {
 
         core::SafeArray<BitVector *> *grid;
 
-        BitGrid(uint8_t chnl, size_t rs, size_t cs, core::SafeArray<BitVector *> *g);
+        BitGrid(uint8_t chnl, size_t rs, size_t cs, 
+                core::SafeArray<BitVector *> *g);
 
     public:
         BitGrid(size_t rs, size_t cs);

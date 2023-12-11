@@ -1,11 +1,21 @@
 
 
 #include "./state.h"
+#include "cxxutil/data/file.h"
 #include "ti-farmer/src/statics/universe.h"
 #include <cxxutil/core/mem.h>
 #include <cxxutil/data/bits.h>
 
 using namespace tif::model;
+
+SeasonState::SeasonState(uint8_t chnl, const statics::season_t *s,
+                const statics::goal_timeline_t *gt,
+                cxxutil::core::SafeArray<cxxutil::core::U24> *cc,
+                cxxutil::data::BitVector *cu,
+                cxxutil::data::BitGrid *gs) 
+    : cxxutil::core::SafeObject(chnl),
+      season(s), goalTimeline(gt), cropCounts(cc), cropUnlocks(cu), goals(gs) {
+}
 
 SeasonState::SeasonState(const statics::season_t *s, const statics::goal_timeline_t *gt) 
     : SeasonState(cxxutil::core::CXX_DEF_CHNL, s, gt) {
@@ -35,6 +45,103 @@ SeasonState::~SeasonState() {
     delete this->cropCounts;
 }
 
+// Time for Season State File Stuff.
+
+SeasonStateFileWriter::SeasonStateFileWriter() 
+    : SeasonStateFileWriter(cxxutil::core::CXX_DEF_CHNL) {
+}
+
+SeasonStateFileWriter::SeasonStateFileWriter(uint8_t chnl) 
+    : cxxutil::data::FileWriter<SeasonState *>(chnl) {
+}
+
+SeasonStateFileWriter::~SeasonStateFileWriter() {
+}
+
+bool SeasonStateFileWriter::write(uint8_t handle, SeasonState *element) {
+    // All we write care crop counts, crop unlocks, and goals.
+
+    bool res;
+
+    cxxutil::data::ShallowArrayFileWriter<cxxutil::core::U24> 
+        ccWriter(this->getChnl());
+
+    res = ccWriter.write(handle, element->cropCounts);
+
+    if (!res) {
+        return false;
+    }
+
+    cxxutil::data::BitVectorFileWriter cuWriter(this->getChnl());
+    res = cuWriter.write(handle, element->cropUnlocks);
+
+    if (!res) {
+        return false;
+    }
+
+    cxxutil::data::BitGridFileWriter gWriter(this->getChnl());
+    res = gWriter.write(handle, element->goals);
+
+    return res;
+}
+
+SeasonStateFileReader::SeasonStateFileReader(const statics::season_t *s, const statics::goal_timeline_t *gt) 
+    : SeasonStateFileReader(cxxutil::core::CXX_DEF_CHNL, s, gt) {
+}
+
+SeasonStateFileReader::SeasonStateFileReader(uint8_t chnl, 
+        const statics::season_t *s, const statics::goal_timeline_t *gt) 
+    : cxxutil::data::FileReader<SeasonState *>(chnl), 
+    season(s), goalTimeline(gt) {
+}
+
+SeasonStateFileReader::~SeasonStateFileReader() {
+}
+
+bool SeasonStateFileReader::read(uint8_t handle, SeasonState **dest) {
+    cxxutil::core::SafeArray<cxxutil::core::U24> *cc = NULL;
+    cxxutil::data::BitVector *cu = NULL;
+    cxxutil::data::BitGrid *gs = NULL;
+
+    bool res;
+
+    cxxutil::data::ShallowArrayFileReader<cxxutil::core::U24>
+       ccReader(this->getChnl()); 
+    res = ccReader.read(handle, &cc); 
+
+    if (!res) {
+        return false;
+    }
+
+    cxxutil::data::BitVectorFileReader 
+        cuReader(this->getChnl());
+    res = cuReader.read(handle, &cu);
+
+    if (!res) {
+        delete cc;
+        return false;
+    }
+
+    cxxutil::data::BitGridFileReader
+        gsReader(this->getChnl());
+    res = gsReader.read(handle, &gs);
+
+    if (!res) {
+        delete cc;
+        delete cu;
+        return false;
+    }
+
+    SeasonState *ss = new SeasonState(
+            this->getChnl(), this->season, this->goalTimeline,
+            cc, cu, gs);
+
+    *dest = ss;
+
+    return true;
+}
+
+
 // Time for planet state boys.
 
 PlanetState::PlanetState(const statics::planet_t *p, 
@@ -48,6 +155,7 @@ PlanetState::PlanetState(uint8_t chnl, const statics::planet_t *p,
 
     this->yearLen = 0;
     this->date = 0; 
+    this->hsLen = 0;
 
     // Create all seasons.
     for (uint8_t i = 0; i < statics::NUM_SEASONS; i++) {

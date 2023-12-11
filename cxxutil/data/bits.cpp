@@ -63,47 +63,6 @@ bool BitVector::operator==(const BitVector &o) const {
     return true;
 }
 
-BitGrid::BitGrid(uint8_t chnl, size_t rs, size_t cs, 
-    core::SafeArray<BitVector *> *g) 
-    : core::SafeObject(chnl), rows(rs), cols(cs), grid(g) {
-}
-
-BitGrid::BitGrid(size_t rs, size_t cs) 
-    : BitGrid(core::CXX_DEF_CHNL, rs, cs) {
-}
-
-BitGrid::BitGrid(uint8_t chnl, size_t rs, size_t cs) 
-    : core::SafeObject(chnl), rows(rs), cols(cs) {
-
-    // Create grid in dynamic memory.
-    this->grid = new core::SafeArray<BitVector *>(chnl, this->rows);
-
-    for (size_t row = 0; row < this->rows; row++) {
-        this->grid->set(row, new BitVector(chnl, this->cols));
-    }
-}
-
-BitGrid::~BitGrid() {
-    for (size_t row = 0; row < this->rows; row++) {
-        delete this->grid->get(row);
-    }
-
-    delete this->grid;
-}
-
-bool BitGrid::operator==(const BitGrid &o) const {
-    if (this->rows != o.rows) {
-        return false;
-    }
-
-    for (size_t i = 0; i < this->rows; i++) {
-        if (*(this->grid->get(i)) != *(o.grid->get(i))) {
-            return false;
-        }
-    }
-
-    return true;
-}
 
 BitVectorFileWriter::BitVectorFileWriter()
     : BitVectorFileWriter(core::CXX_DEF_CHNL) {
@@ -112,7 +71,6 @@ BitVectorFileWriter::BitVectorFileWriter()
 BitVectorFileWriter::BitVectorFileWriter(uint8_t chnl) 
     : FileWriter<BitVector *>(chnl) {
 }
-
 
 BitVectorFileWriter::~BitVectorFileWriter() {
 }
@@ -167,6 +125,47 @@ bool BitVectorFileReader::read(uint8_t handle, BitVector **dest) {
     return true;
 }
 
+BitGrid::BitGrid(uint8_t chnl, size_t rs, size_t cs, 
+    core::SafeArray<BitVector *> *g) 
+    : core::SafeObject(chnl), rows(rs), cols(cs), grid(g) {
+}
+
+BitGrid::BitGrid(size_t rs, size_t cs) 
+    : BitGrid(core::CXX_DEF_CHNL, rs, cs) {
+}
+
+BitGrid::BitGrid(uint8_t chnl, size_t rs, size_t cs) 
+    : core::SafeObject(chnl), rows(rs), cols(cs) {
+
+    // Create grid in dynamic memory.
+    this->grid = new core::SafeArray<BitVector *>(chnl, this->rows);
+
+    for (size_t row = 0; row < this->rows; row++) {
+        this->grid->set(row, new BitVector(chnl, this->cols));
+    }
+}
+
+BitGrid::~BitGrid() {
+    for (size_t row = 0; row < this->rows; row++) {
+        delete this->grid->get(row);
+    }
+
+    delete this->grid;
+}
+
+bool BitGrid::operator==(const BitGrid &o) const {
+    if (this->rows != o.rows) {
+        return false;
+    }
+
+    for (size_t i = 0; i < this->rows; i++) {
+        if (*(this->grid->get(i)) != *(o.grid->get(i))) {
+            return false;
+        }
+    }
+
+    return true;
+}
 
 BitGridFileWriter::BitGridFileWriter()
     : BitGridFileWriter(core::CXX_DEF_CHNL) {

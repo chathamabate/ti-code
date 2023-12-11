@@ -5,6 +5,7 @@
 
 #include "../statics/universe.h"
 #include "cxxutil/data/bits.h"
+#include <cxxutil/data/file.h>
 
 namespace tif { namespace model {
 
@@ -30,6 +31,9 @@ namespace tif { namespace model {
 
     // Seasonal specific states.
     class SeasonState : public cxxutil::core::SafeObject {
+        friend class SeasonStateFileWriter;
+        friend class SeasonStateFileReader;
+
     private:
         const statics::season_t * const season;
         const statics::goal_timeline_t * const goalTimeline;
@@ -37,6 +41,12 @@ namespace tif { namespace model {
         cxxutil::core::SafeArray<cxxutil::core::U24> *cropCounts;
         cxxutil::data::BitVector *cropUnlocks;  // 1 when unlocked 0 when locked.
         cxxutil::data::BitGrid *goals;          // 1 when collected, 0 when not.
+
+        SeasonState(uint8_t chnl, const statics::season_t *s,
+                const statics::goal_timeline_t *gt,
+                cxxutil::core::SafeArray<cxxutil::core::U24> *cc,
+                cxxutil::data::BitVector *cu,
+                cxxutil::data::BitGrid *gs);
 
     public:
         SeasonState(const statics::season_t *s, const statics::goal_timeline_t *gt);
@@ -84,9 +94,40 @@ namespace tif { namespace model {
         }
     };
 
+    class SeasonStateFileWriter : public cxxutil::data::FileWriter<SeasonState *> {
+    public:
+        SeasonStateFileWriter();    
+        SeasonStateFileWriter(uint8_t chnl);
+        virtual ~SeasonStateFileWriter();
+        virtual bool write(uint8_t handle, SeasonState *element) override;
+    };
+
+    class SeasonStateFileReader : public cxxutil::data::FileReader<SeasonState *> {
+    private:
+        const statics::season_t * const season;
+        const statics::goal_timeline_t * const goalTimeline;
+
+    public:
+        SeasonStateFileReader(const statics::season_t *s, const statics::goal_timeline_t *gt);    
+        SeasonStateFileReader(uint8_t chnl, 
+                const statics::season_t *s, const statics::goal_timeline_t *gt);
+
+        virtual ~SeasonStateFileReader();
+        virtual bool read(uint8_t handle, SeasonState **dest) override;
+    };
+
+    // Date and maze completion time of a highscore.
+    struct highscore_entry_t {
+        statics::day_count_t date;
+        uint16_t time;
+    };
+
     // Maybe the only universal thing should be stars???
 
     class PlanetState : public cxxutil::core::SafeObject {
+    public:
+        // Number of high score entries to store.
+        static constexpr uint8_t HS_CAP = 5;
     private:
         const statics::planet_t * const planet;
 
@@ -95,6 +136,10 @@ namespace tif { namespace model {
 
         // Todays date.
         statics::day_count_t date;
+
+        uint8_t hsLen;  // Number of highscores entered.
+                        // Never greater than HS_CAP.
+        highscore_entry_t highscores[HS_CAP];
 
         // Remember that goals and crops are organzied in seasons.
         SeasonState *seasonStates[statics::NUM_SEASONS];
@@ -261,5 +306,13 @@ namespace tif { namespace model {
         inline bool collect(uint8_t seasonInd, uint8_t cropInd, uint8_t goalInd) {
             return this->seasonStates[seasonInd]->collect(cropInd, goalInd);
         }
+    };
+
+    class SeasonStateFileWriter : public cxxutil::data::FileWriter<SeasonState *> {
+    public:
+        SeasonStateFileWriter();    
+        SeasonStateFileWriter(uint8_t chnl);
+        virtual ~SeasonStateFileWriter();
+        virtual bool write(uint8_t handle, SeasonState *element) override;
     };
 }}
