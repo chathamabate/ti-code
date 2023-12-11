@@ -227,6 +227,10 @@ namespace tif { namespace model {
             return this->highscores;
         }
 
+        inline highscore_entry_t getHighscore(uint8_t i) const {
+            return this->highscores[i];
+        }
+
         inline uint8_t getSeasonInd() const {
             return this->seasonInd;
         }
@@ -234,6 +238,11 @@ namespace tif { namespace model {
         inline const statics::season_t *getSeason() const {
             return this->season;
         }
+
+        // Attempt to insert a new highscore into the hs array.
+        // Returns the index at which hse was inserted.
+        // (Will return HS_CAP if the given entry could not be inserted)
+        uint8_t insertHighscore(highscore_entry_t hse);
 
         // NOTE: The below calls will assume all indeces are valid
         // given grid dimmensions and season.

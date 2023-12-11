@@ -256,6 +256,37 @@ PlanetState::~PlanetState() {
     }
 }
 
+uint8_t PlanetState::insertHighscore(highscore_entry_t hse) {
+    // Find out at what index hse belongs.
+    uint8_t i;
+
+    for (i = 0; i < this->hsLen; i++) {
+        if (this->highscores[i].time > hse.time) {
+            break;
+        }
+    }
+
+    // No insertion.
+    if (i == HS_CAP) {
+        return HS_CAP;
+    }
+
+    // Shift right.
+    for (uint8_t j = HS_CAP - 1; i < j; j--) {
+        this->highscores[j] = this->highscores[j + 1];
+    }
+
+    // Insert.
+    this->highscores[i] = hse;
+
+    // Are we not at capactiy yet?
+    if (this->hsLen < HS_CAP) {
+        this->hsLen++;
+    }
+
+    return i;
+}
+
 bool PlanetState::incDate() {
     // Advance our day.
     this->date++;

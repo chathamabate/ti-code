@@ -125,6 +125,8 @@ private:
         tc->assertTrue(this->initPs->plant(0, 0, 0));
 
         this->initPs->incDate();
+
+        this->initPs->insertHighscore({.date = 10, .time = 3});
         
         bool res;
         uint8_t handle;
@@ -146,7 +148,8 @@ private:
         tc->assertTrue(this->resPs->getCellState(0, 0).cropInd == 0);
         tc->assertTrue(this->resPs->getDate() == this->initPs->getDate());
 
-        
+        tc->assertEqUInt(10, this->resPs->getHighscore(0).date);
+        tc->assertEqUInt(1, this->resPs->getHSLen());
     }
 
     virtual void finally() override {
@@ -325,6 +328,16 @@ private:
 
         tc->assertFalse(this->ps->purchase(1)); 
         tc->assertFalse(this->ps->place(0, 0, 1)); // Should already be filled!
+        
+        // Let's try inserting some highscores.
+        for (uint8_t i = 0; i <= PlanetState::HS_CAP; i++) {
+            tc->assertEqUInt(i, 
+                    this->ps->insertHighscore({.date = 0, .time = i}));
+        }
+
+        tc->assertEqUInt(2, 
+                this->ps->insertHighscore({.date = 0, .time = 1}));
+
     }
 
     virtual void finally() override {
