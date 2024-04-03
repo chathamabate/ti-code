@@ -2,6 +2,7 @@
 #include <ti/screen.h>
 #include <graphx.h>
 #include <sys/lcd.h>
+#include "./math/misc.h"
 #include "./math/vec.h"
 #include <ti/real.h>
 
@@ -13,9 +14,14 @@ int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
-    math::Vec3D v(1, 1, 1);
-    v.display();
-    v.display();
+    math::Vec3D v(1, 1, 0);
+    math::Vec3D u(1, 0, 0);
+
+    math::Vec3D c = u.proj(v);
+    c.display();
+
+    math::displayFloat(c.mag());
+
         
 
     /*

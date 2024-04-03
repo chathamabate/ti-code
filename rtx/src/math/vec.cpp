@@ -6,6 +6,14 @@
 
 using namespace math;
 
+Vec3D Vec3D::cross(const Vec3D &o) const {
+    float xp = (this->y * o.z) - (this->z * o.y);
+    float yp = -((this->x * o.z) - (this->z * o.x));
+    float zp = (this->x * o.y) - (this->y * o.x);
+
+    return Vec3D(xp, yp, zp);
+}
+
 void Vec3D::display() const {
     char bufs[3][20];
 
