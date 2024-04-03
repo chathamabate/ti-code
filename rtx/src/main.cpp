@@ -2,14 +2,23 @@
 #include <ti/screen.h>
 #include <graphx.h>
 #include <sys/lcd.h>
-
+#include "./math/vec.h"
+#include <ti/real.h>
 
 using namespace cxxutil;
+
+
 
 int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
+    math::Vec3D v(1, 1, 1);
+    v.display();
+    v.display();
+        
+
+    /*
     uint16_t *vram = (uint16_t *)lcd_Ram;
 
     for (int r = 0; r < 240; r++) {
@@ -25,6 +34,7 @@ int main(void) {
             vram[r*320 + c] = color;
         }
     }
+    */
 
     while (!os_GetCSC());
 
