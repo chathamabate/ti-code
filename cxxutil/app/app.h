@@ -74,6 +74,7 @@ namespace cxxutil { namespace app {
                     this->redrawRequested = false;
                 }
 
+                // NOTE: Consider making this more variable...
                 delay(this->del);
             } 
 
