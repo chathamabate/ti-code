@@ -17,17 +17,18 @@ namespace math {
         float x, y, z;
 
     public:
+        inline Vec3D() : x(0), y(0), z(0) {}
         inline Vec3D(float i, float j, float k) : x(i), y(j), z(k) {}
 
-        inline float X() const {
+        inline float getX() const {
             return this->x;
         }
 
-        inline float Y() const {
+        inline float getY() const {
             return this->y;
         }
 
-        inline float Z() const {
+        inline float getZ() const {
             return this->z;
         }
 

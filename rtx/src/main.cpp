@@ -4,6 +4,9 @@
 #include <sys/lcd.h>
 #include "./math/misc.h"
 #include "./math/vec.h"
+#include "./math/geom.h"
+#include "./math/sphere.h"
+#include "rtx/src/math/ray.h"
 #include <ti/real.h>
 
 using namespace cxxutil;
@@ -14,15 +17,19 @@ int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
-    math::Vec3D v(1, 1, 0);
-    math::Vec3D u(1, 0, 0);
+    math::Sphere sp(NULL, math::Vec3D(0, 0, 0), 1.0f);
 
-    math::Vec3D c = u.proj(v);
-    c.display();
+    math::Ray r(math::Vec3D(-2, 0, 0), math::Vec3D(1, 0, 0));
 
-    math::displayFloat(c.mag());
+    math::Ray n;
+    float s;
 
-        
+    if (sp.intersect(r, &n, &s)) {
+        n.getPoint().display();
+        n.getDir().display();
+    } else {
+        os_PutStrLine("No Intersect!");
+    }
 
     /*
     uint16_t *vram = (uint16_t *)lcd_Ram;
