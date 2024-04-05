@@ -6,31 +6,34 @@
 #include "./math/vec.h"
 #include "./math/geom.h"
 #include "./math/sphere.h"
+#include "cxxutil/core/mem.h"
 #include "rtx/src/math/ray.h"
+#include "rtx/src/math/scene.h"
 #include <ti/real.h>
 
 using namespace cxxutil;
 
 int main(void) {
+    
     // Ok, nice, this works!
     os_ClrHome(); 
 
-    math::Sphere sp(NULL, math::Vec3D(0, 0, 0), 1.0f);
 
-    math::Ray r(math::Vec3D(-2, 0, 0), math::Vec3D(1, 1, 0));
 
-    math::Ray n;
-    float s;
+    math::Perspective per(
+            math::Vec3D(-2.0f, 0.0f, 0.0f),
+            math::Vec3D(0.0f, -0.5f, 0.375f),
+            math::Vec3D(0.0f, 0.5f, 0.375f),
+            math::Vec3D(0.0f, -0.5f, -0.375f)
+    );
 
-    if (sp.intersect(r, &n, &s)) {
-        n.getPoint().display();
-        n.getDir().display();
+    math::Scene *sc = new math::Scene(2, per);
 
-        math::Vec3D ip(r.getPoint() + (r.getDir() * s));
-        ip.display();
-    } else {
-        os_PutStrLine("No Intersect!");
-    }
+    math::Sphere sp(NULL, math::Vec3D(6.0f, 0, 0), 1.0f);
+    sc->addGeom(&sp);
+
+    sc->render();    
+
 
     /*
     uint16_t *vram = (uint16_t *)lcd_Ram;
@@ -53,4 +56,9 @@ int main(void) {
     while (!os_GetCSC());
 
     os_ClrHome();
+
+
+    delete sc;
+
+    core::MemoryTracker::ONLY->checkMemLeaks();
 }

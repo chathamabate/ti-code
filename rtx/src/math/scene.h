@@ -18,7 +18,7 @@ namespace math {
         Vec3D bottomLeft;
 
     public:
-        inline Perspective(Vec3D e, Vec3D tl, Vec3D tr, Vec3D bl) 
+        inline Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
             : eye(e), topLeft(tl), topRight(tr), bottomLeft(bl) {}
 
         inline Vec3D getEye() const {
@@ -55,5 +55,10 @@ namespace math {
         }
 
         void render() const;
+        
+        // Trace should return a color.
+        // (all components should be between 1 and 0)
+        // If lim = 0, No recursion should take place.
+        Vec3D trace(const Ray &r, uint8_t lim) const;
     };
 }
