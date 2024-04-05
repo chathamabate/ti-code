@@ -6,6 +6,9 @@ namespace math {
         friend Vec3D operator*(const Vec3D &l, float s);
         friend Vec3D operator*(float s, const Vec3D& r);
 
+        friend Vec3D operator/(const Vec3D &l, float s);
+        friend Vec3D operator/(float s, const Vec3D& r);
+
         // Dot product.
         friend float operator*(const Vec3D &l, const Vec3D &r);
 
@@ -75,6 +78,14 @@ namespace math {
 
     inline Vec3D operator*(float s, const Vec3D& r) {
         return Vec3D(r.x * s, r.y * s, r.z * s);
+    }
+
+    inline Vec3D operator/(const Vec3D &l, float s) {
+        return Vec3D(l.x / s, l.y / s, l.z / s);
+    }
+
+    inline Vec3D operator/(float s, const Vec3D& r) {
+        return Vec3D(r.x / s, r.y / s, r.z / s);
     }
 
     inline float operator*(const Vec3D &l, const Vec3D &r) {

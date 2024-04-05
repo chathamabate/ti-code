@@ -24,22 +24,22 @@ bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
     float bs = (ac*d) / (dMagSq);
     Vec3D b = a + (bs*d);
 
-    Vec3D bc = b - c;
+    Vec3D cb = b - c;
 
-    float bcMagSq = bc * bc;
+    float cbMagSq = cb * cb;
     float rSq = this->radius * this->radius;
 
-    if (bcMagSq > (rSq + ERR)) {
+    if (cbMagSq > (rSq + ERR)) {
         return false;   // NO INTERSECTION.
     }
 
     // tangent intersection!
-    if (isZero(bcMagSq - rSq)) {
+    if (isZero(cbMagSq - rSq)) {
         if (isZero(bs)) {
             return false;
         }
         
-        *outR = Ray(b, bc);
+        *outR = Ray(b, cb);
         *outS = bs;
     } 
 
@@ -48,7 +48,7 @@ bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
     // We want the closest intersection point (in the positive direction), 
     // which itself is not a.
     
-    float ks = sqrt((rSq - bcMagSq) / dMagSq);
+    float ks = sqrt((rSq - cbMagSq) / dMagSq);
     Vec3D kSeg = ks * d;
 
     // If k1 is infront of a, it must be the closest.

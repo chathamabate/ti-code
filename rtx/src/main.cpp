@@ -11,15 +11,13 @@
 
 using namespace cxxutil;
 
-
-
 int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
     math::Sphere sp(NULL, math::Vec3D(0, 0, 0), 1.0f);
 
-    math::Ray r(math::Vec3D(-2, 0, 0), math::Vec3D(1, 0, 0));
+    math::Ray r(math::Vec3D(-2, 0, 0), math::Vec3D(1, 1, 0));
 
     math::Ray n;
     float s;
@@ -27,6 +25,9 @@ int main(void) {
     if (sp.intersect(r, &n, &s)) {
         n.getPoint().display();
         n.getDir().display();
+
+        math::Vec3D ip(r.getPoint() + (r.getDir() * s));
+        ip.display();
     } else {
         os_PutStrLine("No Intersect!");
     }
