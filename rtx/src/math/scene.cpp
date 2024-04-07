@@ -20,7 +20,8 @@ Scene::~Scene() {
 void Scene::render() const {
     Vec3D eye = this->per.getEye();
 
-    Vec3D pixel = this->per.getTopLeft();
+    Vec3D rowStart = this->per.getTopLeft();
+
     Vec3D dh = this->per.dh();
     Vec3D dv = this->per.dv();
 
@@ -28,6 +29,8 @@ void Scene::render() const {
     uint16_t *vram = (uint16_t *)lcd_Ram;
 
     for (uint8_t row = 0; row < 240; row++) {
+        Vec3D pixel = rowStart;
+
         for (cxxutil::core::U24 col = 0; col < 320; col++) {
             Ray r(pixel, pixel - eye);
 
@@ -44,7 +47,7 @@ void Scene::render() const {
             pixel += dh;
         }
 
-        pixel += dv;
+        rowStart += dv;
     }
 }
 

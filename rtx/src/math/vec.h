@@ -41,6 +41,24 @@ namespace math {
             return sqrt((*this) * (*this));
         }
 
+        inline void normalize() {
+            float mag = this->mag();
+
+            this->x /= mag; 
+            this->y /= mag;
+            this->z /= mag;
+        }
+
+        inline Vec3D norm() const {
+            float mag = this->mag();
+
+            return Vec3D(
+                    this->x / mag,
+                    this->y / mag,
+                    this->z / mag
+            );
+        }
+
         inline Vec3D proj(const Vec3D &o) const {
             return (((*this) * o) / (o * o)) * o;
         }

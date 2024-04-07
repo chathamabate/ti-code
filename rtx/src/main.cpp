@@ -18,8 +18,6 @@ int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
-
-
     math::Perspective per(
             math::Vec3D(-2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),

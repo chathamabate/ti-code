@@ -31,8 +31,8 @@ namespace math {
         // The parameter value will be written to outS.
         // True will be returned.
         //
-        // NOTE: for now outR will NOT be normalized.
-        // The given ray need not be normalized either.
+        // NOTE: outR WILL be normalized.
+        // The given ray need not be normalized tho.
         // 
         // otherwise, false is returned, outR/S are unmodified.
         virtual bool intersect(Ray ray, Ray *outR, float *outS) const = 0;

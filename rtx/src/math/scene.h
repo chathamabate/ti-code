@@ -5,6 +5,7 @@
 #include <cxxutil/core/mem.h>
 
 #include "./geom.h"
+#include "rtx/src/math/vec.h"
 
 namespace math {
     class Perspective {
@@ -21,11 +22,11 @@ namespace math {
         inline Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
             : eye(e), topLeft(tl), topRight(tr), bottomLeft(bl) {}
 
-        inline Vec3D getEye() const {
+        inline const Vec3D &getEye() const {
             return this->eye;
         }
 
-        inline Vec3D getTopLeft() const {
+        inline const Vec3D &getTopLeft() const {
             return this->topLeft;
         }
 
@@ -38,10 +39,30 @@ namespace math {
         }
     };
 
+    // Point light source.
+    class Light {
+    private:
+        Vec3D position;
+        Vec3D color;
+
+    public:
+        inline Light(Vec3D p, Vec3D c) 
+            : position(p), color(c) {}
+
+        inline const Vec3D &getPosition() const {
+            return this->position;
+        }
+
+        inline const Vec3D &getColor() const {
+            return this->color;
+        }
+    };
+
     class Scene : public cxxutil::core::SafeObject {
     private:
         // NOTE: Geoms will NOT be deleted by this scene.
         cxxutil::core::CoreList<Geom *> *geoms;
+        cxxutil::core::CoreList<Light> *lights;
 
         Perspective per;
 
@@ -52,6 +73,10 @@ namespace math {
 
         inline void addGeom(Geom *g) {
             this->geoms->add(g);
+        }
+
+        inline void addLight(const Light &l) {
+            this->lights->add(l);
         }
 
         void render() const;
