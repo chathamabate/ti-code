@@ -59,7 +59,7 @@ bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
     if (k1s > ERR) {
         // We have a hit!
 
-        *outR = Ray(k1, (k1 - c).norm());
+        *outR = Ray(k1, k1 - c);
         *outS = k1s;
         
         return true;
@@ -71,7 +71,7 @@ bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
     float k2s = (ak2 * d) / dMagSq;
 
     if (k2s > ERR) {
-        *outR = Ray(k2, (k2 - c).norm());
+        *outR = Ray(k2, k2 - c);
         *outS = k2s;
 
         return true;

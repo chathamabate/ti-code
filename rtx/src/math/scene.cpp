@@ -4,17 +4,23 @@
 #include "cxxutil/core/data.h"
 #include "cxxutil/core/mem.h"
 #include "rtx/src/math/geom.h"
+#include "rtx/src/math/material.h"
+#include "rtx/src/math/vec.h"
+#include "./misc.h"
 
 using namespace math;
 
-Scene::Scene(uint8_t chnl, const Perspective &p) : cxxutil::core::SafeObject(chnl), per(p) {
+Scene::Scene(uint8_t chnl, const Perspective &p, const Vec3D &iap) : cxxutil::core::SafeObject(chnl), per(p), ia(iap) {
     this->geoms = new cxxutil::core::CoreList<Geom *>(chnl);
+    this->lights = new cxxutil::core::CoreList<Light>(chnl);
 }
 
-Scene::Scene(const Perspective &p) : Scene(cxxutil::core::CXX_DEF_CHNL, p) {}
+Scene::Scene(const Perspective &p, const Vec3D &iap) 
+    : Scene(cxxutil::core::CXX_DEF_CHNL, p, iap) {}
 
 Scene::~Scene() {
     delete this->geoms;
+    delete this->lights;
 }
 
 void Scene::render() const {
@@ -52,16 +58,76 @@ void Scene::render() const {
 }
 
 Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
-    for (size_t i = 0; i < this->geoms->getLen(); i++) {
-        Geom *g = this->geoms->get(i);
+    Geom *g = NULL;
+    Ray n;      // Normal of the intersection point.
+    float s;    // parameter value of the interestion point with respect
+                // to r.
 
-        Ray rp;
+    for (size_t i = 0; i < this->geoms->getLen(); i++) {
+        Geom *gp = this->geoms->get(i);
+
+        Ray np;
         float sp;
 
-        if (g->intersect(r, &rp, &sp)) {
-            return Vec3D(0, 1.0f, 0);
+        if (gp->intersect(r, &np, &sp)  
+                && (!g || sp < s)) {
+            g = gp;
+            s = sp;
+            n = np;
         }
     }
 
-    return Vec3D(0, 0.0f, 0);
+    if (!g) {
+        return Vec3D(0.0f, 0.0f, 0.0f);
+    }
+
+    // Otherwise we have an intersection!
+    // Wooo!
+
+    n.normalize();
+    
+    const Material *mat = g->getMat();
+
+    // Start with ambient lighting... all surfaces get this.
+    Vec3D color = this->ia.flatMult(mat->getKa());
+     
+    // Now we need our pointer to the light...
+    for (size_t j = 0; j < this->lights->getLen(); j++) {
+        Light light = this->lights->get(j);
+
+        // l is the ray from our intersection point to this light source.
+        Ray l(n.getPoint(), light.getPosition() - n.getPoint());
+
+        bool obstructed = false;
+        for (size_t i = 0; i < this->geoms->getLen() && !obstructed; i++) {
+            Geom *g = this->geoms->get(i);
+
+            // Neither of these will be used, however, they're needed for intersect.
+            Ray rp;
+            float sp;
+
+            if (g->intersect(l, &rp, &sp)) {
+                obstructed = true;
+            }
+        }
+
+        // In this case, there is a geom between our intersection point and *this* light souce.
+        // So, we just move on to the next light source.
+        if (obstructed) {
+            continue;
+        }
+
+        // Otherwise, let's do our color calculations! 
+        l.normalize();
+
+        // First diffuse. 
+        float diffuseCosine = n.getDir() * l.getDir();
+        color += diffuseCosine * mat->getKd().flatMult(light.getColor());
+
+        Vec3D lRef = (2 * (l.getDir() * n.getDir()) * n.getDir()) - l.getDir();
+        float specularCosine  = intPow(lRef * n.getDir(), mat->getAlpha());
+        color += specularCosine * mat->getKs().flatMult(light.getColor());
+    } 
+
+    return color.ceil(1.0f);
 }

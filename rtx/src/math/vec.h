@@ -63,6 +63,22 @@ namespace math {
             return (((*this) * o) / (o * o)) * o;
         }
 
+        inline Vec3D flatMult(const Vec3D &o) const {
+            return Vec3D(
+                this->x * o.x,
+                this->y * o.y,
+                this->z * o.z        
+            );
+        }
+
+        inline Vec3D ceil(float max) const {
+            return Vec3D(
+                this->x > max ? max : this->x,
+                this->y > max ? max : this->y,
+                this->z > max ? max : this->z  
+            );
+        }
+
         inline Vec3D& operator*=(float s) {
             this->x *= s;
             this->y *= s;

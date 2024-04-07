@@ -13,6 +13,10 @@ namespace math {
         inline Ray() : point(), dir() {}
         inline Ray(const Vec3D &p, const Vec3D &d) : point(p), dir(d) {}
 
+        inline void normalize() {
+            this->dir.normalize();
+        }
+
         inline Vec3D getPoint() const {
             return this->point;
         }

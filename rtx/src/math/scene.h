@@ -46,6 +46,7 @@ namespace math {
         Vec3D color;
 
     public:
+        inline Light() : position(0, 0, 0), color(0, 0, 0) {}
         inline Light(Vec3D p, Vec3D c) 
             : position(p), color(c) {}
 
@@ -60,15 +61,17 @@ namespace math {
 
     class Scene : public cxxutil::core::SafeObject {
     private:
+
         // NOTE: Geoms will NOT be deleted by this scene.
         cxxutil::core::CoreList<Geom *> *geoms;
         cxxutil::core::CoreList<Light> *lights;
 
         Perspective per;
+        Vec3D ia;   // Global ambient light.
 
     public:
-        Scene(uint8_t chnl, const Perspective &p);
-        Scene(const Perspective &p);
+        Scene(uint8_t chnl, const Perspective &p, const Vec3D &iap);
+        Scene(const Perspective &p, const Vec3D &iap);
         ~Scene();
 
         inline void addGeom(Geom *g) {

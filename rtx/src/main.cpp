@@ -7,6 +7,7 @@
 #include "./math/geom.h"
 #include "./math/sphere.h"
 #include "cxxutil/core/mem.h"
+#include "rtx/src/math/material.h"
 #include "rtx/src/math/ray.h"
 #include "rtx/src/math/scene.h"
 #include <ti/real.h>
@@ -25,10 +26,35 @@ int main(void) {
             math::Vec3D(0.0f, -0.5f, -0.375f)
     );
 
-    math::Scene *sc = new math::Scene(2, per);
+    math::Material mat1(
+            math::Vec3D(1.0f, 0.0f, 0.0f),
+            math::Vec3D(0.0f, 0.0f, 1.0f),
+            math::Vec3D(1.0f, 1.0f, 1.0f),
+            5
+    );
 
-    math::Sphere sp(NULL, math::Vec3D(6.0f, 0, 0), 1.0f);
-    sc->addGeom(&sp);
+    math::Sphere sp1(&mat1, math::Vec3D(6.0f, 0, 0), 1.0f);
+
+    math::Material mat2(
+            math::Vec3D(0.0f, 1.0f, 0.0f),
+            math::Vec3D(0.2f, 0.35f, 0.8f),
+            math::Vec3D(1.0f, 1.0f, 1.0f),
+            5
+    );
+
+    math::Sphere sp2(&mat2, math::Vec3D(4.25f, -0.5f, 0.55f), 0.2f);
+
+    math::Scene *sc = new math::Scene(2, per, 
+            math::Vec3D(0.1f, 0.1f, 0.1f));
+
+    sc->addGeom(&sp1);
+    sc->addGeom(&sp2);
+
+    sc->addLight(math::Light(
+        math::Vec3D(-2.0f, -3.0f, 3.0f),
+        math::Vec3D(1.0f, 1.0f, 1.0f)
+    ));
+
 
     sc->render();    
 
