@@ -106,7 +106,7 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
             Ray rp;
             float sp;
 
-            if (g->intersect(l, &rp, &sp)) {
+            if (g->intersect(l, &rp, &sp) && sp < 1.0f + ERR)  {
                 obstructed = true;
             }
         }

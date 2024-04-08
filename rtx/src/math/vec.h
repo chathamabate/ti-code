@@ -1,5 +1,6 @@
 #pragma once
 #include <math.h>
+#include "./misc.h"
 
 namespace math {
     class Vec3D {
@@ -42,7 +43,12 @@ namespace math {
         }
 
         inline void normalize() {
-            float mag = this->mag();
+            float magSq = *this * *this;
+            if (1.0f - ERR < magSq && magSq < 1.0f + ERR) {
+                return;
+            }
+
+            float mag = sqrt(magSq);
 
             this->x /= mag; 
             this->y /= mag;
@@ -50,13 +56,9 @@ namespace math {
         }
 
         inline Vec3D norm() const {
-            float mag = this->mag();
-
-            return Vec3D(
-                    this->x / mag,
-                    this->y / mag,
-                    this->z / mag
-            );
+            Vec3D o = *this;
+            o.normalize();
+            return o;
         }
 
         inline Vec3D proj(const Vec3D &o) const {
