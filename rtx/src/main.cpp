@@ -12,7 +12,7 @@
 #include "rtx/src/math/scene.h"
 #include <rtx/src/math/plane.h>
 #include <ti/real.h>
-#include <rtx/src/math/quad_plane.h>
+#include <rtx/src/math/rect_plane.h>
 
 using namespace cxxutil;
 
@@ -35,6 +35,9 @@ int main(void) {
             1
     );
 
+    math::RectPlane rp(&mat1, math::Vec3D(-4.0f, 0, 0), 
+            1.0f, 1.0f, 0.0f, 0.0f, 0.0f);
+
     // math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
 
     math::Material mat2(
@@ -44,22 +47,10 @@ int main(void) {
             5
     );
 
-    math::QuadPlane qp(&mat2, math::Vec3D(-5.0f, -0.2f, 0.5f), 
-            math::Vec3D(-5.0f, 0.2f, 0.0f),
-            math::Vec3D(-5.0f, -0.2f, -0.5f));
 
-    /*
-    math::Plane p1(&mat2, math::Vec3D(6.0f, 0.0f, -0.375f), 
-            math::Vec3D(0.0f, 0.0f, 1.0f));
-
-    math::Plane p2(&mat2, math::Vec3D(6.0f, -0.5f, -0.0f), 
-            math::Vec3D(0.0f, 1.0f, 0.0f));
-            */
 
     math::Scene *sc = new math::Scene(2, per, 
             math::Vec3D(0.1f, 0.1f, 0.1f));
-
-    sc->addGeom(&qp);
 
 
     sc->addLight(math::Light(
@@ -67,6 +58,7 @@ int main(void) {
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
+    sc->addGeom(&rp);
     sc->render();    
 
     /*

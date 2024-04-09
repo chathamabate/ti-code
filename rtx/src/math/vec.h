@@ -21,6 +21,8 @@ namespace math {
         float x, y, z;
 
     public:
+        static Vec3D getNorm(float theta, float phi);
+
         inline Vec3D() : x(0), y(0), z(0) {}
         inline Vec3D(float i, float j, float k) : x(i), y(j), z(k) {}
 
@@ -37,6 +39,7 @@ namespace math {
         }
 
         Vec3D cross(const Vec3D &o) const;
+        Vec3D rotate(const Vec3D &axis, float theta) const;
         
         inline float mag() const {
             return sqrt((*this) * (*this));
