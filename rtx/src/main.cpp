@@ -12,6 +12,7 @@
 #include "rtx/src/math/scene.h"
 #include <rtx/src/math/plane.h>
 #include <ti/real.h>
+#include <rtx/src/math/quad_plane.h>
 
 using namespace cxxutil;
 
@@ -21,7 +22,7 @@ int main(void) {
     os_ClrHome(); 
 
     math::Perspective per(
-            math::Vec3D(-2.0f, 0.0f, 0.0f),
+            math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
             math::Vec3D(0.0f, 0.5f, 0.375f),
             math::Vec3D(0.0f, -0.5f, -0.375f)
@@ -29,12 +30,12 @@ int main(void) {
 
     math::Material mat1(
             math::Vec3D(1.0f, 0.0f, 0.0f),
-            math::Vec3D(1.0f, 1.0f, 1.0f),
+            math::Vec3D(0.0f, 0.0f, 1.0f),
             math::Vec3D(1.0f, 1.0f, 1.0f),
             1
     );
 
-    math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
+    // math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
 
     math::Material mat2(
             math::Vec3D(0.0f, 1.0f, 0.0f),
@@ -43,27 +44,30 @@ int main(void) {
             5
     );
 
+    math::QuadPlane qp(&mat2, math::Vec3D(-5.0f, -0.2f, 0.5f), 
+            math::Vec3D(-5.0f, 0.2f, 0.0f),
+            math::Vec3D(-5.0f, -0.2f, -0.5f));
+
+    /*
     math::Plane p1(&mat2, math::Vec3D(6.0f, 0.0f, -0.375f), 
             math::Vec3D(0.0f, 0.0f, 1.0f));
 
     math::Plane p2(&mat2, math::Vec3D(6.0f, -0.5f, -0.0f), 
             math::Vec3D(0.0f, 1.0f, 0.0f));
+            */
 
     math::Scene *sc = new math::Scene(2, per, 
             math::Vec3D(0.1f, 0.1f, 0.1f));
 
-    sc->addGeom(&sp1);
+    sc->addGeom(&qp);
 
-    sc->addGeom(&p1);
-    sc->addGeom(&p2);
 
     sc->addLight(math::Light(
-        math::Vec3D(4.0f, 0.5f, 0.2f),
+        math::Vec3D(-4.5f, 0.0f, 0.0f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
     sc->render();    
-
 
     /*
     uint16_t *vram = (uint16_t *)lcd_Ram;
