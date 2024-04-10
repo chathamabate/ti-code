@@ -36,6 +36,7 @@ void Scene::render() const {
 
     for (uint8_t row = 0; row < 240; row++) {
         Vec3D pixel = rowStart;
+        size_t rowSI = row * 320;
 
         for (cxxutil::core::U24 col = 0; col < 320; col++) {
             Ray r(pixel, pixel - eye);
@@ -48,7 +49,7 @@ void Scene::render() const {
 
             uint16_t rgb = (red << 11) | (green << 5) | blue;
 
-            vram[(row * 320) + col] = rgb;
+            vram[rowSI + col] = rgb;
             
             pixel += dh;
         }
@@ -135,13 +136,13 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
 
         // Otherwise, let's do our color calculations! 
         l.normalize();
+        float cosine = n.getDir() * l.getDir();
 
         // First diffuse. 
-        float diffuseCosine = n.getDir() * l.getDir();
-        color += diffuseCosine * mat->getKd().flatMult(light.getColor());
+        color += cosine * mat->getKd().flatMult(light.getColor());
 
-        Vec3D lRef = (2 * (l.getDir() * n.getDir()) * n.getDir()) - l.getDir();
-        float specularCosine  = intPow(lRef * n.getDir(), mat->getAlpha());
+        // Vec3D lRef = (2 * cosine * n.getDir()) - l.getDir();
+        float specularCosine = intPow(cosine, mat->getAlpha());
         color += specularCosine * mat->getKs().flatMult(light.getColor());
     } 
 

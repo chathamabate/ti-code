@@ -49,7 +49,7 @@ int main(void) {
             5
     );
 
-    math::Sphere sp1(&mat2, math::Vec3D(-3.0f, -0.5f, 0.0f), 0.05f);
+    math::Sphere sp1(&mat2, math::Vec3D(-3.0f, -0.5f, 0.0f), 0.15f);
 
     math::Scene *sc = new math::Scene(2, per, 
             math::Vec3D(0.15f, 0.15f, 0.15f));
