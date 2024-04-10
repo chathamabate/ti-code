@@ -98,6 +98,12 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
         // l is the ray from our intersection point to this light source.
         Ray l(n.getPoint(), light.getPosition() - n.getPoint());
 
+        // Here the normal and direction to light are in opposite directions.
+        // No need to do specular / diffuse calculations.
+        if (l.getDir() * n.getDir() < ERR) {
+            continue;
+        }
+
         bool obstructed = false;
         for (size_t i = 0; i < this->geoms->getLen() && !obstructed; i++) {
             Geom *g = this->geoms->get(i);

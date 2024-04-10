@@ -1,3 +1,4 @@
+#include <cmath>
 #include <cxxutil/core/input.h>
 #include <ti/screen.h>
 #include <graphx.h>
@@ -9,6 +10,7 @@
 #include "cxxutil/core/mem.h"
 #include "rtx/src/math/material.h"
 #include "rtx/src/math/ray.h"
+#include "rtx/src/math/rect_prism.h"
 #include "rtx/src/math/scene.h"
 #include <rtx/src/math/plane.h>
 #include <ti/real.h>
@@ -35,8 +37,10 @@ int main(void) {
             1
     );
 
-    math::RectPlane rp(&mat1, math::Vec3D(-4.0f, 0, 0), 
-            1.0f, 0.35f, -M_PI / 4.0f, M_PI / 2.0f, M_PI / 5.0f);
+    math::RectPrism rp(&mat1, 
+            math::Vec3D(-4.0f, 0.0f, 0.0f),
+            1.0f, 1.0f, 1.0f, M_PI / 4.0f, M_PI / 4.0f, 0.0f
+    );
 
     // math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
 
@@ -51,7 +55,7 @@ int main(void) {
             math::Vec3D(0.1f, 0.1f, 0.1f));
 
     sc->addLight(math::Light(
-        math::Vec3D(-3.5f, 0.0f, 0.0f),
+        math::Vec3D(-3.0f, 0.0f, 2.0f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 

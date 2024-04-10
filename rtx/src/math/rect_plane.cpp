@@ -1,4 +1,5 @@
 #include "./rect_plane.h"
+#include "rtx/src/math/material.h"
 #include "rtx/src/math/plane.h"
 #include "rtx/src/math/vec.h"
 
@@ -15,6 +16,12 @@ RectPlane::RectPlane(const Material *m, const Vec3D &c,
     this->v1 *= wid / 2.0f;
     this->v2 *= hei / 2.0f;
 }
+
+RectPlane::RectPlane(const Material *m, const Vec3D &c) 
+    : Plane(m, c, Vec3D(1, 0, 0)), v1(0, 0.5f, 0), v2(0, 0, 0.5f) {
+}
+
+RectPlane::RectPlane() : RectPlane(Material::DEF_MATERIAL, Vec3D(0, 0, 0)) {}
 
 bool RectPlane::intersect(Ray ray, Ray *outR, float *outS) const {
     Ray tR;

@@ -15,6 +15,8 @@ namespace math {
         uint8_t alpha;  // specular exponent.
 
     public:
+        static Material *DEF_MATERIAL;
+
         inline Material(Vec3D kap, Vec3D kdp, Vec3D ksp, uint8_t a) 
             : ka(kap), kd(kdp), ks(ksp), alpha(a) {}
 

@@ -1,8 +1,8 @@
 #pragma once
 
 #include "./geom.h"
-#include "rtx/src/math/material.h"
-#include "rtx/src/math/vec.h"
+#include "./material.h"
+#include "./vec.h"
 
 namespace math {
     class Plane : public Geom {
@@ -12,6 +12,9 @@ namespace math {
     public:
         Plane(const Material *m, const Vec3D &c, 
                 const Vec3D &n);
+
+        inline Plane(const Plane &p) 
+            : Plane(p.getMat(), p.getCenter(), p.norm) {}
 
         inline Vec3D getNorm() const {
             return this->norm;

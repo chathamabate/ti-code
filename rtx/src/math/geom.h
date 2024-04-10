@@ -7,12 +7,14 @@
 namespace math {
     class Geom {
     private:
-        const Material * const mat;
+        const Material *mat;
         Vec3D center;
 
     public:
         inline Geom(const Material *m, const Vec3D &c) 
             : mat(m), center(c) {}
+
+        inline Geom(const Geom &g) : Geom(g.mat, g.center) {}
 
         inline const Material *getMat() const {
             return this->mat;
@@ -20,10 +22,6 @@ namespace math {
 
         inline Vec3D getCenter() const {
             return this->center;
-        }
-
-        virtual inline void setCenter(const Vec3D &c) {
-            this->center = c;
         }
 
         // If there is an intersection, the point of intersection
