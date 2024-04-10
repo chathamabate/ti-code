@@ -55,12 +55,11 @@ int main(void) {
             math::Vec3D(0.15f, 0.15f, 0.15f));
 
     sc->addLight(math::Light(
-        math::Vec3D(-2.0f, -1.0f, 0.0f),
+        math::Vec3D(-2.0f, 0.0f, 0.0f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
     sc->addGeom(&rp);
-    sc->addGeom(&sp1);
     sc->render();    
 
     /*

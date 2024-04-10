@@ -33,6 +33,11 @@ bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
         return false;
     }
 
+    // NOTE: if we see s0, it's impossible we see s1.
+    // if we see s1, its impossible we see s0... 
+    //
+    // Same condition holds for (s2, s3) and (s4, s5)
+
     const RectPlane *sides[6] = {
         &(this->s0),
         &(this->s1),
@@ -46,7 +51,13 @@ bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
     Ray r;
     float s;    
 
-    for (int i = 0; i < 6; i++) {
+    for (size_t i = 0; i < 6; i++) {
+        // Because a rectangular prism is convex, 
+        // The back of a face will always be obstructed by another face.
+        if (sides[i]->getNorm() * (-ray.getDir()) < ERR) {
+            continue;
+        }
+
         Ray tr;
         float ts;    
 

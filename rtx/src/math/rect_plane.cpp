@@ -8,9 +8,11 @@ using namespace math;
 
 RectPlane::RectPlane(const Material *m, const Vec3D &c, 
     float wid, float hei, float theta, float phi, float ro) 
-    : Plane(m, c, Vec3D::getNorm(theta, phi)), 
-    v1(Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(this->getNorm(), ro) * (wid / 2.0f)),
-    v2(Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(this->getNorm(), ro) * (hei / 2.0f)) {
+    : RectPlane(m, c, 
+            Vec3D::getNorm(theta, phi),
+            Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(this->getNorm(), ro) * (wid / 2.0f),
+            Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(this->getNorm(), ro) * (hei / 2.0f)
+    )  {
 }
 
 bool RectPlane::intersect(Ray ray, Ray *outR, float *outS) const {
@@ -25,13 +27,13 @@ bool RectPlane::intersect(Ray ray, Ray *outR, float *outS) const {
     Vec3D v = tR.getPoint() - this->getCenter();
 
     // Is this point within the bounds of our quad?
-    float v1S = (v * this->v1) / (this->v1 * this->v1);
-    if (v1S < -1.0 || 1.0 < v1S) {
+    float vv1 = v * v1;
+    if (vv1 < -this->v1mag2 || this->v1mag2 < vv1) {
         return false;
     }
 
-    float v2S = (v * this->v2) / (this->v2 * this->v2);
-    if (v2S < -1.0 || 1.0 < v2S) {
+    float vv2 = v * v2;
+    if (vv2 < -this->v2mag2 || this->v2mag2 < vv2) {
         return false;
     }
 
