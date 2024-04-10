@@ -10,6 +10,10 @@
 namespace math {
     class RectPrism : public Geom {
     private:
+        Vec3D nx;
+        Vec3D ny;
+        Vec3D nz;
+
         RectPlane s0;   // +/-x
         RectPlane s1;
 
@@ -19,15 +23,12 @@ namespace math {
         RectPlane s4;   // +/-z
         RectPlane s5;
 
-        float radius;
+        float rad2;
 
     public:
         RectPrism(const Material *m, const Vec3D &c, 
             float wid, float len, float hei,
             float theta, float phi, float ro);
-
-        RectPrism(const RectPlane &rp);
-        void operator=(const RectPrism &rp);
 
         virtual bool intersect(Ray ray, Ray *outR, float *outS) const override;
     };

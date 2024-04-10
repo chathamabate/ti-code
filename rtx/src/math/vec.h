@@ -40,7 +40,7 @@ namespace math {
 
         Vec3D cross(const Vec3D &o) const;
         Vec3D rotate(const Vec3D &axis, float theta) const;
-        
+
         inline float mag() const {
             return sqrt((*this) * (*this));
         }

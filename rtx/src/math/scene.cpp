@@ -83,13 +83,18 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
 
     // Otherwise we have an intersection!
     // Wooo!
+    //
+    // All surfaces get ambient lighting.
+    const Material *mat = g->getMat();
+    Vec3D color = this->ia.flatMult(mat->getKa());
+
+    // All surfaces have a front side and a back side.
+    // The back side will only ever get ambient lighting.
+    if ((-r.getDir()) * n.getDir() < ERR) {
+        return color;
+    }
 
     n.normalize();
-    
-    const Material *mat = g->getMat();
-
-    // Start with ambient lighting... all surfaces get this.
-    Vec3D color = this->ia.flatMult(mat->getKa());
      
     // Now we need our pointer to the light...
     for (size_t j = 0; j < this->lights->getLen(); j++) {
