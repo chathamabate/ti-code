@@ -1,15 +1,13 @@
 
 #include "./sphere.h"
 #include "./misc.h"
-#include "rtx/src/math/ray.h"
-#include "rtx/src/math/vec.h"
+#include "./ray.h"
+#include "./vec.h"
 #include <math.h>
 
 using namespace math;
 
 bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
-    // hmmmmmmmmm
-
     Vec3D c = this->getCenter();    // c = center of circle.
 
     Vec3D a = ray.getPoint();       // a = where ray is casted from.

@@ -15,8 +15,8 @@ namespace math {
     
     private:
         // v1 X v2 should be in the direction of n.
-        Vec3D v1; 
-        Vec3D v2; 
+        const Vec3D v1; 
+        const Vec3D v2; 
 
         // theta and phi are the polar coordinates of the unit normal vector.
         // ro will be how much the rectanglar plane is rotated clockwise about the norm.
@@ -27,10 +27,6 @@ namespace math {
     public:
         RectPlane(const Material *m, const Vec3D &c, 
                 float wid, float hei, float theta, float phi, float ro);
-
-        RectPlane(const Material *m, const Vec3D &c);
-
-        RectPlane();
 
         virtual bool intersect(Ray ray, Ray *outR, float *outS) const override;
     };

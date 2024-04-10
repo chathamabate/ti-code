@@ -111,13 +111,18 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
 
         bool obstructed = false;
         for (size_t i = 0; i < this->geoms->getLen() && !obstructed; i++) {
-            Geom *g = this->geoms->get(i);
+            Geom *gp = this->geoms->get(i);
+
+            // Skip self if not self shadowable.
+            if (gp == g && !(g->selfShadowable())) {
+                continue;
+            }
 
             // Neither of these will be used, however, they're needed for intersect.
             Ray rp;
             float sp;
 
-            if (g->intersect(l, &rp, &sp) && sp < 1.0f + ERR)  {
+            if (gp->intersect(l, &rp, &sp) && sp < 1.0f + ERR)  {
                 obstructed = true;
             }
         }

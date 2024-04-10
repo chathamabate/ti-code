@@ -42,8 +42,6 @@ int main(void) {
             1.0f, 1.0f, 0.5f, M_PI / 3.0f, -M_PI / 6.0f, -M_PI / 4.0f 
     );
 
-    // math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
-
     math::Material mat2(
             math::Vec3D(0.0f, 1.0f, 0.0f),
             math::Vec3D(0.2f, 0.35f, 0.8f),
@@ -51,15 +49,18 @@ int main(void) {
             5
     );
 
+    math::Sphere sp1(&mat2, math::Vec3D(-3.0f, -0.5f, 0.0f), 0.05f);
+
     math::Scene *sc = new math::Scene(2, per, 
             math::Vec3D(0.15f, 0.15f, 0.15f));
 
     sc->addLight(math::Light(
-        math::Vec3D(-2.0f, 0.0f, 0.0f),
+        math::Vec3D(-2.0f, -1.0f, 0.0f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
     sc->addGeom(&rp);
+    sc->addGeom(&sp1);
     sc->render();    
 
     /*

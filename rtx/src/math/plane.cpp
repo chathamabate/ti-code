@@ -1,14 +1,9 @@
 
 #include "./plane.h"
-#include "rtx/src/math/material.h"
-#include "rtx/src/math/misc.h"
+#include "./material.h"
+#include "./misc.h"
 
 using namespace math;
-
-Plane::Plane(const Material *m, const Vec3D &c, const Vec3D &n) 
-    : Geom(m, c), norm(n) {
-    this->norm.normalize();
-}
 
 bool Plane::intersect(Ray ray, Ray *outR, float *outS) const {
     float denom = ray.getDir() * this->norm;

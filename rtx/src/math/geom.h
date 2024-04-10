@@ -7,8 +7,8 @@
 namespace math {
     class Geom {
     private:
-        const Material *mat;
-        Vec3D center;
+        const Material * const mat;
+        const Vec3D center;
 
     public:
         inline Geom(const Material *m, const Vec3D &c) 
@@ -21,6 +21,10 @@ namespace math {
         inline Vec3D getCenter() const {
             return this->center;
         }
+
+        // This returns true iff the given geometry can cast a shadow
+        // onto itself. This is used to optimize shadow ray casting.
+        virtual bool selfShadowable() const = 0;
 
         // If there is an intersection, the point of intersection
         // and the normal vector will be written to outR. 
