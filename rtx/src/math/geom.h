@@ -14,8 +14,6 @@ namespace math {
         inline Geom(const Material *m, const Vec3D &c) 
             : mat(m), center(c) {}
 
-        inline Geom(const Geom &g) : Geom(g.mat, g.center) {}
-
         inline const Material *getMat() const {
             return this->mat;
         }

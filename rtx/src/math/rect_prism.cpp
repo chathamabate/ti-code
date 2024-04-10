@@ -17,9 +17,13 @@ RectPrism::RectPrism(const Material *m, const Vec3D &c,
     this->s1 = RectPlane(m, c - nx, wid, hei, 
             theta + M_PI, -phi, -ro);
 
-    Vec3D ny = Vec3D::getNorm(theta, 0.0f).rotate(nx, ro);
+    Vec3D ny = Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(nx, ro);
     ny *= (wid / 2.0f);
 
+    // This approach simply does not work...
+    // NEED A better one!!
+    this->s2 = RectPlane(m, c + ny, len, hei, 
+            theta + (M_PI / 2.0f), ro, phi);
 }
 
 bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
@@ -36,7 +40,7 @@ bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
     Ray r;
     float s;    
 
-    for (int i = 0; i < 2; i++) {
+    for (int i = 0; i < 3; i++) {
         Ray tr;
         float ts;    
 

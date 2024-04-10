@@ -4,7 +4,7 @@
 #include "./geom.h"
 #include "./material.h"
 #include "./plane.h"
-#include "rtx/src/math/vec.h"
+#include "./vec.h"
 
 
 namespace math {

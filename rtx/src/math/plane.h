@@ -13,9 +13,6 @@ namespace math {
         Plane(const Material *m, const Vec3D &c, 
                 const Vec3D &n);
 
-        inline Plane(const Plane &p) 
-            : Plane(p.getMat(), p.getCenter(), p.norm) {}
-
         inline Vec3D getNorm() const {
             return this->norm;
         }

@@ -39,7 +39,7 @@ int main(void) {
 
     math::RectPrism rp(&mat1, 
             math::Vec3D(-4.0f, 0.0f, 0.0f),
-            1.0f, 1.0f, 1.0f, M_PI / 4.0f, M_PI / 4.0f, 0.0f
+            1.0f, 1.0f, 0.5f, 0.0f, -M_PI / 6.0f, 0.0f
     );
 
     // math::Sphere sp1(&mat1, math::Vec3D(4.0f, 0.0f, 0.20f - 0.375f), 0.20f);
@@ -55,7 +55,7 @@ int main(void) {
             math::Vec3D(0.1f, 0.1f, 0.1f));
 
     sc->addLight(math::Light(
-        math::Vec3D(-3.0f, 0.0f, 2.0f),
+        math::Vec3D(-3.0f, 2.0f, 0.0f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
