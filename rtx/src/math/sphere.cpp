@@ -33,7 +33,7 @@ bool Sphere::intersect(Ray ray, Ray *outR, float *outS) const {
 
     // tangent intersection!
     if (isZero(cbMagSq - rSq)) {
-        if (isZero(bs)) {
+        if (bs < ERR) {
             return false;
         }
         

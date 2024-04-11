@@ -54,6 +54,9 @@ bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
     for (size_t i = 0; i < 6; i++) {
         // Because a rectangular prism is convex, 
         // The back of a face will always be obstructed by another face.
+        //
+        // NOTE: THIS ASSUME OUR RAY DOES NOT ORIGINATE IN 
+        // THE PRISM!
         if (sides[i]->getNorm() * (-ray.getDir()) < ERR) {
             continue;
         }

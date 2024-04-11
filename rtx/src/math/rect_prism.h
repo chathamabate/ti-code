@@ -27,7 +27,7 @@ namespace math {
 
     public:
         RectPrism(const Material *m, const Vec3D &c, 
-            float wid, float len, float hei,
+            float len, float wid, float hei,
             float theta, float phi, float ro);
 
         virtual inline bool selfShadowable() const override {
