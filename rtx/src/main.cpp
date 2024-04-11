@@ -48,8 +48,8 @@ int main(void) {
     math::Material mat3(
             math::Vec3D(0.0f, 0.0f, 1.0f),
             math::Vec3D(0.45f, 0.65f, 0.0f),
-            math::Vec3D(1.0f, 1.0f, 1.0f),
-           7 
+            math::Vec3D(0.65f, 0.65f, 0.65f),
+            7 
     );
 
     math::Plane pl(&mat1, 
@@ -63,9 +63,22 @@ int main(void) {
             M_PI / 3.0f, M_PI / 3, M_PI / 4.0f
     );
 
+    const float RADIUS = 0.1f;
+
+    const core::U24 FRAME = 30;
+
+    const core::U24 NUM_FRAMES = 60;
+    const float H_0 = -0.375 + RADIUS;
+    const float H_MAX = H_0 + 0.4f;
+
+    const float A = (8.0f * (H_0 - H_MAX)) / (NUM_FRAMES * NUM_FRAMES); 
+    const float V_0 = -A * (NUM_FRAMES / 2.0f);
+    const float H = (0.5f * A * FRAME * FRAME) + (V_0 * FRAME) + H_0;
+
+
     math::Sphere sp(&mat3, 
-            math::Vec3D(-2.0f, 0.4f, 0.2f - 0.375),
-            0.2f
+            math::Vec3D(-2.0f, 0.0f, H),
+            RADIUS 
     );
 
     math::Scene *sc = new math::Scene(2, per, 
@@ -77,7 +90,7 @@ int main(void) {
     ));
 
     sc->addGeom(&pl);
-    sc->addGeom(&rp);
+    // sc->addGeom(&rp);
     sc->addGeom(&sp);
 
     sc->render();    
