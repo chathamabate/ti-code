@@ -41,7 +41,7 @@ void Scene::render() const {
         for (cxxutil::core::U24 col = 0; col < 320; col++) {
             Ray r(pixel, pixel - eye);
 
-            Vec3D color = this->trace(r, 0);
+            Vec3D color = this->trace(r, 1);
 
             uint8_t red = color.getX()   * 31;  
             uint8_t green = color.getY() * 63;
@@ -145,6 +145,17 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
         float specularCosine = intPow(cosine, mat->getAlpha());
         color += specularCosine * mat->getKs().flatMult(light.getColor());
     } 
+
+    // Finally reflections!
+    if (lim > 0 && mat->isReflective()) {
+        Vec3D toEye = -r.getDir();
+        Vec3D refDir = (2 * (n.getDir() * toEye) * n.getDir()) - toEye;
+        Ray ref(n.getPoint(), refDir);
+
+        Vec3D refColor = this->trace(ref, lim - 1);
+
+        color += mat->getReflectivity() * refColor;
+    }
 
     return color.ceil(1.0f);
 }
