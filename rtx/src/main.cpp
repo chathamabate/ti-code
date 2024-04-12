@@ -1,4 +1,5 @@
 #include <cmath>
+#include <cstdio>
 #include <cxxutil/core/input.h>
 #include <ti/screen.h>
 #include <graphx.h>
@@ -20,9 +21,7 @@
 
 using namespace cxxutil;
 
-int main(void) {
-    
-    // Ok, nice, this works!
+static void performRender(const uint8_t FRAME) {
     os_ClrHome(); 
 
     const math::Perspective per(
@@ -32,8 +31,7 @@ int main(void) {
             math::Vec3D(0.0f, -0.5f, -0.375f)
     );
 
-    const uint8_t FRAME = 34;
-    const uint8_t TOTAL_FRAMES = 60;
+    const uint8_t TOTAL_FRAMES = 120;
 
     const float FRAME_RATIO = ((float)FRAME / (float)TOTAL_FRAMES);
 
@@ -88,11 +86,33 @@ int main(void) {
     sc->addGeom(&SPHERE);
     sc->render();    
 
+    delete sc;
+}
+
+int main(void) {
+    const uint8_t FRAME_START = 49;
+    const uint8_t FRAME_END = 59;    // Inclusive.
+    const uint8_t FRAME_SKIP = 2;
+
+    char lblBuf[30];
+
+    for (uint8_t f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
+        os_ClrHome();
+        performRender(f);
+
+        while (!os_GetCSC());
+
+        sprintf(lblBuf, "Last Frame: %d", f);
+        os_PutStrFull(lblBuf);
+
+        while (!os_GetCSC());
+    }
+
+    os_ClrHome();
+    os_PutStrLine("Done Rendering");
     while (!os_GetCSC());
 
     os_ClrHome();
-
-    delete sc;
 
     core::MemoryTracker::ONLY->checkMemLeaks();
 }
