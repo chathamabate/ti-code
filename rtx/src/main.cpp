@@ -32,7 +32,7 @@ int main(void) {
             math::Vec3D(0.0f, -0.5f, -0.375f)
     );
 
-    const uint8_t FRAME = 0;
+    const uint8_t FRAME = 34;
     const uint8_t TOTAL_FRAMES = 60;
 
     const float FRAME_RATIO = ((float)FRAME / (float)TOTAL_FRAMES);
