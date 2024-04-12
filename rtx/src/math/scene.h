@@ -1,22 +1,19 @@
 
 #pragma once
 
-#include <cxxutil/core/data.h>
-#include <cxxutil/core/mem.h>
-
 #include "./geom.h"
-#include "rtx/src/math/vec.h"
+#include "./vec.h"
 
 namespace math {
     class Perspective {
     private:
         // eye point.
-        Vec3D eye;
+        const Vec3D eye;
 
         // 3 Corners of the screen.
-        Vec3D topLeft;
-        Vec3D topRight;
-        Vec3D bottomLeft;
+        const Vec3D topLeft;
+        const Vec3D topRight;
+        const Vec3D bottomLeft;
 
     public:
         inline Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
@@ -42,11 +39,10 @@ namespace math {
     // Point light source.
     class Light {
     private:
-        Vec3D position;
-        Vec3D color;
+        const Vec3D position;
+        const Vec3D color;
 
     public:
-        inline Light() : position(0, 0, 0), color(0, 0, 0) {}
         inline Light(Vec3D p, Vec3D c) 
             : position(p), color(c) {}
 
@@ -59,28 +55,20 @@ namespace math {
         }
     };
 
-    class Scene : public cxxutil::core::SafeObject {
+    class Scene {
     private:
+        const Perspective per;
+        const Vec3D ia;   // Global ambient light.
 
-        // NOTE: Geoms will NOT be deleted by this scene.
-        cxxutil::core::CoreList<const Geom *> *geoms;
-        cxxutil::core::CoreList<Light> *lights;
+        const Geom * const * const geoms;
+        const size_t geomsLen;
 
-        Perspective per;
-        Vec3D ia;   // Global ambient light.
+        const Light * const * const lights; 
+        const size_t lightsLen;
 
     public:
-        Scene(uint8_t chnl, const Perspective &p, const Vec3D &iap);
-        Scene(const Perspective &p, const Vec3D &iap);
-        ~Scene();
-
-        inline void addGeom(const Geom *g) {
-            this->geoms->add(g);
-        }
-
-        inline void addLight(const Light &l) {
-            this->lights->add(l);
-        }
+        Scene(const Perspective &p, const Vec3D &iap, 
+                const Geom * const *gs, size_t gsl, const Light * const *ls, size_t lsl);
 
         void render() const;
         
