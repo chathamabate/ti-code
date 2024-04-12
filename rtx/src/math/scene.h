@@ -63,7 +63,7 @@ namespace math {
     private:
 
         // NOTE: Geoms will NOT be deleted by this scene.
-        cxxutil::core::CoreList<Geom *> *geoms;
+        cxxutil::core::CoreList<const Geom *> *geoms;
         cxxutil::core::CoreList<Light> *lights;
 
         Perspective per;
@@ -74,7 +74,7 @@ namespace math {
         Scene(const Perspective &p, const Vec3D &iap);
         ~Scene();
 
-        inline void addGeom(Geom *g) {
+        inline void addGeom(const Geom *g) {
             this->geoms->add(g);
         }
 

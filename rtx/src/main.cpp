@@ -25,66 +25,66 @@ int main(void) {
     // Ok, nice, this works!
     os_ClrHome(); 
 
-    math::Perspective per(
+    const math::Perspective per(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
             math::Vec3D(0.0f, 0.5f, 0.375f),
             math::Vec3D(0.0f, -0.5f, -0.375f)
     );
 
-    math::Material mat1(
-            math::Vec3D(0.2f, 0.0f, 0.0f),
-            math::Vec3D(0.0f, 0.0f, 0.3f),
+    const uint8_t FRAME = 0;
+    const uint8_t TOTAL_FRAMES = 60;
+    const float FRAME_RATIO = ((float)FRAME / (float)TOTAL_FRAMES);
+
+    const math::Vec3D SPHERE_CENTER(-3.0f, 0.25f, 0.0f);
+    const float SPHERE_RADIUS = 0.5f;
+    const float ORBIT_SPACE = 0.23f;
+    const float CYL_RADIUS = 0.028f;
+    const float CYL_LEN = 0.14f;
+    const uint8_t CYL_ROTATIONS = 1;
+
+    const math::Vec3D CYL_CENTER = SPHERE_CENTER + 
+        (SPHERE_RADIUS + ORBIT_SPACE) * math::Vec3D::getNorm((-M_PI / 2.0f) + (FRAME_RATIO * 2 * M_PI), 0.0f);
+    const float CYL_THETA = FRAME_RATIO * 2 * M_PI;
+    const float CYL_PHI = (M_PI / 2.0f) + (-FRAME_RATIO * (float)CYL_ROTATIONS * (2 * M_PI));
+
+    const math::Material SPHERE_MAT(
+            math::Vec3D(0.0f, 0.3f, 0.0f),
+            math::Vec3D(0.0f, 0.0f, 0.4f),
             math::Vec3D(0.5f, 0.5f, 0.5f),
             8,
-            0.9f
+            0.8f
     );
 
-    math::Material mat2(
-            math::Vec3D(0.0f, 1.0f, 0.0f),
-            math::Vec3D(0.9f, 0.15f, 0.25f),
-            math::Vec3D(1.0f, 1.0f, 1.0f),
-            5
+    const math::Sphere SPHERE(
+            &SPHERE_MAT,
+            SPHERE_CENTER,
+            SPHERE_RADIUS
     );
 
-    math::Material mat3(
-            math::Vec3D(0.0f, 0.0f, 1.0f),
-            math::Vec3D(0.25f, 0.45f, 0.0f),
-            math::Vec3D(0.65f, 0.65f, 0.65f),
-            7 
+    const math::Material CYL_MAT(
+            math::Vec3D(0.0f, 0.0f, 0.4f),
+            math::Vec3D(0.8f, 0.0f, 0.3f),
+            math::Vec3D(0.8f, 0.8f, 0.8f),
+            8
     );
 
-    math::Cylinder cy(&mat2,
-            math::Vec3D(-2.10f, -0.2f, 0.1f - 0.375), 
-            0.2f, 0.2f, 0.0f, M_PI / 2.0f);
-
-    math::Plane pl(&mat3, 
-            math::Vec3D(0.0f, 0.0f, -0.375f),
-            math::Vec3D(0.0f, 0.0f, 1.0f)
-    );
-
-    math::Sphere sp(&mat1, 
-            math::Vec3D(-2.5f, 0.3f, -0.375 + 0.3f),
-            0.3f
-    );
-
-    math::RectPrism rp(&mat2, 
-            math::Vec3D(-2.15f, -0.45f, -0.375f + (0.1f / 2.0f)),
-            0.35f, 0.45f, 0.1f, 
-            M_PI / 6, 0.0f, 0.0f
+    const math::Cylinder CYL(
+            &CYL_MAT, CYL_CENTER, 
+            CYL_LEN, CYL_RADIUS, 
+            CYL_THETA, CYL_PHI
     );
 
     math::Scene *sc = new math::Scene(2, per, 
             math::Vec3D(0.15f, 0.15f, 0.15f));
 
     sc->addLight(math::Light(
-        math::Vec3D(-1.0f, 0.0f, 0.375f),
+        math::Vec3D(-1.0f, -0.3f, 0.375f),
         math::Vec3D(1.0f, 1.0f, 1.0f)
     ));
 
-    sc->addGeom(&cy);
-    sc->addGeom(&sp);
-    sc->addGeom(&pl);
+    sc->addGeom(&CYL);
+    sc->addGeom(&SPHERE);
     sc->render();    
 
     while (!os_GetCSC());

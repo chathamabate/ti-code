@@ -11,7 +11,7 @@
 using namespace math;
 
 Scene::Scene(uint8_t chnl, const Perspective &p, const Vec3D &iap) : cxxutil::core::SafeObject(chnl), per(p), ia(iap) {
-    this->geoms = new cxxutil::core::CoreList<Geom *>(chnl);
+    this->geoms = new cxxutil::core::CoreList<const Geom *>(chnl);
     this->lights = new cxxutil::core::CoreList<Light>(chnl);
 }
 
@@ -59,13 +59,13 @@ void Scene::render() const {
 }
 
 Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
-    Geom *g = NULL;
+    const Geom *g = NULL;
     Ray n;      // Normal of the intersection point.
     float s;    // parameter value of the interestion point with respect
                 // to r.
 
     for (size_t i = 0; i < this->geoms->getLen(); i++) {
-        Geom *gp = this->geoms->get(i);
+        const Geom *gp = this->geoms->get(i);
 
         Ray np;
         float sp;
@@ -112,7 +112,7 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
 
         bool obstructed = false;
         for (size_t i = 0; i < this->geoms->getLen() && !obstructed; i++) {
-            Geom *gp = this->geoms->get(i);
+            const Geom *gp = this->geoms->get(i);
 
             // Skip self if not self shadowable.
             if (gp == g && !(g->selfShadowable())) {
