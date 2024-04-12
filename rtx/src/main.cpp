@@ -34,6 +34,7 @@ int main(void) {
 
     const uint8_t FRAME = 0;
     const uint8_t TOTAL_FRAMES = 60;
+
     const float FRAME_RATIO = ((float)FRAME / (float)TOTAL_FRAMES);
 
     const math::Vec3D SPHERE_CENTER(-3.0f, 0.25f, 0.0f);
