@@ -90,8 +90,8 @@ static void performRender(const uint8_t FRAME) {
 }
 
 int main(void) {
-    const uint8_t FRAME_START = 49;
-    const uint8_t FRAME_END = 59;    // Inclusive.
+    const uint8_t FRAME_START = 70;
+    const uint8_t FRAME_END = 76;    // Inclusive.
     const uint8_t FRAME_SKIP = 2;
 
     char lblBuf[30];
