@@ -10,128 +10,118 @@
 
 using namespace expls;
 
-void expls::rotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) {
-    const math::Perspective PER(
+RotatingPrisms::RotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) 
+    : 
+       per(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
             math::Vec3D(0.0f, 0.5f, 0.375f),
             math::Vec3D(0.0f, -0.5f, -0.375f)
-    );
-
-    const float FRAME_RATIO = ((float)frame / (float)numFrames);
-
-    const math::Material MAT(
+       ),
+       rpMat(
             math::Vec3D(1.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, 0.2f, 0.7f),
             math::Vec3D(1.0f, 1.0f, 1.0f),
             8
-    );
+       ),
+       rpLen(0.3f), 
+       rpWid(0.1f),
+       rpHei(0.1f),
+       center(-3.5f, 0.0f, 0.14f),
+       radius(0.3f),
+       frameRatio((float)frame / (float)numFrames),
+       azTheta(M_PI / 6.0f),
+       azPhi(M_PI / 4.0f),
+       theta(this->frameRatio * 2 * M_PI),
 
-    const float LENGTH = 0.3f;
-    const float WIDTH = 0.1f;
-    const float HEIGHT = 0.1f;
+       az(math::Vec3D::getNorm(this->azTheta, this->azPhi)),
+       ax(math::Vec3D::getNorm(this->azTheta, this->azPhi - (M_PI / 2.0f))
+               .rotate(this->az, this->theta)),
+       ay(math::Vec3D::getNorm(this->azTheta + (M_PI / 2.0f), 0.0f)
+               .rotate(this->az, this->theta)),
 
-    const math::Vec3D CENTER(-3.5f, 0.0f, 0.12f);
-    const float RADIUS = 0.3f;
+       rp0(
+               &(this->rpMat),
+               this->center + (this->radius * this->ax),
+               this->ax * (this->rpLen / 2.0f),
+               this->ay * (this->rpWid / 2.0f),
+               this->az * (this->rpHei / 2.0f)
+       ),
+       rp1(
+               &(this->rpMat),
+               this->center - (this->radius * this->ax),
+               -this->ax * (this->rpLen / 2.0f),
+               -this->ay * (this->rpWid / 2.0f),
+               this->az * (this->rpHei / 2.0f)
+       ),
+       rp2(
+               &(this->rpMat),
+               this->center - (this->radius * this->ax),
+               this->ay * (this->rpWid / 2.0f),
+               -this->ax * (this->rpLen / 2.0f),
+               this->az * (this->rpHei / 2.0f)
+       ),
+       rp3(
+               &(this->rpMat),
+               this->center - (this->radius * this->ax),
+               -this->ay * (this->rpWid / 2.0f),
+               this->ax * (this->rpLen / 2.0f),
+               this->az * (this->rpHei / 2.0f)
+       ),
+       rp4(
+               &(this->rpMat),
+               this->center - (this->radius * this->ax),
+               this->az * (this->rpHei / 2.0f),
+               this->ay * (this->rpWid / 2.0f),
+               -this->ax * (this->rpLen / 2.0f)
+       ),
+       rp5(
+               &(this->rpMat),
+               this->center - (this->radius * this->ax),
+               -this->az * (this->rpHei / 2.0f),
+               this->ay * (this->rpWid / 2.0f),
+               this->ax * (this->rpLen / 2.0f)
+       ),
 
-    const float AZ_THETA = M_PI / 6.0f;
-    const float AZ_PHI = M_PI / 4.0f;
-
-    const float THETA = FRAME_RATIO * 2 * M_PI;
-
-    // The prisms will rotate about an axis.
-    const math::Vec3D AZ = math::Vec3D::getNorm(AZ_THETA, AZ_PHI);
-    const math::Vec3D AX = math::Vec3D::getNorm(AZ_THETA, AZ_PHI - (M_PI / 2.0f))
-        .rotate(AZ, THETA);
-    const math::Vec3D AY = math::Vec3D::getNorm(AZ_THETA + (M_PI / 2.0f), 0.0f)
-        .rotate(AZ, THETA);
-
-    const math::RectPrism RP0(
-            &MAT, 
-            CENTER + (RADIUS * AX),
-            (AX * (LENGTH / 2.0f)),
-            (AY * (WIDTH / 2.0f)),
-            (AZ * (HEIGHT / 2.0f))
-    );
-
-    const math::RectPrism RP1(
-            &MAT, 
-            CENTER - (RADIUS * AX),
-            -(AX * (LENGTH / 2.0f)),
-            -(AY * (WIDTH / 2.0f)),
-            (AZ * (HEIGHT / 2.0f))
-    );
-
-    const math::RectPrism RP2(
-            &MAT, 
-            CENTER + (RADIUS * AY),
-            (AY * (LENGTH / 2.0f)), 
-            -(AX * (WIDTH / 2.0f)),
-            (AZ * (HEIGHT / 2.0f))
-    );
-
-    const math::RectPrism RP3(
-            &MAT, 
-            CENTER - (RADIUS * AY),
-            -(AY * (LENGTH / 2.0f)), 
-            (AX * (WIDTH / 2.0f)),
-            (AZ * (HEIGHT / 2.0f))
-    );
-
-    const math::RectPrism RP4(
-            &MAT, 
-            CENTER + (RADIUS * AZ),
-            (AZ * (LENGTH / 2.0f)), 
-            (AY * (WIDTH / 2.0f)),
-            -(AX * (HEIGHT / 2.0f))
-    );
-
-    const math::RectPrism RP5(
-            &MAT, 
-            CENTER - (RADIUS * AZ),
-            -(AZ * (LENGTH / 2.0f)), 
-            (AY * (WIDTH / 2.0f)),
-            (AX * (HEIGHT / 2.0f))
-    );
-
-    const math::Material PLANE_MAT(
+       planeMat(
             math::Vec3D(1.0f, 0.0f, 0.0f),
             math::Vec3D(0.65f, 0.0f, 0.45f),
             math::Vec3D(0.4f, 0.4f, 0.4f),
             8,
             0.8f
-    );
-
-    const math::Plane PLANE(
-            &PLANE_MAT, 
+       ),
+       plane(
+            &(this->planeMat),
             math::Vec3D(0.0f, 0.0f, -0.375f),
             math::Vec3D(0.0f, 0.0f, 1.0f) 
-    );
-
-    const size_t GEOMS_LEN = 7;
-    const math::Geom *GEOMS[GEOMS_LEN] = {
-        &PLANE,
-        &RP0,
-        &RP1,
-        &RP2,
-        &RP3,
-        &RP4,
-        &RP5
-    };
-
-    math::Light L0( 
+       ),
+       ambFactors(0.15f, 0.15f, 0.15f),
+       l0(
             math::Vec3D(-1.0f, 0.0f, 0.5f),
             math::Vec3D(1.0f, 1.0f, 1.0f)
-    );
+       ) {
+}
+
+void RotatingPrisms::render() const {
+    const size_t GEOMS_LEN = 7;
+    const math::Geom *GEOMS[GEOMS_LEN] = {
+        &(this->plane),
+        &(this->rp0),
+        &(this->rp1),
+        &(this->rp2),
+        &(this->rp3),
+        &(this->rp4),
+        &(this->rp5)
+    };
 
     const size_t LIGHTS_LEN = 1;
     const math::Light *LIGHTS[LIGHTS_LEN] = {
-        &L0
+        &(this->l0)
     };
 
     const math::Scene SCENE(
-            PER,
-            math::Vec3D(0.15f, 0.15f, 0.15f),
+            this->per,
+            this->ambFactors,
             GEOMS, 
             GEOMS_LEN,
             LIGHTS,

@@ -36,7 +36,7 @@ int main(void) {
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
-        expls::rotatingPrisms(f, NUM_FRAMES);
+        expls::RotatingPrisms(f, NUM_FRAMES).render();
 
         while (!os_GetCSC());
 
