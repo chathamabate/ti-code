@@ -10,7 +10,8 @@
 
 using namespace expls;
 
-void expls::dimmingLight(uint8_t frame, uint8_t numFrames) {
+void expls::dimmingLight(cxxutil::core::U24 frame, 
+            cxxutil::core::U24 numFrames) {
     const math::Perspective PER(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
@@ -62,7 +63,7 @@ void expls::dimmingLight(uint8_t frame, uint8_t numFrames) {
     const math::RectPrism RP(
             &RP_MAT,
             math::Vec3D(-2.0f, -0.25f, -0.375 + (RP_HEIGHT / 2.0f)),        
-            0.45f, 0.35f, RP_HEIGHT, M_PI / 6.0f, 0.0f, 0.0f
+            0.35f, 0.45f, RP_HEIGHT, M_PI / 6.0f, 0.0f, 0.0f
     );
 
     const size_t GEOMS_LEN = 3;

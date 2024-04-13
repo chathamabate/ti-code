@@ -6,7 +6,8 @@
 
 using namespace expls;
 
-void expls::orbitingCylinder(uint8_t frame, uint8_t numFrames) {
+void expls::orbitingCylinder(cxxutil::core::U24 frame, 
+            cxxutil::core::U24 numFrames) {
     const math::Perspective PER(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),

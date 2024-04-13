@@ -21,20 +21,22 @@
 
 #include "./examples/orbiting_cyl.h"
 #include "./examples/dimming_light.h"
+#include "./examples/rotating_prisms.h"
 
 using namespace cxxutil;
 
 
 int main(void) {
-    const uint8_t FRAME_START = 60;
-    const uint8_t FRAME_END = 119;    // Inclusive.
-    const uint8_t FRAME_SKIP = 6;
+    const cxxutil::core::U24 NUM_FRAMES = 240;
+    const cxxutil::core::U24 FRAME_START = 5;
+    const cxxutil::core::U24 FRAME_END = 59;
+    const cxxutil::core::U24 FRAME_SKIP = 6;
 
     char lblBuf[30];
 
-    for (uint8_t f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
+    for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
-        expls::dimmingLight(f, 120);
+        expls::rotatingPrisms(f, NUM_FRAMES);
 
         while (!os_GetCSC());
 

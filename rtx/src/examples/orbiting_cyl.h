@@ -1,8 +1,10 @@
 #pragma once
 
 #include <stdint.h>
+#include <cxxutil/core/mem.h>
 
 namespace expls {
-    void orbitingCylinder(uint8_t frame, uint8_t numFrames); 
+    void orbitingCylinder(cxxutil::core::U24 frame, 
+            cxxutil::core::U24 numFrames); 
 }
 

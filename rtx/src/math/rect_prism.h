@@ -30,6 +30,12 @@ namespace math {
             float len, float wid, float hei,
             float theta, float phi, float ro);
 
+        // NOTE: Be careful with this constructor,
+        // If the given vectors are not orthogonal,
+        // the planes will be disconnected.
+        RectPrism(const Material *m, const Vec3D &c, 
+            const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp);
+
         virtual inline bool selfShadowable() const override {
             return false;
         }

@@ -6,19 +6,26 @@
 using namespace math;
 
 RectPrism::RectPrism(const Material *m, const Vec3D &c, 
-    float wid, float len, float hei,
+    float len, float wid, float hei,
     float theta, float phi, float ro) 
-    : Geom(m, c), 
-    nx(Vec3D::getNorm(theta, phi) * (len / 2.0f)),
-    ny(Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(nx, ro) * (wid / 2.0f)),
-    nz(Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(nx, ro) * (hei / 2.0f)),
+    : RectPrism(m, c,
+            Vec3D::getNorm(theta, phi) * (len / 2.0f),
+            Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(nx, ro) * (wid / 2.0f),
+            Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(nx, ro) * (hei / 2.0f)
+    ) {
+}
+
+RectPrism::RectPrism(const Material *m, const Vec3D &c, 
+    const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp) 
+    : Geom(m, c),
+    nx(nxp), ny(nyp), nz(nzp), 
     s0(m, c + nx, nx, ny, nz),
     s1(m, c - nx, -nx, ny, -nz),
     s2(m, c + ny, ny, -nx, nz),
     s3(m, c - ny, -ny, -nx, -nz),
     s4(m, c + nz, nz, ny, -nx),
-    s5(m, c -nz, -nz, ny, nx),
-    rad2(0.25f * ((wid*wid) + (len*len) + (hei*hei))) {
+    s5(m, c - nz, -nz, ny, nx),
+    rad2((nx + ny + nz).mag2()) {
 }
 
 bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
