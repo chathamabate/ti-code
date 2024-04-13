@@ -70,7 +70,7 @@ namespace math {
         Scene(const Perspective &p, const Vec3D &iap, 
                 const Geom * const *gs, size_t gsl, const Light * const *ls, size_t lsl);
 
-        void render() const;
+        void render(uint8_t lim) const;
         
         // Trace should return a color.
         // (all components should be between 1 and 0)

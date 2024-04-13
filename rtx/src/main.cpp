@@ -20,20 +20,21 @@
 #include <rtx/src/math/rect_plane.h>
 
 #include "./examples/orbiting_cyl.h"
+#include "./examples/dimming_light.h"
 
 using namespace cxxutil;
 
 
 int main(void) {
-    const uint8_t FRAME_START = 25;
-    const uint8_t FRAME_END = 76;    // Inclusive.
-    const uint8_t FRAME_SKIP = 2;
+    const uint8_t FRAME_START = 60;
+    const uint8_t FRAME_END = 119;    // Inclusive.
+    const uint8_t FRAME_SKIP = 6;
 
     char lblBuf[30];
 
     for (uint8_t f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
-        expls::orbitingCylinder(f, 120);
+        expls::dimmingLight(f, 120);
 
         while (!os_GetCSC());
 

@@ -15,7 +15,7 @@ Scene::Scene(const Perspective &p, const Vec3D &iap,
     : per(p), ia(iap), geoms(gs), geomsLen(gsl), lights(ls), lightsLen(lsl) {
 }
 
-void Scene::render() const {
+void Scene::render(uint8_t lim) const {
     Vec3D eye = this->per.getEye();
 
     Vec3D rowStart = this->per.getTopLeft();
@@ -33,7 +33,7 @@ void Scene::render() const {
         for (cxxutil::core::U24 col = 0; col < 320; col++) {
             Ray r(pixel, pixel - eye);
 
-            Vec3D color = this->trace(r, 1);
+            Vec3D color = this->trace(r, lim);
 
             uint8_t red = color.getX()   * 31;  
             uint8_t green = color.getY() * 63;

@@ -4,14 +4,10 @@
 #include "../math/cylinder.h"
 #include "../math/sphere.h"
 
-#include <ti/screen.h>
-
 using namespace expls;
 
 void expls::orbitingCylinder(uint8_t frame, uint8_t numFrames) {
-    os_ClrHome(); 
-
-    const math::Perspective per(
+    const math::Perspective PER(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
             math::Vec3D(0.0f, 0.5f, 0.375f),
@@ -75,7 +71,7 @@ void expls::orbitingCylinder(uint8_t frame, uint8_t numFrames) {
     };
 
     const math::Scene SCENE(
-            per, 
+            PER,
             math::Vec3D(0.15f, 0.15f, 0.15f),
             GEOMS, 
             GEOMS_LEN,
@@ -83,5 +79,5 @@ void expls::orbitingCylinder(uint8_t frame, uint8_t numFrames) {
             LIGHTS_LEN
     );
 
-    SCENE.render();
+    SCENE.render(1);
 }
