@@ -36,7 +36,10 @@ int main(void) {
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
-        expls::RotatingPrisms(f, NUM_FRAMES).render();
+
+        expls::RotatingPrisms* rps = new expls::RotatingPrisms(3, f, NUM_FRAMES);
+        rps->render();
+        delete rps;
 
         while (!os_GetCSC());
 

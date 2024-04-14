@@ -10,8 +10,9 @@
 
 using namespace expls;
 
-RotatingPrisms::RotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) 
+RotatingPrisms::RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) 
     : 
+       cxxutil::core::SafeObject(chnl),
        per(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
@@ -27,8 +28,9 @@ RotatingPrisms::RotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numF
        rpLen(0.3f), 
        rpWid(0.1f),
        rpHei(0.1f),
-       center(-3.5f, 0.0f, 0.14f),
+       center(-5.25f, 0.0f, 0.12f),
        radius(0.3f),
+
        frameRatio((float)frame / (float)numFrames),
        azTheta(M_PI / 6.0f),
        azPhi(M_PI / 4.0f),
@@ -56,31 +58,31 @@ RotatingPrisms::RotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numF
        ),
        rp2(
                &(this->rpMat),
-               this->center - (this->radius * this->ax),
-               this->ay * (this->rpWid / 2.0f),
-               -this->ax * (this->rpLen / 2.0f),
+               this->center + (this->radius * this->ay),
+               this->ay * (this->rpLen / 2.0f),
+               -this->ax * (this->rpWid / 2.0f),
                this->az * (this->rpHei / 2.0f)
        ),
        rp3(
                &(this->rpMat),
-               this->center - (this->radius * this->ax),
-               -this->ay * (this->rpWid / 2.0f),
-               this->ax * (this->rpLen / 2.0f),
+               this->center - (this->radius * this->ay),
+               -this->ay * (this->rpLen / 2.0f),
+               this->ax * (this->rpWid / 2.0f),
                this->az * (this->rpHei / 2.0f)
        ),
        rp4(
                &(this->rpMat),
-               this->center - (this->radius * this->ax),
-               this->az * (this->rpHei / 2.0f),
+               this->center + (this->radius * this->az),
+               this->az * (this->rpLen / 2.0f),
                this->ay * (this->rpWid / 2.0f),
-               -this->ax * (this->rpLen / 2.0f)
+               -this->ax * (this->rpHei / 2.0f)
        ),
        rp5(
                &(this->rpMat),
-               this->center - (this->radius * this->ax),
-               -this->az * (this->rpHei / 2.0f),
+               this->center - (this->radius * this->az),
+               -this->az * (this->rpLen / 2.0f),
                this->ay * (this->rpWid / 2.0f),
-               this->ax * (this->rpLen / 2.0f)
+               this->ax * (this->rpHei / 2.0f)
        ),
 
        planeMat(

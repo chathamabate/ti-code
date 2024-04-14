@@ -50,7 +50,7 @@ namespace expls {
         const math::Light l0;
 
     public:
-        RotatingPrisms(cxxutil::core::U24 frame, cxxutil::core::U24 numFrames);
+        RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::core::U24 numFrames);
 
         void render() const;
     };
