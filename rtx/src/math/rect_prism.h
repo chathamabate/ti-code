@@ -10,10 +10,6 @@
 namespace math {
     class RectPrism : public Geom {
     private:
-        const Vec3D nx;
-        const Vec3D ny;
-        const Vec3D nz;
-
         const RectPlane s0;   // +/-x
         const RectPlane s1;
 

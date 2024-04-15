@@ -9,16 +9,19 @@ RectPrism::RectPrism(const Material *m, const Vec3D &c,
     float len, float wid, float hei,
     float theta, float phi, float ro) 
     : RectPrism(m, c,
+            // We do recalc (theta, phi) here 3 times, however, i'm really not sure a better
+            // way to do this without adding more variables to the RectPrism.
             Vec3D::getNorm(theta, phi) * (len / 2.0f),
-            Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(nx, ro) * (wid / 2.0f),
-            Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(nx, ro) * (hei / 2.0f)
+            Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f) 
+                .rotate(Vec3D::getNorm(theta, phi), ro) * (wid / 2.0f),
+            Vec3D::getNorm(theta, phi + (M_PI / 2.0f))
+                .rotate(Vec3D::getNorm(theta, phi), ro) * (hei / 2.0f)
     ) {
 }
 
 RectPrism::RectPrism(const Material *m, const Vec3D &c, 
-    const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp) 
+    const Vec3D &nx, const Vec3D &ny, const Vec3D &nz) 
     : Geom(m, c),
-    nx(nxp), ny(nyp), nz(nzp), 
     s0(m, c + nx, nx, ny, nz),
     s1(m, c - nx, -nx, ny, -nz),
     s2(m, c + ny, ny, -nx, nz),

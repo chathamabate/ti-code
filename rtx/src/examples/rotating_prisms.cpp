@@ -130,5 +130,5 @@ void RotatingPrisms::render() const {
             LIGHTS_LEN
     );
 
-    SCENE.render(1);
+    SCENE.render(0);
 }

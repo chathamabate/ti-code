@@ -10,6 +10,22 @@
 
 using namespace math;
 
+Perspective::Perspective(const Vec3D &o, 
+    float theta, float phi, float ro,
+    float len, float wid, float hei) 
+    : nx(Vec3D::getNorm(theta, phi) * len), 
+    ny(Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(this->nx, ro) * (wid / 2.0f)),
+    nz(Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(this->nx, ro) * (hei / 2.0f)), 
+    origin(o) {
+}
+
+Perspective::Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
+    : nx(e - (tl + ((tr - tl) / 2.0f) + ((bl - tl) / 2.0f))),
+    ny((tr - tl) / 2.0f),
+    nz((tl - bl) / 2.0f),
+    origin(e - this->nx) {
+}
+
 Scene::Scene(const Perspective &p, const Vec3D &iap, 
     const Geom * const *gs, size_t gsl, const Light * const *ls, size_t lsl) 
     : per(p), ia(iap), geoms(gs), geomsLen(gsl), lights(ls), lightsLen(lsl) {
@@ -20,8 +36,8 @@ void Scene::render(uint8_t lim) const {
 
     Vec3D rowStart = this->per.getTopLeft();
 
+    Vec3D dw = this->per.dw();
     Vec3D dh = this->per.dh();
-    Vec3D dv = this->per.dv();
 
     // Screen vram.
     uint16_t *vram = (uint16_t *)lcd_Ram;
@@ -43,10 +59,10 @@ void Scene::render(uint8_t lim) const {
 
             vram[rowSI + col] = rgb;
             
-            pixel += dh;
+            pixel += dw;
         }
 
-        rowStart += dv;
+        rowStart += dh;
     }
 }
 

@@ -25,8 +25,23 @@
 
 using namespace cxxutil;
 
-
 int main(void) {
+    /*
+    const math::Perspective PER(
+            math::Vec3D(2.0f, 0.0f, 0.0f),
+            math::Vec3D(0.0f, -0.5f, 0.375f),
+            math::Vec3D(0.0f, 0.5f, 0.375f),
+            math::Vec3D(0.0f, -0.5f, -0.375f)
+    );
+
+    os_ClrHome();
+    PER.getEye().display();
+    PER.getTopLeft().display();
+    while (!os_GetCSC());
+    exit(1);
+    */
+
+
     const cxxutil::core::U24 NUM_FRAMES = 240;
     const cxxutil::core::U24 FRAME_START = 5;
     const cxxutil::core::U24 FRAME_END = 59;
@@ -37,9 +52,7 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::RotatingPrisms* rps = new expls::RotatingPrisms(3, f, NUM_FRAMES);
-        rps->render();
-        delete rps;
+        expls::orbitingCylinder(f, NUM_FRAMES);
 
         while (!os_GetCSC());
 

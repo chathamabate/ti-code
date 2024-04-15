@@ -8,31 +8,42 @@ namespace math {
     class Perspective {
     private:
         // eye point.
-        const Vec3D eye;
 
-        // 3 Corners of the screen.
-        const Vec3D topLeft;
-        const Vec3D topRight;
-        const Vec3D bottomLeft;
+        const Vec3D nx;
+        const Vec3D ny;
+        const Vec3D nz;
+
+        // origin will be the center of the viewing plane.
+        const Vec3D origin;
+
+        // origin + nx = eye.
+        // origin - ny + nz = top left.
+        // origin + ny + nz = top right.
+        // origin - ny - nz = bottom left.
 
     public:
-        inline Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
-            : eye(e), topLeft(tl), topRight(tr), bottomLeft(bl) {}
 
-        inline const Vec3D &getEye() const {
-            return this->eye;
+        Perspective(const Vec3D &o, 
+                float theta, float phi, float ro,
+                float len, float wid, float hei);
+
+        // Legacy constructor.
+        Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl);
+
+        inline Vec3D getEye() const {
+            return this->origin + this->nx;
         }
 
-        inline const Vec3D &getTopLeft() const {
-            return this->topLeft;
+        inline Vec3D getTopLeft() const {
+            return this->origin + this->nz - this->ny;
+        }
+
+        inline Vec3D dw() const {
+            return (this->ny * 2.0f) / 320.0f;
         }
 
         inline Vec3D dh() const {
-            return (topRight - topLeft) / 320.0f;
-        }
-
-        inline Vec3D dv() const {
-            return (bottomLeft - topLeft) / 240.0f;
+            return (this->nz * -2.0f) / 240.0f;
         }
     };
 
