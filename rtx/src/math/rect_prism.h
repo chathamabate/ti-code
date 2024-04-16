@@ -10,16 +10,16 @@
 namespace math {
     class RectPrism : public Geom {
     private:
-        const RectPlane s0;   // +/-x
-        const RectPlane s1;
+        RectPlane s0;   // +/-x
+        RectPlane s1;
 
-        const RectPlane s2;   // +/-y
-        const RectPlane s3;
+        RectPlane s2;   // +/-y
+        RectPlane s3;
 
-        const RectPlane s4;   // +/-z
-        const RectPlane s5;
+        RectPlane s4;   // +/-z
+        RectPlane s5;
 
-        const float rad2;
+        float rad2;
 
     public:
         RectPrism(const Material *m, const Vec3D &c, 
@@ -31,6 +31,8 @@ namespace math {
         // the planes will be disconnected.
         RectPrism(const Material *m, const Vec3D &c, 
             const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp);
+
+        RectPrism();
 
         virtual inline bool selfShadowable() const override {
             return false;

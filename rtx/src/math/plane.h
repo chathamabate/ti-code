@@ -7,9 +7,11 @@
 namespace math {
     class Plane : public Geom {
     private:
-        const Vec3D norm;
+        Vec3D norm;
 
     public:
+        inline Plane() : Geom(), norm(1.0f, 0.0f, 0.0f) {}
+
         inline Plane(const Material *m, const Vec3D &c, 
                 const Vec3D &n) : Geom(m, c), norm(n.norm()) {}
 

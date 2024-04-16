@@ -9,12 +9,12 @@ namespace math {
     private:
         // eye point.
 
-        const Vec3D nx;
-        const Vec3D ny;
-        const Vec3D nz;
+        Vec3D nx;
+        Vec3D ny;
+        Vec3D nz;
 
         // origin will be the center of the viewing plane.
-        const Vec3D origin;
+        Vec3D origin;
 
         // origin + nx = eye.
         // origin - ny + nz = top left.
@@ -26,6 +26,11 @@ namespace math {
         Perspective(const Vec3D &o, 
                 float theta, float phi, float ro,
                 float len, float wid, float hei);
+
+        inline Perspective() 
+            : Perspective(Vec3D(0.0f, 0.0f, 0.0f), 
+                    0.0f, 0.0f, 0.0f,
+                    2.0f, 1.0f, 0.75f) {}
 
         // Legacy constructor.
         Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl);
@@ -50,10 +55,14 @@ namespace math {
     // Point light source.
     class Light {
     private:
-        const Vec3D position;
-        const Vec3D color;
+        Vec3D position;
+        Vec3D color;
 
     public:
+        inline Light() 
+            : position(0.0f, 0.0f, 0.0f), 
+            color(1.0f, 1.0f, 1.0f) {}
+
         inline Light(Vec3D p, Vec3D c) 
             : position(p), color(c) {}
 
@@ -68,14 +77,14 @@ namespace math {
 
     class Scene {
     private:
-        const Perspective per;
-        const Vec3D ia;   // Global ambient light.
+        Perspective per;
+        Vec3D ia;   // Global ambient light.
 
-        const Geom * const * const geoms;
+        const Geom * const *geoms;
         const size_t geomsLen;
 
-        const Light * const * const lights; 
-        const size_t lightsLen;
+        const Light * const *lights; 
+        size_t lightsLen;
 
     public:
         Scene(const Perspective &p, const Vec3D &iap, 

@@ -5,6 +5,13 @@
 
 using namespace math;
 
+RectPlane::RectPlane(const Material *m, const Vec3D &c, const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp) 
+    : Plane(m, c, nxp), ny(nyp), nyMag2(nyp * nyp), nz(nzp), nzMag2(nzp * nzp) {}
+
+RectPlane::RectPlane() 
+    : Plane(), 
+    ny(0.0f, 1.0f, 0.0f), nyMag2(1.0f), 
+    nz(0.0f, 0.0f, 1.0f), nzMag2(1.0f) {}
 
 RectPlane::RectPlane(const Material *m, const Vec3D &c, 
     float wid, float hei, float theta, float phi, float ro) 
@@ -27,13 +34,13 @@ bool RectPlane::intersect(Ray ray, Ray *outR, float *outS) const {
     Vec3D v = tR.getPoint() - this->getCenter();
 
     // Is this point within the bounds of our quad?
-    float vv1 = v * v1;
-    if (vv1 < -this->v1mag2 || this->v1mag2 < vv1) {
+    float vny = v * this->ny;
+    if (vny < -this->nyMag2 || this->nyMag2 < vny) {
         return false;
     }
 
-    float vv2 = v * v2;
-    if (vv2 < -this->v2mag2 || this->v2mag2 < vv2) {
+    float vnz = v * this->nz;
+    if (vnz < -this->nzMag2 || this->nzMag2 < vnz) {
         return false;
     }
 
