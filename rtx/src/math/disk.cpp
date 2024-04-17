@@ -1,11 +1,8 @@
 
 #include "./disk.h"
-#include "./vec.h"
+#include "rtx/src/math/vec.h"
 
 using namespace math;
-Disk::Disk(const Material *m, const Vec3D &c,
-    float r, float theta, float phi) 
-    : Plane(m, c, Vec3D::getNorm(theta, phi)), radius(r) {}
 
 bool Disk::intersect(Ray ray, Ray *outR, float *outS) const {
     Ray tr;

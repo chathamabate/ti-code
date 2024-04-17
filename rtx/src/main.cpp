@@ -25,36 +25,7 @@
 
 using namespace cxxutil;
 
-
 int main(void) {
-
-    math::Perspective per(
-        math::Vec3D(0.0f, 0.0f, 1.5f),
-       0.0f, M_PI / 2.0f,  0.0f,
-        2.0f, 1.0f, 0.75f
-    );
-
-    math::Cylinder defCyl;
-
-    const math::Geom *gs[1] = {&defCyl};
-
-    math::Light l0(
-            math::Vec3D(2.0f, 0.0f, 2.0f),
-            math::Vec3D(1.0f, 1.0f, 1.0f)
-    );
-    const math::Light *ls[1] = {&l0};
-
-    math::Scene s(
-        per, math::Vec3D(0.15f, 0.15f, 0.15f),
-        gs, 1, ls, 1
-    );
-
-    s.render(0);
-    while (!os_GetCSC());
-    exit(1);
-
-
-
     /*
     const math::Perspective PER(
             math::Vec3D(2.0f, 0.0f, 0.0f),

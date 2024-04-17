@@ -9,18 +9,16 @@
 namespace math {
     class Disk : public Plane {
     private:
-        float radius;
+        const float radius;
 
     public:
-        inline Disk() 
-            : Plane(), radius(1.0f) {}
-
         inline Disk(const Material *m, const Vec3D &c, 
                 const Vec3D &n, float r) 
             : Plane(m, c, n), radius(r) {}
 
-        Disk(const Material *m, const Vec3D &c,
-                float r, float theta, float phi);
+        inline Disk(const Material *m, const Vec3D &c,
+                float r, float theta, float phi) 
+            : Plane(m, c, Vec3D::getNorm(theta, phi)), radius(r) {}
 
         inline float getRadius() const {
             return this->radius;

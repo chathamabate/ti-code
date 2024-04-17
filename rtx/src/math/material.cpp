@@ -4,6 +4,4 @@
 
 using namespace math;
 
-const Material Material::DEFAULT_MAT;
-
 

@@ -2,7 +2,6 @@
 #include "./rect_prism.h"
 #include "./rect_plane.h"
 #include "./vec.h"
-#include "rtx/src/math/material.h"
 
 using namespace math;
 
@@ -31,12 +30,6 @@ RectPrism::RectPrism(const Material *m, const Vec3D &c,
     s5(m, c - nz, -nz, ny, nx),
     rad2((nx + ny + nz).mag2()) {
 }
-
-RectPrism::RectPrism() 
-    : RectPrism(&Material::DEFAULT_MAT, 
-            Vec3D(0.0f, 0.0f, 0.0f), 
-            1.0f, 1.0f, 1.0f, 
-            0.0f, 0.0f, 0.0f) {}
 
 bool RectPrism::intersect(Ray ray, Ray *outR, float *outS) const {
     // First we determine if our ray even comes close enough

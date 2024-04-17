@@ -1,25 +1,11 @@
 
 #include "./cylinder.h"
-#include "./misc.h"
-#include "./ray.h"
-#include "./vec.h"
-#include "./material.h"
+#include "rtx/src/math/misc.h"
+#include "rtx/src/math/ray.h"
+#include "rtx/src/math/vec.h"
 
 using namespace math;
 
-Cylinder::Cylinder() 
-    : Cylinder(&Material::DEFAULT_MAT, 
-            Vec3D(0.0f, 0.0f, 0.0f),
-            1.0f, 0.5f, 0.0f, 0.0f) {}
-
-Cylinder::Cylinder(const Material *m, const Vec3D &c, 
-        float len, float r, float theta, float phi) 
-    : Geom(m, c), 
-    halflen(len / 2.0f),
-    radius(r), 
-    axis(Vec3D::getNorm(theta, phi) * this->halflen),
-    cap1(m, c + this->axis, this->axis, r),
-    cap2(m, c - this->axis, -this->axis, r) {}
 
 bool Cylinder::intersect(Ray ray, Ray *outR, float *outS) const {
     Vec3D A = ray.getPoint(); 
