@@ -25,7 +25,9 @@
 
 using namespace cxxutil;
 
+
 int main(void) {
+
     math::Perspective per(
         math::Vec3D(0.0f, 0.0f, 1.5f),
        0.0f, M_PI / 2.0f,  0.0f,
