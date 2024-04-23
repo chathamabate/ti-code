@@ -163,7 +163,7 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
 
         Vec3D refColor = this->trace(ref, lim - 1);
 
-        color += mat->getReflectivity() * refColor;
+        color += mat->getReflectivity().flatMult(refColor);
     }
 
     return color.ceil(1.0f);

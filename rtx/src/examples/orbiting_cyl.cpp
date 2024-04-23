@@ -3,6 +3,7 @@
 #include "../math/scene.h"
 #include "../math/cylinder.h"
 #include "../math/sphere.h"
+#include "rtx/src/math/vec.h"
 
 using namespace expls;
 

@@ -27,8 +27,6 @@
 using namespace cxxutil;
 
 int main(void) {
-
-
     const cxxutil::core::U24 NUM_FRAMES = 240;
     const cxxutil::core::U24 FRAME_START = 5;
     const cxxutil::core::U24 FRAME_END = 59;
@@ -39,10 +37,7 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::RotatingPrisms *rp = 
-            new expls::RotatingPrisms(1, f, NUM_FRAMES);
-        rp->render();
-        delete rp;
+        expls::dimmingLight(f, NUM_FRAMES);
 
         while (!os_GetCSC());
 

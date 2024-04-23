@@ -5,6 +5,7 @@
 #include "../math/material.h"
 #include "../math/sphere.h"
 #include "../math/rect_prism.h"
+#include "rtx/src/math/vec.h"
 #include <cmath>
 
 
