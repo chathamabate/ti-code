@@ -7,11 +7,19 @@
 using namespace math;
 
 bool Cone::intersect(Ray ray, Ray *outR, float *outS) const {
-    Vec3D n = this->cap.getNorm();
-    Vec3D T = this->tip;
-
     Vec3D v = ray.getDir();
     Vec3D A = ray.getPoint();
+
+    Vec3D C = this->getCenter();
+    Vec3D AC = C - A;
+
+    Vec3D d = AC - AC.proj(v);
+    if (d * d > this->rad2) {
+        return false;
+    }
+
+    Vec3D n = this->cap.getNorm();
+    Vec3D T = this->tip;
 
     float vDotn = v * n;
 
@@ -40,10 +48,11 @@ bool Cone::intersect(Ray ray, Ray *outR, float *outS) const {
     );
     float c = (this->mag2 * uDotn2) - (this->length2 * uMag2);
 
-    float s = -1.0f;
+    float s1 = -1.0f;
+    float s2 = -1.0f;
 
     if (isZero(a)) {
-        s = -c / b;
+        s2 = -c / b;
     } else {
         // discriminant.
         float discr = (b*b) - (4*a*c);
@@ -52,39 +61,56 @@ bool Cone::intersect(Ray ray, Ray *outR, float *outS) const {
             return false;   // No real roots.
         }
 
-        float ax2 = 2*a;
+        if (isZero(discr)) {
+            s2 = -b / (2*a);
+        } else {
+            float ax2 = 2*a;
 
-        s = -b / ax2; 
-
-        if (!isZero(discr)) {
+            float sp = -b / ax2;
             float root = sqrt(discr) / ax2;
-            float s1 = s + root;
-            float s2 = s - root;
 
-            s = s1;
-            if (s2 > 0.0f && s2 < s1) {
-                s = s2;
-            }
+            s1 = sp - root;
+            s2 = sp + root;
         }
     }
 
-    // Negative intersection = NO intersection.
-    if (s < ERR) {
-        return false;
+    // At this point, s1 and s2 represent the 2 possible intersection
+    // points on the cone. (If s1 or s2 is negative, its value should not be interpreted)
+
+    // We must determine the closest point with a positive s value on the 
+    // visible cone. 
+
+    // Make sure s1 has the smallest value.
+    if (s1 > s2) {
+        float temp = s1;
+        s1 = s2;
+        s2 = temp;
     }
 
-    // finally, is our point in bounds? And, what is our norm?
-    Vec3D P = A + (v*s); 
-    Vec3D w = P - T;
+    if (s1 > 0.0f) {
+        Vec3D P1 = A + (s1*v);
+        Vec3D w1 = P1 - T;
+        float w1Dotn = w1 * n;
+        if (0.0f < w1Dotn && w1Dotn < this->length) {
+            *outS = s1;
+            *outR = Ray(P1, w1.cross(w1.cross(n)));
+            return true;
 
-    float wDotn = w * n;
-    
-    if (wDotn < 0.0f || this->length < wDotn) {
-        return false;   // Out of bounds!
+            // NOTE: even if s2 hits the visible cone, since s1 < s2,
+            // we are safe to return true here.
+        } 
     }
 
-    *outS = s;
-    *outR = Ray(P, w.cross(w.cross(n)));
+    if (s2 > 0.0f) {
+        Vec3D P2 = A + (s2*v);
+        Vec3D w2 = P2 - T;
+        float w2Dotn = w2 * n;
+        if (0.0f < w2Dotn && w2Dotn < this->length) {
+            *outS = s2;
+            *outR = Ray(P2, w2.cross(w2.cross(n)));
+            return true;
+        } 
+    }
 
-    return true;
+    return false;
 }

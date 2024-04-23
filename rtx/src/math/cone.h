@@ -15,6 +15,9 @@ namespace math {
         const float mag2;
         const float cos2;
 
+        // This is the radius of the enclosing sphere!
+        const float rad2;
+
         const Disk cap;     // Normal of the cap is the axis of 
                             // the cone.
 
@@ -28,6 +31,7 @@ namespace math {
             length2(this->length * this->length),
             mag2(r*r + this->length2),
             cos2(this->length2 / this->mag2),
+            rad2((this->length2 / 4.0f) + (r*r)),
             cap(m, c + (n.norm() * (this->length / 2.0f)), n.norm(), r),
             tip(this->cap.getCenter() - (this->length * this->cap.getNorm())) {}
 

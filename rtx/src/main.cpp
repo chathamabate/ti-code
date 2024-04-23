@@ -42,9 +42,9 @@ int main(void) {
     );
 
     const math::Cone CONE(
-            &MAT, math::Vec3D(-2.0f, 0.0f, 0.0f),
-            math::Vec3D(-1.0f, 0.0f, 0.0f),
-            0.5f, 0.2f
+            &MAT, math::Vec3D(-2.0f, 0.0f, -0.375f),
+            math::Vec3D(0.0f, 0.0f, -1.0f),
+            0.4f, 0.3f
     );
 
     const math::Geom * const SHAPES[1] = {&CONE};
@@ -78,7 +78,7 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::orbitingCylinder(f, NUM_FRAMES);
+        expls::dimmingLight(f, NUM_FRAMES);
 
         while (!os_GetCSC());
 
