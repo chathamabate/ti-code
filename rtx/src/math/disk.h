@@ -12,13 +12,13 @@ namespace math {
         const float radius;
 
     public:
-        inline Disk(const Material *m, const Vec3D &c, 
+        inline Disk(const Vec3D &c, 
                 const Vec3D &n, float r) 
-            : Plane(m, c, n), radius(r) {}
+            : Plane(c, n), radius(r) {}
 
-        inline Disk(const Material *m, const Vec3D &c,
+        inline Disk(const Vec3D &c,
                 float r, float theta, float phi) 
-            : Plane(m, c, Vec3D::getNorm(theta, phi)), radius(r) {}
+            : Plane(c, Vec3D::getNorm(theta, phi)), radius(r) {}
 
         inline float getRadius() const {
             return this->radius;

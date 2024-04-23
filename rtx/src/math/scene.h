@@ -3,6 +3,7 @@
 
 #include "./geom.h"
 #include "./vec.h"
+#include "rtx/src/math/material.h"
 
 namespace math {
     class Perspective {
@@ -22,7 +23,6 @@ namespace math {
         // origin - ny - nz = bottom left.
 
     public:
-
         Perspective(const Vec3D &o, 
                 float theta, float phi, float ro,
                 float len, float wid, float hei);
@@ -66,20 +66,36 @@ namespace math {
         }
     };
 
+    class SceneObject {
+    private:
+        const Geom * const geom;
+        const Material * const mat;
+
+    public:
+        inline SceneObject(const Geom *g, const Material *m) : geom(g), mat(m) {}
+        inline const Geom *getGeom() const {
+            return this->geom;
+        }
+        inline const Material *getMaterial() const {
+            return this->mat;
+        }
+    };
+
+
     class Scene {
     private:
         const Perspective per;
         const Vec3D ia;   // Global ambient light.
 
-        const Geom * const * const geoms;
-        const size_t geomsLen;
+        const SceneObject * const objects;
+        const size_t objectsLen;
 
-        const Light * const * const lights; 
+        const Light * const lights; 
         const size_t lightsLen;
 
     public:
         Scene(const Perspective &p, const Vec3D &iap, 
-                const Geom * const *gs, size_t gsl, const Light * const *ls, size_t lsl);
+                const SceneObject *os, size_t osl, const Light *ls, size_t lsl);
 
         void render(uint8_t lim) const;
         

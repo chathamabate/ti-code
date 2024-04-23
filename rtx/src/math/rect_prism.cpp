@@ -5,10 +5,10 @@
 
 using namespace math;
 
-RectPrism::RectPrism(const Material *m, const Vec3D &c, 
+RectPrism::RectPrism(const Vec3D &c, 
     float len, float wid, float hei,
     float theta, float phi, float ro) 
-    : RectPrism(m, c,
+    : RectPrism(c,
             // We do recalc (theta, phi) here 3 times, however, i'm really not sure a better
             // way to do this without adding more variables to the RectPrism.
             Vec3D::getNorm(theta, phi) * (len / 2.0f),
@@ -19,15 +19,15 @@ RectPrism::RectPrism(const Material *m, const Vec3D &c,
     ) {
 }
 
-RectPrism::RectPrism(const Material *m, const Vec3D &c, 
+RectPrism::RectPrism(const Vec3D &c, 
     const Vec3D &nx, const Vec3D &ny, const Vec3D &nz) 
-    : Geom(m, c),
-    s0(m, c + nx, nx, ny, nz),
-    s1(m, c - nx, -nx, ny, -nz),
-    s2(m, c + ny, ny, -nx, nz),
-    s3(m, c - ny, -ny, -nx, -nz),
-    s4(m, c + nz, nz, ny, -nx),
-    s5(m, c - nz, -nz, ny, nx),
+    : Geom(c),
+    s0(c + nx, nx, ny, nz),
+    s1(c - nx, -nx, ny, -nz),
+    s2(c + ny, ny, -nx, nz),
+    s3(c - ny, -ny, -nx, -nz),
+    s4(c + nz, nz, ny, -nx),
+    s5(c - nz, -nz, ny, nx),
     rad2((nx + ny + nz).mag2()) {
 }
 

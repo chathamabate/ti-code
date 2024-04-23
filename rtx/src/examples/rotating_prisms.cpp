@@ -6,6 +6,7 @@
 #include "../math/rect_prism.h"
 #include "rtx/src/math/material.h"
 #include "rtx/src/math/plane.h"
+#include "rtx/src/math/rect_plane.h"
 #include <cxxutil/core/mem.h>
 
 using namespace expls;
@@ -42,48 +43,44 @@ RotatingPrisms::RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::
        ay(math::Vec3D::getNorm(this->azTheta + (M_PI / 2.0f), 0.0f)
                .rotate(this->az, this->theta)),
 
-       rp0(
-               &(this->rpMat),
-               this->center + (this->radius * this->ax),
-               this->ax * (this->rpLen / 2.0f),
-               this->ay * (this->rpWid / 2.0f),
-               this->az * (this->rpHei / 2.0f)
-       ),
-       rp1(
-               &(this->rpMat),
-               this->center - (this->radius * this->ax),
-               -this->ax * (this->rpLen / 2.0f),
-               -this->ay * (this->rpWid / 2.0f),
-               this->az * (this->rpHei / 2.0f)
-       ),
-       rp2(
-               &(this->rpMat),
-               this->center + (this->radius * this->ay),
-               this->ay * (this->rpLen / 2.0f),
-               -this->ax * (this->rpWid / 2.0f),
-               this->az * (this->rpHei / 2.0f)
-       ),
-       rp3(
-               &(this->rpMat),
-               this->center - (this->radius * this->ay),
-               -this->ay * (this->rpLen / 2.0f),
-               this->ax * (this->rpWid / 2.0f),
-               this->az * (this->rpHei / 2.0f)
-       ),
-       rp4(
-               &(this->rpMat),
-               this->center + (this->radius * this->az),
-               this->az * (this->rpLen / 2.0f),
-               this->ay * (this->rpWid / 2.0f),
-               -this->ax * (this->rpHei / 2.0f)
-       ),
-       rp5(
-               &(this->rpMat),
-               this->center - (this->radius * this->az),
-               -this->az * (this->rpLen / 2.0f),
-               this->ay * (this->rpWid / 2.0f),
-               this->ax * (this->rpHei / 2.0f)
-       ),
+       rps{
+           math::RectPrism(
+                   this->center + (this->radius * this->ax),
+                   this->ax * (this->rpLen / 2.0f),
+                   this->ay * (this->rpWid / 2.0f),
+                   this->az * (this->rpHei / 2.0f)
+           ),
+           math::RectPrism(
+                   this->center - (this->radius * this->ax),
+                   -this->ax * (this->rpLen / 2.0f),
+                   -this->ay * (this->rpWid / 2.0f),
+                   this->az * (this->rpHei / 2.0f)
+           ),
+           math::RectPrism(
+                   this->center + (this->radius * this->ay),
+                   this->ay * (this->rpLen / 2.0f),
+                   -this->ax * (this->rpWid / 2.0f),
+                   this->az * (this->rpHei / 2.0f)
+           ),
+           math::RectPrism(
+                   this->center - (this->radius * this->ay),
+                   -this->ay * (this->rpLen / 2.0f),
+                   this->ax * (this->rpWid / 2.0f),
+                   this->az * (this->rpHei / 2.0f)
+           ),
+           math::RectPrism(
+                   this->center + (this->radius * this->az),
+                   this->az * (this->rpLen / 2.0f),
+                   this->ay * (this->rpWid / 2.0f),
+                   -this->ax * (this->rpHei / 2.0f)
+           ),
+           math::RectPrism(
+                   this->center - (this->radius * this->az),
+                   -this->az * (this->rpLen / 2.0f),
+                   this->ay * (this->rpWid / 2.0f),
+                   this->ax * (this->rpHei / 2.0f)
+           )
+       },
 
        planeMat(
             math::Vec3D(1.0f, 0.0f, 0.0f),
@@ -93,41 +90,34 @@ RotatingPrisms::RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::
             0.8f
        ),
        plane(
-            &(this->planeMat),
             math::Vec3D(0.0f, 0.0f, -0.375f),
             math::Vec3D(0.0f, 0.0f, 1.0f) 
        ),
+       objs{
+           math::SceneObject(&(this->plane), &(this->planeMat)),
+           math::SceneObject(&(this->rps[0]), &(this->rpMat)),
+           math::SceneObject(&(this->rps[1]), &(this->rpMat)),
+           math::SceneObject(&(this->rps[2]), &(this->rpMat)),
+           math::SceneObject(&(this->rps[3]), &(this->rpMat)),
+           math::SceneObject(&(this->rps[4]), &(this->rpMat)),
+           math::SceneObject(&(this->rps[5]), &(this->rpMat)),
+       },
        ambFactors(0.15f, 0.15f, 0.15f),
-       l0(
-            math::Vec3D(-1.0f, 0.0f, 0.5f),
-            math::Vec3D(1.0f, 1.0f, 1.0f)
-       ) {
+       lights{
+           math::Light(
+                math::Vec3D(-1.0f, 0.0f, 0.5f),
+                math::Vec3D(1.0f, 1.0f, 1.0f)
+           )
+       } {
 }
 
 void RotatingPrisms::render() const {
-    const size_t GEOMS_LEN = 7;
-    const math::Geom *GEOMS[GEOMS_LEN] = {
-        &(this->plane),
-        &(this->rp0),
-        &(this->rp1),
-        &(this->rp2),
-        &(this->rp3),
-        &(this->rp4),
-        &(this->rp5)
-    };
-
-    const size_t LIGHTS_LEN = 1;
-    const math::Light *LIGHTS[LIGHTS_LEN] = {
-        &(this->l0)
-    };
 
     const math::Scene SCENE(
             this->per,
             this->ambFactors,
-            GEOMS, 
-            GEOMS_LEN,
-            LIGHTS,
-            LIGHTS_LEN
+            this->objs, 7,
+            this->lights, 1
     );
 
     SCENE.render(0);

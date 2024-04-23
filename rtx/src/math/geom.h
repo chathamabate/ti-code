@@ -7,16 +7,11 @@
 namespace math {
     class Geom {
     private:
-        const Material * const mat;
         const Vec3D center;
 
     public:
-        inline Geom(const Material *m, const Vec3D &c) 
-            : mat(m), center(c) {}
-
-        inline const Material *getMat() const {
-            return this->mat;
-        }
+        inline Geom(const Vec3D &c) 
+            : center(c) {}
 
         inline Vec3D getCenter() const {
             return this->center;

@@ -10,8 +10,8 @@ namespace math {
         const Vec3D norm;
 
     public:
-        inline Plane(const Material *m, const Vec3D &c, 
-                const Vec3D &n) : Geom(m, c), norm(n.norm()) {}
+        inline Plane(const Vec3D &c, 
+                const Vec3D &n) : Geom(c), norm(n.norm()) {}
 
         inline Vec3D getNorm() const {
             return this->norm;

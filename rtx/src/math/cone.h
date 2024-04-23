@@ -24,15 +24,15 @@ namespace math {
         const Vec3D tip;    // The tip of the cone.
 
     public:
-        inline Cone(const Material *m, const Vec3D &c,
+        inline Cone(const Vec3D &c,
                 const Vec3D &n, float l, float r) 
-            : Geom(m, c),
+            : Geom(c),
             length(l),
             length2(this->length * this->length),
             mag2(r*r + this->length2),
             cos2(this->length2 / this->mag2),
             rad2((this->length2 / 4.0f) + (r*r)),
-            cap(m, c + (n.norm() * (this->length / 2.0f)), n.norm(), r),
+            cap(c + (n.norm() * (this->length / 2.0f)), n.norm(), r),
             tip(this->cap.getCenter() - (this->length * this->cap.getNorm())) {}
 
         virtual inline bool selfShadowable() const override {

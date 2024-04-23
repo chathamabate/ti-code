@@ -27,45 +27,6 @@
 using namespace cxxutil;
 
 int main(void) {
-    const math::Perspective PER(
-            math::Vec3D(2.0f, 0.0f, 0.0f),
-            math::Vec3D(0.0f, -0.5f, 0.375f),
-            math::Vec3D(0.0f, 0.5f, 0.375f),
-            math::Vec3D(0.0f, -0.5f, -0.375f)
-    );
-
-    const math::Material MAT(
-            math::Vec3D(1.0f, 0.0f, 0.0f),
-            math::Vec3D(1.0f, 0.0f, 0.0f),
-            math::Vec3D(1.0f, 1.0f, 1.0f),
-            8
-    );
-
-    const math::Cone CONE(
-            &MAT, math::Vec3D(-2.0f, 0.0f, -0.375f),
-            math::Vec3D(0.0f, 0.0f, -1.0f),
-            0.4f, 0.3f
-    );
-
-    const math::Geom * const SHAPES[1] = {&CONE};
-
-    const math::Light L(
-            math::Vec3D(0.0f, 0.0f, 0.375f),
-            math::Vec3D(1.0f, 1.0f, 1.0f)
-    );
-    const math::Light *const LIGHTS[1] = {&L};
-
-    const math::Scene SCENE(
-            PER, math::Vec3D(0.15f, 0.15f, 0.15f),
-            SHAPES, 1, LIGHTS, 1
-    );
-
-
-    os_ClrHome();
-    SCENE.render(0);
-
-    while (!os_GetCSC());
-    exit(1);
 
 
     const cxxutil::core::U24 NUM_FRAMES = 240;
@@ -78,7 +39,10 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::dimmingLight(f, NUM_FRAMES);
+        expls::RotatingPrisms *rp = 
+            new expls::RotatingPrisms(1, f, NUM_FRAMES);
+        rp->render();
+        delete rp;
 
         while (!os_GetCSC());
 

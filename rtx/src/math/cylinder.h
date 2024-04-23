@@ -17,14 +17,14 @@ namespace math {
         const Disk cap2;
 
     public:
-        inline Cylinder(const Material *m, const Vec3D &c, 
+        inline Cylinder(const Vec3D &c, 
                 float len, float r, float theta, float phi) 
-            : Geom(m, c), 
+            : Geom(c), 
             halflen(len / 2.0f),
             radius(r), 
             axis(Vec3D::getNorm(theta, phi) * this->halflen),
-            cap1(m, c + axis, axis, r),
-            cap2(m, c - axis, -axis, r) {}
+            cap1(c + axis, axis, r),
+            cap2(c - axis, -axis, r) {}
 
         virtual inline bool selfShadowable() const override {
             return false;

@@ -7,8 +7,8 @@ namespace math {
         const float radius; 
 
     public:
-        inline Sphere(const Material *m, const Vec3D &c, float r) 
-            : Geom(m, c), radius(r) {}
+        inline Sphere(const Vec3D &c, float r) 
+            : Geom(c), radius(r) {}
 
         inline float getRadius() const {
             return this->radius;

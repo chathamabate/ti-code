@@ -32,7 +32,6 @@ void expls::dimmingLight(cxxutil::core::U24 frame,
     );
 
     const math::Plane PLANE(
-            &PLANE_MAT,
             math::Vec3D(0.0f, 0.0f, -0.375),
             math::Vec3D(0.0f, 0.0f, 1.0f)
     );
@@ -47,7 +46,6 @@ void expls::dimmingLight(cxxutil::core::U24 frame,
 
     const float SPHERE_RADIUS = 0.35f;
     const math::Sphere SPHERE(
-            &SPHERE_MAT,
             math::Vec3D(-3.0f, 0.35f, -0.375 + SPHERE_RADIUS),
             SPHERE_RADIUS
     );
@@ -61,16 +59,15 @@ void expls::dimmingLight(cxxutil::core::U24 frame,
 
     const float RP_HEIGHT = 0.14f;
     const math::RectPrism RP(
-            &RP_MAT,
             math::Vec3D(-2.0f, -0.25f, -0.375 + (RP_HEIGHT / 2.0f)),        
             0.35f, 0.45f, RP_HEIGHT, M_PI / 6.0f, 0.0f, 0.0f
     );
 
-    const size_t GEOMS_LEN = 3;
-    const math::Geom *GEOMS[GEOMS_LEN] = {
-        &PLANE,
-        &SPHERE,
-        &RP 
+    const size_t OBJS_LEN = 3;
+    const math::SceneObject OBJS[OBJS_LEN] = {
+        math::SceneObject(&PLANE, &PLANE_MAT),
+        math::SceneObject(&SPHERE, &SPHERE_MAT),
+        math::SceneObject(&RP, &RP_MAT)
     };
 
     const float LIGHT_COEF1 = (cosf(2 * M_PI * FRAME_RATIO) + 1.0f) / 2.0f;
@@ -82,14 +79,17 @@ void expls::dimmingLight(cxxutil::core::U24 frame,
     );
 
     const size_t LIGHTS_LEN = 1;
-    const math::Light *LIGHTS[LIGHTS_LEN] = {
-        &LIGHT
+    const math::Light LIGHTS[LIGHTS_LEN] = {
+        math::Light(
+            math::Vec3D(-0.5f, 0.0f, 0.5f),
+            math::Vec3D(LIGHT_COEF1 * 1.0f, LIGHT_COEF1 * 1.0f, LIGHT_COEF2 * 1.0f)
+        )
     };
 
     const math::Scene SCENE(
         PER, 
         math::Vec3D(0.15f, 0.15f, 0.15f),
-        GEOMS, GEOMS_LEN,
+        OBJS, OBJS_LEN,
         LIGHTS, LIGHTS_LEN
     );
 

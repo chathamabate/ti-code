@@ -27,8 +27,8 @@ Perspective::Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const
 }
 
 Scene::Scene(const Perspective &p, const Vec3D &iap, 
-    const Geom * const *gs, size_t gsl, const Light * const *ls, size_t lsl) 
-    : per(p), ia(iap), geoms(gs), geomsLen(gsl), lights(ls), lightsLen(lsl) {
+    const SceneObject *os, size_t osl, const Light *ls, size_t lsl) 
+    : per(p), ia(iap), objects(os), objectsLen(osl), lights(ls), lightsLen(lsl) {
 }
 
 void Scene::render(uint8_t lim) const {
@@ -68,12 +68,13 @@ void Scene::render(uint8_t lim) const {
 
 Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
     const Geom *g = NULL;
+    const Material *mat = NULL;
     Ray n;      // Normal of the intersection point.
     float s;    // parameter value of the interestion point with respect
                 // to r.
 
-    for (size_t i = 0; i < this->geomsLen; i++) {
-        const Geom *gp = this->geoms[i];
+    for (size_t i = 0; i < this->objectsLen; i++) {
+        const Geom *gp = this->objects[i].getGeom();
 
         Ray np;
         float sp;
@@ -83,6 +84,7 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
             g = gp;
             s = sp;
             n = np;
+            mat = this->objects[i].getMaterial();
         }
     }
 
@@ -94,7 +96,6 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
     // Wooo!
     //
     // All surfaces get ambient lighting.
-    const Material *mat = g->getMat();
     Vec3D color = this->ia.flatMult(mat->getKa());
 
     // All surfaces have a front side and a back side.
@@ -107,7 +108,7 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
      
     // Now we need our pointer to the light...
     for (size_t j = 0; j < this->lightsLen; j++) {
-        Light light = *(this->lights[j]);
+        Light light = this->lights[j];
 
         // l is the ray from our intersection point to this light source.
         Ray l(n.getPoint(), light.getPosition() - n.getPoint());
@@ -119,8 +120,8 @@ Vec3D Scene::trace(const Ray &r, uint8_t lim) const {
         }
 
         bool obstructed = false;
-        for (size_t i = 0; i < this->geomsLen && !obstructed; i++) {
-            const Geom *gp = this->geoms[i];
+        for (size_t i = 0; i < this->objectsLen && !obstructed; i++) {
+            const Geom *gp = this->objects[i].getGeom();
 
             // Skip self if not self shadowable.
             if (gp == g && !(g->selfShadowable())) {

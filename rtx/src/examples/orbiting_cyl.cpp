@@ -39,7 +39,6 @@ void expls::orbitingCylinder(cxxutil::core::U24 frame,
     );
 
     const math::Sphere SPHERE(
-            &SPHERE_MAT,
             SPHERE_CENTER,
             SPHERE_RADIUS
     );
@@ -52,31 +51,29 @@ void expls::orbitingCylinder(cxxutil::core::U24 frame,
     );
 
     const math::Cylinder CYL(
-            &CYL_MAT, CYL_CENTER, 
+            CYL_CENTER, 
             CYL_LEN, CYL_RADIUS, 
             CYL_THETA, CYL_PHI
     );
 
-    const size_t GEOMS_LEN = 2;
-    const math::Geom *GEOMS[GEOMS_LEN] = {
-        &SPHERE, &CYL
+    const size_t OBJS_LEN = 2;
+    const math::SceneObject OBJS[OBJS_LEN] = {
+        math::SceneObject(&SPHERE, &SPHERE_MAT),
+        math::SceneObject(&CYL, &CYL_MAT) 
     };
 
-    math::Light L1( 
-            math::Vec3D(-1.0f, -0.3f, 0.375f),
-            math::Vec3D(1.0f, 1.0f, 1.0f)
-    );
-
     const size_t LIGHTS_LEN = 1;
-    const math::Light *LIGHTS[LIGHTS_LEN] = {
-        &L1
+    const math::Light LIGHTS[LIGHTS_LEN] = {
+        math::Light( 
+                math::Vec3D(-1.0f, -0.3f, 0.375f),
+                math::Vec3D(1.0f, 1.0f, 1.0f)
+        )
     };
 
     const math::Scene SCENE(
             PER,
             math::Vec3D(0.15f, 0.15f, 0.15f),
-            GEOMS, 
-            GEOMS_LEN,
+            OBJS, OBJS_LEN,
             LIGHTS,
             LIGHTS_LEN
     );

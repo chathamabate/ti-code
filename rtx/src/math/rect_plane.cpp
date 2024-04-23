@@ -6,9 +6,9 @@
 using namespace math;
 
 
-RectPlane::RectPlane(const Material *m, const Vec3D &c, 
+RectPlane::RectPlane(const Vec3D &c, 
     float wid, float hei, float theta, float phi, float ro) 
-    : RectPlane(m, c, 
+    : RectPlane(c, 
             Vec3D::getNorm(theta, phi),
             Vec3D::getNorm(theta + (M_PI / 2.0f), 0.0f).rotate(this->getNorm(), ro) * (wid / 2.0f),
             Vec3D::getNorm(theta, phi + (M_PI / 2.0f)).rotate(this->getNorm(), ro) * (hei / 2.0f)

@@ -36,18 +36,15 @@ namespace expls {
         const math::Vec3D ax;
         const math::Vec3D ay;
 
-        const math::RectPrism rp0;
-        const math::RectPrism rp1;
-        const math::RectPrism rp2;
-        const math::RectPrism rp3;
-        const math::RectPrism rp4;
-        const math::RectPrism rp5;
+        const math::RectPrism rps[6];
 
         const math::Material planeMat;
         const math::Plane plane;
 
+        const math::SceneObject objs[7];
+
         const math::Vec3D ambFactors;
-        const math::Light l0;
+        const math::Light lights[1];
 
     public:
         RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::core::U24 numFrames);
