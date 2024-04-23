@@ -9,12 +9,12 @@
 namespace math {
     class Cylinder : public Geom {
     private: 
-        float halflen;
-        float radius;
-        Vec3D axis;
+        const float halflen;
+        const float radius;
+        const Vec3D axis;
 
-        Disk cap1;
-        Disk cap2;
+        const Disk cap1;
+        const Disk cap2;
 
     public:
         inline Cylinder(const Material *m, const Vec3D &c, 

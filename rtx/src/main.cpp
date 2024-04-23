@@ -18,6 +18,7 @@
 #include <rtx/src/math/plane.h>
 #include <ti/real.h>
 #include <rtx/src/math/rect_plane.h>
+#include <rtx/src/math/cone.h>
 
 #include "./examples/orbiting_cyl.h"
 #include "./examples/dimming_light.h"
@@ -26,7 +27,6 @@
 using namespace cxxutil;
 
 int main(void) {
-    /*
     const math::Perspective PER(
             math::Vec3D(2.0f, 0.0f, 0.0f),
             math::Vec3D(0.0f, -0.5f, 0.375f),
@@ -34,12 +34,38 @@ int main(void) {
             math::Vec3D(0.0f, -0.5f, -0.375f)
     );
 
+    const math::Material MAT(
+            math::Vec3D(1.0f, 0.0f, 0.0f),
+            math::Vec3D(1.0f, 0.0f, 0.0f),
+            math::Vec3D(1.0f, 1.0f, 1.0f),
+            8
+    );
+
+    const math::Cone CONE(
+            &MAT, math::Vec3D(-2.0f, 0.0f, 0.0f),
+            math::Vec3D(-1.0f, 0.0f, 0.0f),
+            0.5f, 0.2f
+    );
+
+    const math::Geom * const SHAPES[1] = {&CONE};
+
+    const math::Light L(
+            math::Vec3D(0.0f, 0.0f, 0.375f),
+            math::Vec3D(1.0f, 1.0f, 1.0f)
+    );
+    const math::Light *const LIGHTS[1] = {&L};
+
+    const math::Scene SCENE(
+            PER, math::Vec3D(0.15f, 0.15f, 0.15f),
+            SHAPES, 1, LIGHTS, 1
+    );
+
+
     os_ClrHome();
-    PER.getEye().display();
-    PER.getTopLeft().display();
+    SCENE.render(0);
+
     while (!os_GetCSC());
     exit(1);
-    */
 
 
     const cxxutil::core::U24 NUM_FRAMES = 240;
