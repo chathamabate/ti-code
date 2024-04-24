@@ -33,14 +33,11 @@ int main(void) {
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
-        expls::dimmingLight(0, 240);
 
-        /*
         expls::RotatingPerspective *rp = 
             new expls::RotatingPerspective(1, f, NUM_FRAMES);
         rp->render();
         delete rp;
-        */
 
         while (!os_GetCSC());
 
