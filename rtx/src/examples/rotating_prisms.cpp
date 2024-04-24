@@ -112,7 +112,6 @@ RotatingPrisms::RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::
 }
 
 void RotatingPrisms::render() const {
-
     const math::Scene SCENE(
             this->per,
             this->ambFactors,

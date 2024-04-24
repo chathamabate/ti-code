@@ -24,16 +24,13 @@ namespace math {
         const Vec3D tip;    // The tip of the cone.
 
     public:
-        inline Cone(const Vec3D &c,
-                const Vec3D &n, float l, float r) 
-            : Geom(c),
-            length(l),
-            length2(this->length * this->length),
-            mag2(r*r + this->length2),
-            cos2(this->length2 / this->mag2),
-            rad2((this->length2 / 4.0f) + (r*r)),
-            cap(c + (n.norm() * (this->length / 2.0f)), n.norm(), r),
-            tip(this->cap.getCenter() - (this->length * this->cap.getNorm())) {}
+        inline Cone(const Vec3D &c, 
+                float len, float rad,
+                float theta, float phi) 
+            : Cone(c, Vec3D::getNorm(theta, phi), len, rad) {};
+
+        Cone(const Vec3D &c,
+                const Vec3D &n, float l, float r);
 
         virtual inline bool selfShadowable() const override {
             return false;

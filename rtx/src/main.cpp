@@ -4,11 +4,8 @@
 #include <ti/screen.h>
 #include <graphx.h>
 #include <sys/lcd.h>
-#include "./math/misc.h"
-#include "./math/vec.h"
-#include "./math/geom.h"
-#include "./math/sphere.h"
 #include "cxxutil/core/mem.h"
+#include "rtx/src/examples/rotating_perspective.h"
 #include "rtx/src/math/cylinder.h"
 #include "rtx/src/math/disk.h"
 #include "rtx/src/math/material.h"
@@ -29,15 +26,21 @@ using namespace cxxutil;
 int main(void) {
     const cxxutil::core::U24 NUM_FRAMES = 240;
     const cxxutil::core::U24 FRAME_START = 5;
-    const cxxutil::core::U24 FRAME_END = 59;
+    const cxxutil::core::U24 FRAME_END = 239;
     const cxxutil::core::U24 FRAME_SKIP = 6;
 
     char lblBuf[30];
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
+        expls::dimmingLight(0, 240);
 
-        expls::dimmingLight(f, NUM_FRAMES);
+        /*
+        expls::RotatingPerspective *rp = 
+            new expls::RotatingPerspective(1, f, NUM_FRAMES);
+        rp->render();
+        delete rp;
+        */
 
         while (!os_GetCSC());
 

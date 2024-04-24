@@ -6,6 +6,17 @@
 
 using namespace math;
 
+Cone::Cone(const Vec3D &c,
+        const Vec3D &n, float l, float r) 
+    : Geom(c),
+    length(l),
+    length2(this->length * this->length),
+    mag2(r*r + this->length2),
+    cos2(this->length2 / this->mag2),
+    rad2((this->length2 / 4.0f) + (r*r)),
+    cap(c + (n.norm() * (this->length / 2.0f)), n.norm(), r),
+    tip(this->cap.getCenter() - (this->length * this->cap.getNorm())) {}
+
 bool Cone::intersect(Ray ray, Ray *outR, float *outS) const {
     Vec3D v = ray.getDir();
     Vec3D A = ray.getPoint();
