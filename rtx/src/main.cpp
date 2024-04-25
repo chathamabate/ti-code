@@ -20,12 +20,13 @@
 #include "./examples/dimming_light.h"
 #include "./examples/rotating_prisms.h"
 #include "./examples/rolling_cone.h"
+#include "./examples/elliptical_orbits.h"
 
 using namespace cxxutil;
 
 int main(void) {
     const cxxutil::core::U24 NUM_FRAMES = 240;
-    const cxxutil::core::U24 FRAME_START = 5;
+    const cxxutil::core::U24 FRAME_START = 120;
     const cxxutil::core::U24 FRAME_END = 239;
     const cxxutil::core::U24 FRAME_SKIP = 6;
 
@@ -34,10 +35,10 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::RollingCone *rc = 
-            new expls::RollingCone(1, f, NUM_FRAMES);
-        rc->render();
-        delete rc;
+        expls::EllipticalOrbits *eos = 
+            new expls::EllipticalOrbits(1, f, NUM_FRAMES);
+        eos->render();
+        delete eos;
 
         while (!os_GetCSC());
 
