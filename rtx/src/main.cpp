@@ -25,8 +25,8 @@ using namespace cxxutil;
 
 int main(void) {
     const cxxutil::core::U24 NUM_FRAMES = 240;
-    const cxxutil::core::U24 FRAME_START = 127;
-    const cxxutil::core::U24 FRAME_END = 139;
+    const cxxutil::core::U24 FRAME_START = 139;
+    const cxxutil::core::U24 FRAME_END = 239;
     const cxxutil::core::U24 FRAME_SKIP = 6;
 
     char lblBuf[30];
