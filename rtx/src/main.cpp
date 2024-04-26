@@ -25,20 +25,23 @@
 using namespace cxxutil;
 
 int main(void) {
-    const cxxutil::core::U24 NUM_FRAMES = 180;
-    const cxxutil::core::U24 FRAME_START = 5;
-    const cxxutil::core::U24 FRAME_END = 179;
-    const cxxutil::core::U24 FRAME_SKIP = 6;
+    const cxxutil::core::U24 NUM_FRAMES = 240;
+    const cxxutil::core::U24 FRAME_START = 11;
+    const cxxutil::core::U24 FRAME_END = 119;
+    const cxxutil::core::U24 FRAME_SKIP = 12;
 
     char lblBuf[30];
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
+        expls::dimmingLight(f, NUM_FRAMES);
+        /*
         expls::EllipticalOrbits *eos = 
             new expls::EllipticalOrbits(1, f, NUM_FRAMES);
         eos->render();
         delete eos;
+        */
 
         while (!os_GetCSC());
 
