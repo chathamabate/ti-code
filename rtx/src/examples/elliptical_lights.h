@@ -6,7 +6,9 @@
 #include "../math/plane.h"
 #include "../math/scene.h"
 #include "../math/material.h"
-#include "rtx/src/math/vec.h"
+#include "../math/vec.h"
+#include "../math/rect_prism.h"
+#include "../math/cone.h"
 
 namespace expls {
     class EllipticalLights : public cxxutil::core::SafeObject {
@@ -27,7 +29,10 @@ namespace expls {
         const math::Material planeMat;
         const math::Plane plane;
 
-        const math::SceneObject objs[1];
+        const math::Material coneMat;
+        const math::Cone cone;
+
+        const math::SceneObject objs[2];
 
         const math::Light lights[2];
 

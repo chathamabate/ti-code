@@ -9,19 +9,19 @@ using namespace expls;
 EllipticalLights::EllipticalLights(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) 
     : cxxutil::core::SafeObject(chnl),
     per{
-        {0.0f, 0.0f, 0.0f},
-        0.0f, 0.0f, 0.0f, 
-        2.0f, 1.0f, 0.75f
+        {0.0f, 0.0f, 0.375f},
+        M_PI / 12.0f, M_PI / 6.0f, 0.0f, 
+        0.35f, 1.0f, 0.75f
     },
-    focus{0.0f, 0.0f, 0.0f},
-    axisTheta{},
-    axisPhi{},
+    focus{-2.0f, -0.7f, 1.0f},
+    axisTheta{6.0f * M_PI / 7.0f},
+    axisPhi{M_PI / 2.0f},
     axis{math::Vec3D::getNorm(this->axisTheta, this->axisPhi)},
     orient{math::Vec3D::getNorm(this->axisTheta, this->axisPhi - (M_PI / 2.0f))},
 
     lens{
-        0.0f,
-        0.0f
+        5.0f,
+        1.5f
     },
     thetas{
         (float)((2 * M_PI * (float)frame / (float)numFrames)),
@@ -40,34 +40,48 @@ EllipticalLights::EllipticalLights(uint8_t chnl, cxxutil::core::U24 frame, cxxut
             (this->radii[1] * this->orient.rotate(this->axis, this->thetas[1]))
     },
     planeMat{
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 0.0f},
-        8
+        {1.0f, 0.0f, 0.0f},
+        {0.2f, 0.2f, 0.7f},
+        {1.0f, 1.0f, 1.0f},
+        18 
     },
     plane{
         {0.0f, 0.0f, -0.375f},
         {0.0f, 0.0f, 1.0f}
     },
+    coneMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.8f, 0.8f, 0.8f},
+        {1.0f, 1.0f, 1.0f},
+        12 
+    },
+    cone{
+        {-2.0f, -0.7f, -0.375f + 0.5f},
+        1.0f, 0.45f, 
+        0.0f, -M_PI / 2.0f
+    },
     objs{
-        {&(this->plane), &(this->planeMat)}
+        {&(this->plane), &(this->planeMat)},
+        {&(this->cone), &(this->coneMat)}
     },
     lights{
         {
             this->points[0],
-            {0.0f, 0.0f, 0.0f}
+            {1.0f, 0.5f, 0.5f}
         },
         {
             this->points[1],
-            {0.0f, 0.0f, 0.0f}
+            {0.5f, 0.5f, 1.0f}
         }
     },
     scene{
         this->per,
         {0.15f, 0.15f, 0.15f},
-        this->objs, 1,
+        this->objs, 2,
         this->lights, 2
-    }
-    {
+    } {
+}
 
+void EllipticalLights::render() const {
+    this->scene.render(1);
 }
