@@ -5,7 +5,7 @@
 
 namespace math {
 
-    constexpr float ERR = 0.000001f;
+    constexpr float ERR = 0.01f;
 
     inline bool isZero(float v) {
         return -ERR < v && v < ERR;

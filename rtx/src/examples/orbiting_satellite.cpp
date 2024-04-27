@@ -58,10 +58,10 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
         this->axisK * 0.375f
     },
     homeMat{
-        {1.0f, 0.0f, 0.0f},
-        {0.6f, 0.2f, 0.2f},
-        {1.0f, 1.0f, 1.0f},
-        6 
+        {0.5f, 0.5f, 0.0f},
+        {0.6f, 0.2f, 0.6f},
+        {0.5f, 0.5f, 0.5f},
+        8
     },
     home{
         this->focus + (this->r[0] -this->r[1]) * this->axisI,
@@ -69,48 +69,48 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
 
     },
     bigPrismMat{
-        {1.0f, 0.0f, 0.0f},
-        {0.7f, 0.6f, 0.1f},
+        {0.5f, 0.0f, 0.0f},
+        {0.9f, 0.3f, 0.3f},
         {1.0f, 1.0f, 1.0f},
         14 
     },
     bigPrism{
-        {-660.0f, 930.0f, -100.0f},
-        230.0f, 230.0f, 230.0f,
+        {-1200.0f, 1400.0f, -100.0f},
+        500.0f, 500.0f, 500.0f,
         // In this entire animation, we will only rotate by PI!
         M_PI / 6.0f, M_PI / 3.0f, (float)(M_PI * this->frameRatio)
     },
     galaxyMat{
-        {1.0f, 0.0f, 0.0f},
-        {0.1f, 0.6f, 0.1f},
-        {1.0f, 1.0f, 1.0f},
-        6 
+        {0.3f, 0.0f, 0.0f},
+        {0.1f, 0.3f, 0.2f},
+        {0.5f, 0.5f, 0.5f},
+        4 
     },
     galaxy{
-        {-1550.0f, -990.0f, 200.0f},
+        {-2780.0f, -940.0f, 600.0f},
         math::Vec3D::getNorm(M_PI / 10.0f, -M_PI / 8.0f),
-        2100.0f
+        4000.0f
     },
     bigPlanetMat{
-        {1.0f, 0.0f, 0.0f},
+        {0.4f, 0.0f, 0.0f},
         {0.1f, 0.1f, 0.6f},
         {0.4f, 0.4f, 0.4f},
         25,
         0.8f
     },
     bigPlanet{
-        {-270.0f, -1280.0f, 0.0f},
-        620.0f
+        {-930.0f, -2670.0f, 0.0f},
+        1000.0f
     },
     objs{
         {&(this->home), &(this->homeMat)},
         {&(this->bigPrism), &(this->bigPrismMat)},
         {&(this->galaxy), &(this->galaxyMat)},
-        {&(this->bigPlanet), &(this->bigPrismMat)},
+        {&(this->bigPlanet), &(this->bigPlanetMat)},
     },
     lights{
         {
-            this->galaxy.getCenter() + this->galaxy.getNorm() * 100.0f,
+            this->galaxy.getCenter() + this->galaxy.getNorm() * 400.0f,
             {1.0f, 1.0f, 1.0f}
         }
     },
@@ -123,5 +123,5 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
 }
 
 void OrbitingSatellite::render() const {
-    this->scene.render(0);
+    this->scene.render(1);
 }
