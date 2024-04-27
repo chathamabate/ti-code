@@ -22,6 +22,7 @@
 #include "./examples/rolling_cone.h"
 #include "./examples/elliptical_orbits.h"
 #include "./examples/elliptical_lights.h"
+#include "./examples/orbiting_satellite.h"
 
 using namespace cxxutil;
 
@@ -36,10 +37,10 @@ int main(void) {
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::EllipticalLights *els = 
-            new expls::EllipticalLights(1, f, NUM_FRAMES);
-        els->render();
-        delete els;
+        expls::OrbitingSatellite *os = 
+            new expls::OrbitingSatellite(1, f, NUM_FRAMES);
+        os->render();
+        delete os;
 
         while (!os_GetCSC());
 

@@ -10,6 +10,7 @@
 
 using namespace math;
 
+
 Perspective::Perspective(const Vec3D &o, 
     float theta, float phi, float ro,
     float len, float wid, float hei) 
