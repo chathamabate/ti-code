@@ -8,10 +8,11 @@ using namespace expls;
 
 OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::core::U24 numFrames) 
     : cxxutil::core::SafeObject(chnl),
-    focus{0.0f, 0.0f, 1.0f},
+    frameRatio{(float)frame / (float)numFrames},
+    focus{0.0f, 0.0f, 0.0f},
     r{
-        2.0f, 
-        1.0f
+        2000.0f,
+        80.0f
     },
     axisTheta{0.0f},
     axisPhi{M_PI / 2.0f},
@@ -27,7 +28,7 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
         this->axisI.rotate(this->axisK, M_PI / 2.0f)
     },
     theta{
-        (float)(2.0f * M_PI) * ((float)frame / (float)numFrames)
+        (float)(2.0f * M_PI * this->frameRatio)
     },
     rTheta{
         (2.0f * this->r[0] * this->r[1]) /
@@ -47,7 +48,7 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
             this->focus + (this->rTheta * this->axisI.rotate(this->axisK, this->theta))
         },
         {
-            (this->dxdTheta * this->axisI) + (this->dydTheta * this->axisJ)
+            ((this->dxdTheta * this->axisI) + (this->dydTheta * this->axisJ)).norm()
         }
     },
     per{
@@ -56,29 +57,67 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
         this->sat.getDir().rotate(this->axisK, -M_PI / 2.0f) * 0.5f,
         this->axisK * 0.375f
     },
-    floorMat{
+    homeMat{
         {1.0f, 0.0f, 0.0f},
-        {0.7f, 0.2f, 0.0f},
+        {0.6f, 0.2f, 0.2f},
         {1.0f, 1.0f, 1.0f},
-        8
+        6 
     },
-    floor{
-        {0.0f, 0.0f, 0.0f},
-        {0.0f, 0.0f, 1.0f}
+    home{
+        this->focus + (this->r[0] -this->r[1]) * this->axisI,
+        79.0f
+
+    },
+    bigPrismMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.7f, 0.6f, 0.1f},
+        {1.0f, 1.0f, 1.0f},
+        14 
+    },
+    bigPrism{
+        {-660.0f, 930.0f, -100.0f},
+        230.0f, 230.0f, 230.0f,
+        // In this entire animation, we will only rotate by PI!
+        M_PI / 6.0f, M_PI / 3.0f, (float)(M_PI * this->frameRatio)
+    },
+    galaxyMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.1f, 0.6f, 0.1f},
+        {1.0f, 1.0f, 1.0f},
+        6 
+    },
+    galaxy{
+        {-1550.0f, -990.0f, 200.0f},
+        math::Vec3D::getNorm(M_PI / 10.0f, -M_PI / 8.0f),
+        2100.0f
+    },
+    bigPlanetMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.1f, 0.1f, 0.6f},
+        {0.4f, 0.4f, 0.4f},
+        25,
+        0.8f
+    },
+    bigPlanet{
+        {-270.0f, -1280.0f, 0.0f},
+        620.0f
     },
     objs{
-        {&(this->floor), &(this->floorMat)}
+        {&(this->home), &(this->homeMat)},
+        {&(this->bigPrism), &(this->bigPrismMat)},
+        {&(this->galaxy), &(this->galaxyMat)},
+        {&(this->bigPlanet), &(this->bigPrismMat)},
     },
     lights{
         {
-            {0.0f, 0.0f, 1.0f},
+            this->galaxy.getCenter() + this->galaxy.getNorm() * 100.0f,
             {1.0f, 1.0f, 1.0f}
         }
     },
     scene{
         this->per,
         {0.15f, 0.15f, 0.15f},
-        this->objs, 1,
+        this->objs, 4,
         this->lights, 1
     } {
 }

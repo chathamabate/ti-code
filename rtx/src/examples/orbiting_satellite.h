@@ -15,6 +15,8 @@
 namespace expls {
     class OrbitingSatellite : public cxxutil::core::SafeObject {
     private:
+        const float frameRatio;
+
         // Specs for our orbit.
         const math::Vec3D focus;
         const float r[2];
@@ -34,25 +36,22 @@ namespace expls {
         const math::Ray sat;
         const math::Perspective per;
 
-        /*
+        // Our home planet.
         const math::Material homeMat;
         const math::Sphere home;
 
-        const math::Material satRPMat;
-        const math::RectPrism satRP;
+        const math::Material bigPrismMat;
+        const math::RectPrism bigPrism;
 
-        const math::Material satConeMat;
-        const math::Cone satCone;
+        // Galaxy is going to provide the light
+        // for the scene.
+        const math::Material galaxyMat;
+        const math::Disk galaxy;
 
-        const math::Material satSphereMat;
-        const math::Sphere satSphere;
-        */
+        const math::Material bigPlanetMat;
+        const math::Sphere bigPlanet;
 
-        
-        const math::Material floorMat;
-        const math::Plane floor;
-
-        const math::SceneObject objs[1];
+        const math::SceneObject objs[4];
         const math::Light lights[1];
 
         const math::Scene scene;

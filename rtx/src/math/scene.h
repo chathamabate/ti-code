@@ -27,8 +27,8 @@ namespace math {
                 float theta, float phi, float ro,
                 float len, float wid, float hei);
 
-        // Legacy constructor.
-        Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl);
+        // Direct Constructor. 
+        Perspective(const Vec3D &o, const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp);
 
         inline Vec3D getEye() const {
             return this->origin + this->nx;

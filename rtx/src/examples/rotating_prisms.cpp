@@ -15,10 +15,9 @@ RotatingPrisms::RotatingPrisms(uint8_t chnl, cxxutil::core::U24 frame, cxxutil::
     : 
        cxxutil::core::SafeObject(chnl),
        per(
-            math::Vec3D(2.0f, 0.0f, 0.0f),
-            math::Vec3D(0.0f, -0.5f, 0.375f),
-            math::Vec3D(0.0f, 0.5f, 0.375f),
-            math::Vec3D(0.0f, -0.5f, -0.375f)
+            math::Vec3D(0.0f, 0.0f, 0.0f),
+            0.0f, 0.0f, 0.0f, 
+            2.0f, 1.0f, 0.75f
        ),
        rpMat(
             math::Vec3D(1.0f, 0.0f, 0.0f),

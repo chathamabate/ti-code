@@ -20,11 +20,8 @@ Perspective::Perspective(const Vec3D &o,
     origin(o) {
 }
 
-Perspective::Perspective(const Vec3D &e, const Vec3D &tl, const Vec3D &tr, const Vec3D &bl) 
-    : nx(e - (tl + ((tr - tl) / 2.0f) + ((bl - tl) / 2.0f))),
-    ny((tr - tl) / 2.0f),
-    nz((tl - bl) / 2.0f),
-    origin(e - this->nx) {
+Perspective::Perspective(const Vec3D &o, const Vec3D &nxp, const Vec3D &nyp, const Vec3D &nzp) 
+    : nx{nxp}, ny{nyp}, nz{nzp}, origin{o} {
 }
 
 Scene::Scene(const Perspective &p, const Vec3D &iap, 
