@@ -117,7 +117,7 @@ OrbitingSatellite::OrbitingSatellite(uint8_t chnl, cxxutil::core::U24 frame, cxx
     scene{
         this->per,
         {0.15f, 0.15f, 0.15f},
-        this->objs, 1,
+        this->objs, 4,
         this->lights, 1
     } {
 }
