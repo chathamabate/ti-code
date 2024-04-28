@@ -23,24 +23,25 @@
 #include "./examples/elliptical_orbits.h"
 #include "./examples/elliptical_lights.h"
 #include "./examples/orbiting_satellite.h"
+#include "./examples/rotating_cube.h"
 
 using namespace cxxutil;
 
 int main(void) {
-    const cxxutil::core::U24 NUM_FRAMES = 400;
-    const cxxutil::core::U24 FRAME_START = 351;
-    const cxxutil::core::U24 FRAME_END = 399;
-    const cxxutil::core::U24 FRAME_SKIP = 7;
+    const cxxutil::core::U24 NUM_FRAMES = 160;
+    const cxxutil::core::U24 FRAME_START = 2;
+    const cxxutil::core::U24 FRAME_END = 39;
+    const cxxutil::core::U24 FRAME_SKIP = 5;
 
     char lblBuf[30];
 
     for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
         os_ClrHome();
 
-        expls::OrbitingSatellite *os = 
-            new expls::OrbitingSatellite(1, f, NUM_FRAMES);
-        os->render();
-        delete os;
+        expls::RotatingCube *tc = 
+            new expls::RotatingCube(1, f, NUM_FRAMES);
+        tc->render();
+        delete tc;
 
         while (!os_GetCSC());
 
