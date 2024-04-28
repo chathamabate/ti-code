@@ -28,7 +28,7 @@ using namespace cxxutil;
 
 int main(void) {
     const cxxutil::core::U24 NUM_FRAMES = 400;
-    const cxxutil::core::U24 FRAME_START = 6;
+    const cxxutil::core::U24 FRAME_START = 351;
     const cxxutil::core::U24 FRAME_END = 399;
     const cxxutil::core::U24 FRAME_SKIP = 7;
 
