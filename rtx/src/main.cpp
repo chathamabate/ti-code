@@ -1,5 +1,3 @@
-#include <cmath>
-#include <cstdio>
 #include <cxxutil/core/input.h>
 #include <ti/screen.h>
 #include <graphx.h>
@@ -24,38 +22,96 @@
 #include "./examples/elliptical_lights.h"
 #include "./examples/orbiting_satellite.h"
 #include "./examples/rotating_cube.h"
+#include "rtx/src/math/sphere.h"
 
 using namespace cxxutil;
 
-int main(void) {
-    const cxxutil::core::U24 NUM_FRAMES = 160;
-    const cxxutil::core::U24 FRAME_START = 2;
-    const cxxutil::core::U24 FRAME_END = 39;
-    const cxxutil::core::U24 FRAME_SKIP = 5;
+class SceneWrapper {
+private:
+    math::Material spMat;
+    math::Sphere sp;
 
-    char lblBuf[30];
+    math::Material prMat;
+    math::RectPrism pr;
 
-    for (cxxutil::core::U24 f = FRAME_START; f <= FRAME_END; f += FRAME_SKIP) {
-        os_ClrHome();
+    math::Material plMat;
+    math::Plane pl;
 
-        expls::RotatingCube *tc = 
-            new expls::RotatingCube(1, f, NUM_FRAMES);
-        tc->render();
-        delete tc;
+    math::SceneObject objs[3];
+    math::Light lights[1];
 
-        while (!os_GetCSC());
+    math::Perspective per;
+    math::Scene sc; 
+public:
+    SceneWrapper() : 
+    spMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 0.0f, 1.0f},
+        {1.0f, 1.0f, 1.0f},
+        5
+    },
+    sp{
+        {-2.0f, 0.3f, -0.375 + 0.25},
+        0.25f
+    },
+    prMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.0f, 0.6f, 0.35f},
+        {1.0f, 1.0f, 1.0f},
+        15
+    },
+    pr{
+        {-1.65f, -0.25f, -0.375 + 0.075f},
+        0.3f, 0.35f, 0.15f,
+        M_PI / 0.6f, 0.0f, 0.0f
+    },
+    plMat{
+        {1.0f, 0.0f, 0.0f},
+        {0.2f, 0.0f, 0.1f},
+        {0.6f, 0.6f, 0.6f},
+        13, 0.75f
+    },
+    pl{
+        {0.0f, 0.0f, -0.375f},
+        {0.0f, 0.0f, 1.0f},
+    },
+    objs{
+        {&sp, &spMat},
+        {&pr, &prMat},
+        {&pl, &plMat},
+    },
+    lights{
+        {
+            {-0.4f, 0.0f, 0.75f},
+            {1.0f, 1.0f, 1.0f}
+        }
+    },
+    per{
+        {0.0f, 0.0f, 0.0f},
+        0.0f, 0.0f, 0.0f,
+        2.0f, 1.0f, 0.75f
+    },
+    sc{
+        this->per,
+        {0.15f, 0.15f, 0.15f},
+        this->objs, 3,
+        this->lights, 1
+    } {}
 
-        sprintf(lblBuf, "Last Frame: %d", f);
-        os_PutStrFull(lblBuf);
-
-        while (!os_GetCSC());
+    void render() {
+        this->sc.render(1);
     }
+};
+
+int main(void) {
+    SceneWrapper *sw = new SceneWrapper();
 
     os_ClrHome();
-    os_PutStrLine("Done Rendering");
+
+    sw->render();
+
+    delete sw;
+
     while (!os_GetCSC());
-
     os_ClrHome();
-
-    core::MemoryTracker::ONLY->checkMemLeaks();
 }
