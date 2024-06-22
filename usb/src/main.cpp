@@ -36,7 +36,7 @@ int main(void) {
     }
 
     device = NULL;
-    while ((device = usb_FindDevice(NULL, device, USB_SKIP_HUBS))) {
+    while ((device = usb_FindDevice(NULL, device, USB_SKIP_NONE))) {
         println("Found Device"); 
     }
 
