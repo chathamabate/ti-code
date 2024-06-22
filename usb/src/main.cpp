@@ -1,5 +1,7 @@
 #include <ti/screen.h>
 #include <ti/getcsc.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #include <usbdrvce.h>
 
@@ -37,7 +39,27 @@ int main(void) {
 
     device = NULL;
     while ((device = usb_FindDevice(NULL, device, USB_SKIP_NONE))) {
+        // This successfully finds my laptop!
+        // Can we do more tho??
         println("Found Device"); 
+
+        size_t config_desc_size = usb_GetConfigurationDescriptorTotalLength(device, 0);
+        void *config_desc = malloc(config_desc_size);
+
+        size_t trans;
+        usb_err = usb_GetDescriptor(device, USB_CONFIGURATION_DESCRIPTOR, 0, 
+                config_desc, config_desc_size, &trans);
+
+        free(config_desc);
+
+        if (usb_err != USB_SUCCESS) {
+            println("Error getting descriptor");
+            goto ending;
+        } else {
+            char buf[20];
+            snprintf(buf, 20, "SZ: %zu", trans);
+            println(buf);
+        }
     }
 
 
@@ -48,6 +70,8 @@ ending:
 
     println("Cleaning Up");
     usb_Cleanup();
+
+    while (!os_GetCSC());
     
     os_ClrHome();
 }

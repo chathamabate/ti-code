@@ -11,7 +11,7 @@ ARCHIVED = NO
 CFLAGS = -Wall -Wextra -Oz -I.. 
 CXXFLAGS = -Wall -Wextra -Oz -I..
 
-HAS_PRINTF := NO
+HAS_PRINTF := YES
 
 # Core Modules without testing code.
 CXX_UTIL_CORE_MODS			= core unit
