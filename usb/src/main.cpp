@@ -1,11 +1,27 @@
+#include "cxxutil/core/mem.h"
+#include "sys/timers.h"
 #include <ti/screen.h>
 #include <ti/getcsc.h>
 #include <stdlib.h>
 #include <stdio.h>
 
 #include <usbdrvce.h>
+#include <cxxutil/core/input.h>
+
+#define char_buf_size 50
+static char char_buf[char_buf_size];
 
 #define println(str) os_PutStrLine(str); os_NewLine()
+#define printlnf(...) \
+    snprintf(char_buf, char_buf_size, __VA_ARGS__); \
+    os_PutStrLine(char_buf); os_NewLine()
+
+#define TRANSFER_BUF_SIZE 100
+
+
+// Is this the root hub?
+// I think this may start as a host, but is changed to a device after
+// connecting with my laptop???
 
 static usb_error_t usb_callback(usb_event_t event, void *event_data, 
         usb_callback_data_t *callback_data) {
@@ -19,6 +35,16 @@ static usb_error_t usb_callback(usb_event_t event, void *event_data,
 int main(void) {
     os_ClrHome();
 
+    cxxutil::core::KeyManager *km = 
+        new cxxutil::core::KeyManager();
+
+    // Set clear as a focused key.
+    cxxutil::core::cxx_key_t keys[1] = {
+        cxxutil::core::CXX_KEY_Clear
+    };
+    km->setFocusedKeys(keys, 1);
+
+
     // Ok, time to figure out how to use this usb stuff??
     //usb_error_t usb_Init(usb_event_callback_t handler, 
     //usb_callback_data_t *data,
@@ -26,52 +52,44 @@ int main(void) {
     //usb_init_flags_t flags);
 
     usb_error_t usb_err;
-    usb_device_t device;
 
     println("Initing USB");
 
     usb_err = usb_Init(usb_callback, NULL, NULL, USB_DEFAULT_INIT_FLAGS);
-
     if (usb_err != USB_SUCCESS) {
         println("Error Setting up USB");
         goto ending;
     }
 
-    device = NULL;
-    while ((device = usb_FindDevice(NULL, device, USB_SKIP_NONE))) {
-        // This successfully finds my laptop!
-        // Can we do more tho??
-        println("Found Device"); 
+    // Need to find our root I believe??
+    // Then read from the buffer?
 
-        size_t config_desc_size = usb_GetConfigurationDescriptorTotalLength(device, 0);
-        void *config_desc = malloc(config_desc_size);
+    println("Polling for events...");
+    // Or maybe read??
 
-        size_t trans;
-        usb_err = usb_GetDescriptor(device, USB_CONFIGURATION_DESCRIPTOR, 0, 
-                config_desc, config_desc_size, &trans);
+    while (1) {
+        km->scanFocusedKeys();
+        if (km->isKeyDown(cxxutil::core::CXX_KEY_Clear)) {
+            break;
+        }
 
-        free(config_desc);
+        usb_err = usb_HandleEvents();
 
         if (usb_err != USB_SUCCESS) {
-            println("Error getting descriptor");
-            goto ending;
-        } else {
-            char buf[20];
-            snprintf(buf, 20, "SZ: %zu", trans);
-            println(buf);
+            println("Error handling events...");
+            break;
         }
+
+        // Tenth of a second.
+        msleep(100);
     }
 
-
-    println("Successfully set up USB");
-    while (!os_GetCSC());
-
 ending:
-
-    println("Cleaning Up");
     usb_Cleanup();
+    println("Exiting");
 
-    while (!os_GetCSC());
-    
+    delete km;
+    cxxutil::core::MemoryTracker::ONLY->checkMemLeaks();
+
     os_ClrHome();
 }
