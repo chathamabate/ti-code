@@ -10,6 +10,10 @@
 
 using namespace cxxutil::gui;
 
+// I think it may be better just to have a separate class???
+// For this type of stuff?
+// Might be slightly better...
+
 // Undefined behavoir if msg is null.
 //
 // Returns the index of the next character which needs to be processed.

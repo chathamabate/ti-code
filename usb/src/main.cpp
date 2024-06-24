@@ -8,6 +8,9 @@
 #include <usbdrvce.h>
 #include <cxxutil/core/input.h>
 
+#include <graphx.h>
+#include <fileioc.h>
+
 #define char_buf_size 50
 static char char_buf[char_buf_size];
 
@@ -35,14 +38,42 @@ static usb_error_t usb_callback(usb_event_t event, void *event_data,
 int main(void) {
     os_ClrHome();
 
-    cxxutil::core::KeyManager *km = 
-        new cxxutil::core::KeyManager();
+    uint8_t handle = ti_Open("MyFont", "r");
+    if (!handle) {
+        os_PutStrLine("Could not locate font");
+        cxxutil::core::waitClear();
+        return 1;
+    }
+    const uint8_t *font = (const uint8_t *)ti_GetDataPtr(handle);
 
-    // Set clear as a focused key.
-    cxxutil::core::cxx_key_t keys[1] = {
-        cxxutil::core::CXX_KEY_Clear
-    };
-    km->setFocusedKeys(keys, 1);
+    if (!ti_Close(handle)) {
+        os_PutStrLine("Could not close font AppVar");
+        cxxutil::core::waitClear();
+        return 1;
+    }
+
+    gfx_Begin();
+    gfx_SetDrawBuffer();
+
+    gfx_FillScreen(0);
+
+    gfx_SetTextTransparentColor(248);
+
+    gfx_SetTextBGColor(0);
+    gfx_SetTextFGColor(255);
+
+    gfx_SetTextScale(1, 2);
+    gfx_SetMonospaceFont(8);
+    gfx_SetFontData(font);
+
+    gfx_PrintStringXY("King of the hilly", 0, 0);
+    gfx_PrintStringXY("TTTTTTTTTTTTTTTTT", 0, 16);
+
+    gfx_SwapDraw();
+
+    cxxutil::core::waitClear();
+    gfx_End();
+    return 0;
 
 
     // Ok, time to figure out how to use this usb stuff??
@@ -51,7 +82,7 @@ int main(void) {
     //const usb_standard_descriptors_t *device_descriptors,
     //usb_init_flags_t flags);
 
-    usb_error_t usb_err;
+    /*usb_error_t usb_err;
 
     println("Initing USB");
 
@@ -87,9 +118,5 @@ int main(void) {
 ending:
     usb_Cleanup();
     println("Exiting");
-
-    delete km;
-    cxxutil::core::MemoryTracker::ONLY->checkMemLeaks();
-
-    os_ClrHome();
+    */
 }

@@ -2,9 +2,9 @@
 # Makefile Options
 # ----------------------------
 
-NAME = USB
+NAME = ADFNT
 ICON = icon.png
-DESCRIPTION = "USB Prog"
+DESCRIPTION = "Add My Fonts"
 COMPRESSED := YES
 ARCHIVED = NO
 
@@ -17,7 +17,7 @@ HAS_PRINTF := YES
 CXX_UTIL_CORE_MODS			= core unit
 
 # Non Core modules which can be tested.
-CXX_UTIL_NON_CORE_MODS		= gui unitapp app data term
+CXX_UTIL_NON_CORE_MODS		= gui unitapp app data
 
 CXX_UTIL_MODS				= $(CXX_UTIL_CORE_MODS) $(CXX_UTIL_NON_CORE_MODS)
 
