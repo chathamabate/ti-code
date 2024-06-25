@@ -195,7 +195,7 @@ namespace core {
         }
 
         // NOTE: No bounds checking for speed!
-        inline T get(size_t i) const {
+        inline const T &get(size_t i) const {
             return this->arr[i];
         }
 
