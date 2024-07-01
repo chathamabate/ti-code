@@ -1,9 +1,11 @@
 #include "cxxutil/core/mem.h"
+#include "keypadc.h"
 #include "sys/timers.h"
 #include <ti/screen.h>
 #include <ti/getcsc.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <cxxutil/term/term.h>
 
 #include <usbdrvce.h>
 #include <cxxutil/core/input.h>
@@ -52,27 +54,40 @@ int main(void) {
         return 1;
     }
 
+    cxxutil::term::terminal_config_t config = {
+        .fontData = font,
+        .colorMap = cxxutil::term::DEF_COLOR_MAP,
+
+        .viewX = 0,
+        .viewY = 0,
+
+        .widthScale = 1,
+        .heightScale = 2,
+
+        .rows = 10,
+        .cols = 10,
+        .pad = 1
+    };
+
+    cxxutil::term::Terminal *T = 
+        new cxxutil::term::Terminal(5, config);
+
     gfx_Begin();
-    gfx_SetDrawBuffer();
+    gfx_FillScreen(255);
 
-    gfx_FillScreen(0);
+    while (!kb_IsDown(kb_KeyClear)) {
+        delay(200);
+        T->render();
+        kb_Scan();
+    }
 
-    gfx_SetTextTransparentColor(248);
-
-    gfx_SetTextBGColor(0);
-    gfx_SetTextFGColor(255);
-
-    gfx_SetTextScale(1, 2);
-    gfx_SetMonospaceFont(8);
-    gfx_SetFontData(font);
-
-    gfx_PrintStringXY("King of the hilly", 0, 0);
-    gfx_PrintStringXY("TTTTTTTTTTTTTTTTT", 0, 16);
-
-    gfx_SwapDraw();
-
-    cxxutil::core::waitClear();
     gfx_End();
+
+    os_ClrHome();
+
+    delete T;
+    cxxutil::core::MemoryTracker::ONLY->checkMemLeaks();
+
     return 0;
 
 
