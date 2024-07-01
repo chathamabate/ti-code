@@ -25,13 +25,13 @@ namespace cxxutil { namespace term {
     constexpr uint8_t ANSII_STRONG_CYAN = 14;
     constexpr uint8_t ANSII_STRONG_WHITE = 15;
 
-    extern const uint8_t DEF_COLOR_MAP[16];
+    constexpr uint8_t TRANSPARENT_IND = 16;
 
-    // Should flip every 2 frames.
+    extern const uint8_t DEF_COLOR_MAP[17];
+
+    // These must be powers of 2.
     constexpr uint8_t FAST_BLINK_FREQ = 2;
-    
-    // Should flip every 5 frames.
-    constexpr uint8_t SLOW_BLINK_FREQ = 5;
+    constexpr uint8_t SLOW_BLINK_FREQ = 4;
 
     struct cell_style_t {
         core::U24 fgColor : 4; 
@@ -92,24 +92,34 @@ namespace cxxutil { namespace term {
         uint8_t pad;
     };
 
+    typedef struct {
+        // Whether or not the below state actually was rendered.
+        uint8_t visible;
+
+        core::SafeArray<cell_state_t> *state;
+    } terminal_render_state_t;
+
     class Terminal : public core::SafeObject {
     private:
         terminal_config_t config;
 
-        // When this is 0, nothing has been rendered yet.
-        uint8_t renderStateVisible;
-        core::SafeArray<cell_state_t> *renderState;
-
         core::SafeArray<cell_state_t> *currState;
 
         // The number of times render has been called.
-        // This will be used for fastBlink and slowBlink rendering.
-        // NOTE: We may want to switch this out for an actual clock later.
+        // Used for blinking and buffered rendering.
         uint8_t frameNum;
+
+        // Whether or not we should use buffered rendering.
+        const uint8_t buffered;
+        
+        // Only use 1 of these entries when not in buffered mode.
+        terminal_render_state_t renders[2];
     public:
-        Terminal(const terminal_config_t &cfg);
-        Terminal(uint8_t chnl, const terminal_config_t &cfg);
+        Terminal(uint8_t bufrd, const terminal_config_t &cfg);
+        Terminal(uint8_t chnl, uint8_t bufrd, const terminal_config_t &cfg);
         ~Terminal();
+
+        // Assumes swap is called at somepoint after this call.
         void render();
 
         inline void putCellState(size_t i, const cell_state_t &ct) {

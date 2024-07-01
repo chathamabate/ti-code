@@ -70,14 +70,18 @@ int main(void) {
     };
 
     cxxutil::term::Terminal *T = 
-        new cxxutil::term::Terminal(5, config);
+        new cxxutil::term::Terminal(5, 1, config);
 
     gfx_Begin();
     gfx_FillScreen(255);
 
+    gfx_SetDrawBuffer();
+
     while (!kb_IsDown(kb_KeyClear)) {
         delay(200);
         T->render();
+        gfx_SwapDraw();
+
         kb_Scan();
     }
 
